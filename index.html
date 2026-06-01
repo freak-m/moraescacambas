@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Moraes Caçambas – Aluguel de Caçambas para Entulho de Obra</title>
+  <meta name="description" content="Aluguel de caçambas para entulho de obra com entrega rápida. Moraes Caçambas – sua obra mais limpa e organizada.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    /* ─── RESET ─── */
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --yellow:       #F5C400;
+      --yellow-light: #FFD93D;
+      --yellow-dark:  #C9A000;
+      --black:        #0D0D0D;
+      --dark:         #161616;
+      --dark-2:       #222222;
+      --dark-3:       #2A2A2A;
+      --white:        #FFFFFF;
+      --muted:        #888888;
+      --green:        #25D366;
+      --radius:       12px;
+      --shadow-y:     0 8px 32px rgba(245,196,0,0.4);
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--black); color: var(--white); overflow-x: hidden; }
+
+    h1, h2, h3 { font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.02em; }
+
+    /* ─── SCROLL REVEAL ─── */
+    .reveal       { opacity: 0; transform: translateY(40px);  transition: opacity .7s ease, transform .7s ease; }
+    .reveal-left  { opacity: 0; transform: translateX(-50px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal-right { opacity: 0; transform: translateX(50px);  transition: opacity .7s ease, transform .7s ease; }
+    .reveal.visible, .reveal-left.visible, .reveal-right.visible { opacity: 1; transform: none; }
+    .d1 { transition-delay: .1s; }
+    .d2 { transition-delay: .2s; }
+    .d3 { transition-delay: .3s; }
+    .d4 { transition-delay: .4s; }
+    .d5 { transition-delay: .5s; }
+
+    /* ─── HAZARD UTILITIES ─── */
+    .hazard-bar {
+      height: 10px;
+      background: repeating-linear-gradient(90deg, var(--yellow) 0 20px, var(--dark) 20px 40px);
+    }
+    .hazard-diagonal {
+      background: repeating-linear-gradient(45deg, var(--yellow) 0 20px, #0D0D0D 20px 40px);
+    }
+
+    /* ─── NAVBAR ─── */
+    #navbar {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      height: 70px; padding: 0 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(13,13,13,.95); backdrop-filter: blur(12px);
+      border-bottom: 3px solid var(--yellow);
+      transition: height .3s, background .3s;
+    }
+    #navbar.scrolled { height: 60px; background: rgba(10,10,10,.98); }
+    .nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+    .nav-logo img { height: 46px; width: auto; object-fit: contain; }
+    .nav-links { list-style: none; display: flex; gap: 28px; }
+    .nav-links a {
+      color: var(--white); text-decoration: none; font-size: .875rem;
+      font-weight: 600; letter-spacing: .05em; text-transform: uppercase;
+      transition: color .2s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 2px; background: var(--yellow); transition: width .3s;
+    }
+    .nav-links a:hover { color: var(--yellow); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-cta {
+      background: var(--yellow) !important; color: var(--black) !important;
+      padding: 9px 22px; border-radius: 50px; font-weight: 800 !important;
+      transition: transform .2s, box-shadow .2s !important;
+    }
+    .nav-cta:hover { transform: scale(1.05); box-shadow: var(--shadow-y); }
+    .nav-cta::after { display: none !important; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 5px; }
+    .hamburger span { display: block; width: 26px; height: 3px; background: var(--white); border-radius: 2px; transition: all .3s; }
+
+    /* Mobile nav */
+    .mobile-nav {
+      display: none; position: fixed; inset: 0; z-index: 999;
+      background: rgba(0,0,0,.97); flex-direction: column;
+      align-items: center; justify-content: center; gap: 28px;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a {
+      font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem;
+      color: var(--white); text-decoration: none; transition: color .2s;
+    }
+    .mobile-nav a:hover { color: var(--yellow); }
+    .mob-close {
+      position: absolute; top: 22px; right: 24px;
+      background: none; border: none; color: var(--white); font-size: 2.2rem; cursor: pointer;
+    }
+
+    /* ─── HERO ─── */
+    #hero {
+      min-height: 100vh; padding-top: 70px;
+      display: flex; align-items: center;
+      position: relative; overflow: hidden;
+      background: var(--black);
+    }
+    .hero-glow {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 70% 60% at 75% 50%, rgba(245,196,0,.09) 0%, transparent 70%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(245,196,0,.05) 0%, transparent 60%);
+    }
+    .hero-stripe {
+      position: absolute; left: 0; right: 0; height: 8px;
+      background: repeating-linear-gradient(90deg, var(--yellow) 0 30px, transparent 30px 60px);
+    }
+    .hero-stripe.top    { top: 70px; }
+    .hero-stripe.bottom { bottom: 0; }
+
+    /* Grid dots bg */
+    .hero-dots {
+      position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+      background-image: radial-gradient(rgba(245,196,0,.08) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse 60% 60% at 80% 50%, black 0%, transparent 80%);
+    }
+
+    .hero-inner {
+      position: relative; z-index: 10;
+      max-width: 1200px; margin: 0 auto; width: 100%; padding: 60px 5%;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--yellow); color: var(--black);
+      padding: 6px 16px; border-radius: 50px;
+      font-size: .75rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+      margin-bottom: 20px;
+      animation: fadeDown .6s ease both;
+    }
+    .badge-dot {
+      width: 8px; height: 8px; background: var(--black); border-radius: 50%;
+      animation: dotPulse 1.5s infinite;
+    }
+    @keyframes dotPulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.6); } }
+
+    .hero-title {
+      font-size: clamp(3rem, 6vw, 5.8rem); line-height: .92; margin-bottom: 4px;
+    }
+    .hero-title .line {
+      display: block;
+      animation: slideUp .7s ease both;
+    }
+    .hero-title .line:nth-child(2) { animation-delay: .12s; }
+    .hero-title .line:nth-child(3) { animation-delay: .24s; }
+    .line-yellow { color: var(--yellow); }
+
+    .hero-sub {
+      font-size: clamp(.95rem, 1.8vw, 1.2rem); color: #ccc; line-height: 1.65;
+      margin: 22px 0 36px; max-width: 480px;
+      animation: fadeUp .7s .4s ease both;
+    }
+
+    .hero-btns {
+      display: flex; gap: 14px; flex-wrap: wrap;
+      animation: fadeUp .7s .55s ease both;
+    }
+
+    .btn-yellow {
+      background: var(--yellow); color: var(--black);
+      padding: 16px 34px; border-radius: 50px;
+      font-weight: 800; font-size: .95rem; text-decoration: none;
+      text-transform: uppercase; letter-spacing: .05em;
+      transition: transform .2s, box-shadow .2s;
+      border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-yellow:hover { transform: translateY(-3px); box-shadow: var(--shadow-y); }
+
+    .btn-wa {
+      background: var(--green); color: var(--white);
+      padding: 16px 34px; border-radius: 50px;
+      font-weight: 800; font-size: .95rem; text-decoration: none;
+      text-transform: uppercase; letter-spacing: .05em;
+      transition: transform .2s, box-shadow .2s;
+      display: inline-flex; align-items: center; gap: 10px;
+    }
+    .btn-wa:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(37,211,102,.45); }
+
+    .btn-outline {
+      background: transparent; color: var(--white);
+      padding: 15px 32px; border-radius: 50px;
+      font-weight: 700; font-size: .95rem; text-decoration: none;
+      text-transform: uppercase; letter-spacing: .05em;
+      border: 2px solid rgba(255,255,255,.25);
+      transition: all .2s;
+      display: inline-flex; align-items: center; gap: 8px;
+    }
+    .btn-outline:hover { border-color: var(--yellow); color: var(--yellow); }
+
+    /* Hero visual */
+    .hero-visual {
+      display: flex; justify-content: center; align-items: center;
+      animation: fadeRight .9s .3s ease both;
+    }
+    .dumpster-wrap {
+      position: relative;
+      animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 24px 48px rgba(245,196,0,.32));
+    }
+    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+    /* Debris particles */
+    .debris-piece {
+      position: absolute; border-radius: 3px;
+      animation: fallDeb linear infinite;
+    }
+    @keyframes fallDeb {
+      0%   { transform: translateY(-20px) rotate(0deg);   opacity: .8; }
+      100% { transform: translateY(90px)  rotate(360deg); opacity: 0; }
+    }
+
+    /* ─── SECTION BASE ─── */
+    section { padding: 88px 5%; }
+    .wrap { max-width: 1200px; margin: 0 auto; }
+    .sec-tag {
+      display: inline-block; background: var(--yellow); color: var(--black);
+      padding: 4px 14px; border-radius: 4px;
+      font-size: .72rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .sec-title { font-size: clamp(2rem, 4vw, 3rem); line-height: 1; margin-bottom: 14px; }
+    .sec-sub { font-size: 1rem; color: var(--muted); line-height: 1.7; max-width: 540px; }
+    .sec-head { margin-bottom: 56px; }
+
+    /* ─── SERVICES ─── */
+    #services { background: var(--dark); }
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: 22px; }
+
+    .card {
+      background: var(--dark-2); border: 1px solid rgba(255,255,255,.06);
+      border-radius: var(--radius); padding: 34px 26px;
+      transition: border-color .3s, transform .3s, box-shadow .3s;
+      position: relative; overflow: hidden;
+    }
+    .card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(245,196,0,.06) 0%, transparent 60%);
+      opacity: 0; transition: opacity .3s;
+    }
+    .card:hover { border-color: var(--yellow); transform: translateY(-7px); box-shadow: 0 24px 48px rgba(0,0,0,.45), 0 0 0 1px var(--yellow); }
+    .card:hover::after { opacity: 1; }
+    .card:hover .card-icon { transform: scale(1.18) rotate(-6deg); }
+
+    .card-icon { width: 68px; height: 68px; margin-bottom: 18px; transition: transform .3s; }
+    .card-size { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: var(--yellow); line-height: 1; margin-bottom: 4px; }
+    .card-name { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+    .card-desc { font-size: .875rem; color: var(--muted); line-height: 1.6; margin-bottom: 18px; }
+    .card-list { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+    .card-list li { font-size: .84rem; color: #bbb; display: flex; align-items: center; gap: 8px; }
+    .card-list li::before { content: ''; width: 6px; height: 6px; background: var(--yellow); border-radius: 50%; flex-shrink: 0; }
+
+    /* ─── HOW IT WORKS ─── */
+    #how { background: var(--black); }
+    .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; position: relative; }
+    .steps::before {
+      content: ''; position: absolute;
+      top: 40px; left: calc(16.66% + 40px); right: calc(16.66% + 40px);
+      height: 2px; background: linear-gradient(90deg, var(--yellow), var(--yellow-dark), var(--yellow));
+    }
+    .step { text-align: center; padding: 0 20px; position: relative; z-index: 1; }
+    .step-num {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: var(--yellow); color: var(--black);
+      font-family: 'Bebas Neue', sans-serif; font-size: 2rem;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 26px; transition: transform .3s; position: relative;
+    }
+    .step:hover .step-num { transform: scale(1.12); }
+    .step-badge {
+      position: absolute; top: -10px; right: -10px;
+      width: 26px; height: 26px; background: var(--dark-2); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step h3 { font-size: 1.4rem; margin-bottom: 10px; }
+    .step p { font-size: .9rem; color: var(--muted); line-height: 1.65; }
+
+    /* ─── BENEFITS ─── */
+    #benefits { background: var(--dark); }
+    .benefits-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+    .blist { display: flex; flex-direction: column; gap: 16px; }
+    .bitem {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 18px; border-radius: var(--radius);
+      background: var(--dark-3); border: 1px solid rgba(255,255,255,.05);
+      transition: all .3s;
+    }
+    .bitem:hover { border-color: rgba(245,196,0,.3); background: rgba(245,196,0,.03); }
+    .bicon {
+      width: 42px; height: 42px; border-radius: 10px;
+      background: rgba(245,196,0,.14); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .btext h4 { font-size: .97rem; font-weight: 700; margin-bottom: 3px; }
+    .btext p  { font-size: .84rem; color: var(--muted); line-height: 1.5; }
+    .bvisual { display: flex; justify-content: center; align-items: center; position: relative; }
+    .glow-ring {
+      position: absolute; width: 320px; height: 320px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,196,0,.14) 0%, transparent 70%);
+      animation: glowPulse 3.5s ease-in-out infinite;
+    }
+    @keyframes glowPulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: .5; } }
+    .bvisual svg { position: relative; z-index: 1; animation: float 5s ease-in-out infinite reverse; }
+
+    /* ─── STATS ─── */
+    #stats { background: var(--yellow); padding: 64px 5%; }
+    .stats-grid { max-width: 1200px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; }
+    .stat-item { text-align: center; }
+    .stat-num {
+      font-family: 'Bebas Neue', sans-serif; font-size: 3.8rem; color: var(--black); line-height: 1;
+      display: flex; align-items: baseline; justify-content: center; gap: 3px;
+    }
+    .stat-suf { font-size: 2.2rem; }
+    .stat-label { font-size: .85rem; font-weight: 700; color: #333; text-transform: uppercase; letter-spacing: .05em; margin-top: 4px; }
+
+    /* ─── CONTACT ─── */
+    #contact { background: var(--black); }
+    .contact-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 72px; align-items: start; }
+    .cinfo { display: flex; flex-direction: column; gap: 24px; }
+    .citem { display: flex; align-items: flex-start; gap: 14px; }
+    .cicon {
+      width: 46px; height: 46px; border-radius: 11px;
+      background: rgba(245,196,0,.14); display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .citem h4 { font-size: .75rem; text-transform: uppercase; letter-spacing: .1em; color: var(--yellow); margin-bottom: 4px; }
+    .citem p, .citem a { font-size: .97rem; color: var(--white); text-decoration: none; font-weight: 500; transition: color .2s; }
+    .citem a:hover { color: var(--yellow); }
+
+    /* Form */
+    .cform { background: var(--dark); border-radius: var(--radius); padding: 38px; border: 1px solid rgba(255,255,255,.06); }
+    .cform h3 { font-size: 1.7rem; margin-bottom: 26px; }
+    .fgroup { margin-bottom: 18px; }
+    .fgroup label { display: block; font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; color: #aaa; margin-bottom: 7px; }
+    .fgroup input, .fgroup textarea, .fgroup select {
+      width: 100%; background: var(--dark-3); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 8px; padding: 13px 15px; color: var(--white);
+      font-family: 'Inter', sans-serif; font-size: .92rem; transition: border-color .2s; resize: vertical;
+    }
+    .fgroup input:focus, .fgroup textarea:focus, .fgroup select:focus { outline: none; border-color: var(--yellow); }
+    .fgroup select option { background: var(--dark-3); }
+    .frow { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .fsub {
+      width: 100%; background: var(--yellow); color: var(--black); border: none;
+      padding: 15px; border-radius: 50px; font-weight: 800; font-size: .95rem;
+      text-transform: uppercase; letter-spacing: .08em; cursor: pointer; transition: transform .2s, box-shadow .2s;
+    }
+    .fsub:hover { transform: translateY(-2px); box-shadow: var(--shadow-y); }
+
+    /* ─── FOOTER ─── */
+    footer { background: var(--dark); border-top: 4px solid var(--yellow); padding: 52px 5% 24px; }
+    .foot-inner { max-width: 1200px; margin: 0 auto; }
+    .foot-grid { display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 48px; margin-bottom: 40px; }
+    .foot-brand img { height: 56px; margin-bottom: 14px; }
+    .foot-brand p { font-size: .88rem; color: var(--muted); line-height: 1.7; max-width: 280px; }
+    .fcol h4 { font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; letter-spacing: .05em; color: var(--yellow); margin-bottom: 14px; }
+    .fcol ul { list-style: none; }
+    .fcol ul li { margin-bottom: 9px; }
+    .fcol ul li a { color: var(--muted); text-decoration: none; font-size: .88rem; transition: color .2s; }
+    .fcol ul li a:hover { color: var(--yellow); }
+    .fcontact { display: flex; align-items: center; gap: 9px; margin-bottom: 10px; }
+    .fcontact span { font-size: .88rem; color: var(--muted); }
+    .foot-bottom { border-top: 1px solid rgba(255,255,255,.08); padding-top: 20px; display: flex; align-items: center; justify-content: space-between; }
+    .foot-bottom p { font-size: .82rem; color: var(--muted); }
+    .foot-stripes { display: flex; gap: 3px; }
+    .foot-stripes span {
+      width: 18px; height: 18px; border-radius: 3px;
+      background: repeating-linear-gradient(45deg, var(--yellow) 0 4px, var(--black) 4px 8px);
+    }
+
+    /* ─── WHATSAPP FLOAT ─── */
+    .wa-float {
+      position: fixed; bottom: 26px; right: 26px; z-index: 9999;
+      width: 60px; height: 60px; border-radius: 50%;
+      background: var(--green); display: flex; align-items: center; justify-content: center;
+      text-decoration: none; box-shadow: 0 4px 20px rgba(37,211,102,.5);
+      transition: transform .2s;
+      animation: waPulse 2.5s ease-in-out infinite;
+    }
+    .wa-float:hover { transform: scale(1.12); animation: none; box-shadow: 0 6px 30px rgba(37,211,102,.7); }
+    .wa-float svg { width: 30px; height: 30px; }
+    @keyframes waPulse {
+      0%,100% { box-shadow: 0 4px 20px rgba(37,211,102,.5); }
+      50%      { box-shadow: 0 4px 40px rgba(37,211,102,.8), 0 0 0 10px rgba(37,211,102,.15); }
+    }
+    .wa-tip {
+      position: absolute; right: 70px;
+      background: var(--dark-2); color: var(--white);
+      padding: 7px 13px; border-radius: 7px; font-size: .83rem; font-weight: 600;
+      white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity .2s;
+    }
+    .wa-tip::after {
+      content: ''; position: absolute; right: -6px; top: 50%; transform: translateY(-50%);
+      border: 6px solid transparent; border-right: none; border-left-color: var(--dark-2);
+    }
+    .wa-float:hover .wa-tip { opacity: 1; }
+
+    /* ─── KEYFRAMES ─── */
+    @keyframes fadeDown  { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: none; } }
+    @keyframes fadeUp    { from { opacity: 0; transform: translateY(20px);  } to { opacity: 1; transform: none; } }
+    @keyframes fadeRight { from { opacity: 0; transform: translateX(40px);  } to { opacity: 1; transform: none; } }
+    @keyframes slideUp   { from { opacity: 0; transform: translateY(60px);  } to { opacity: 1; transform: none; } }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 920px) {
+      .hero-inner      { grid-template-columns: 1fr; }
+      .hero-visual     { display: none; }
+      .steps           { grid-template-columns: 1fr; }
+      .steps::before   { display: none; }
+      .benefits-layout { grid-template-columns: 1fr; }
+      .bvisual         { display: none; }
+      .contact-layout  { grid-template-columns: 1fr; }
+      .stats-grid      { grid-template-columns: repeat(2, 1fr); }
+      .foot-grid       { grid-template-columns: 1fr; gap: 32px; }
+      .nav-links       { display: none; }
+      .hamburger       { display: flex; }
+      .frow            { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      section { padding: 60px 5%; }
+      .hero-btns { flex-direction: column; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ NAVBAR ══ -->
+<nav id="navbar">
+  <a href="#hero" class="nav-logo">
+    <img src="logo.jpg" alt="Moraes Caçambas">
+  </a>
+  <ul class="nav-links">
+    <li><a href="#services">Serviços</a></li>
+    <li><a href="#how">Como Funciona</a></li>
+    <li><a href="#benefits">Diferenciais</a></li>
+    <li><a href="#contact">Contato</a></li>
+    <li><a href="#contact" class="nav-cta">Solicitar Orçamento</a></li>
+  </ul>
+  <div class="hamburger" id="ham"><span></span><span></span><span></span></div>
+</nav>
+
+<!-- Mobile nav drawer -->
+<div class="mobile-nav" id="mobNav">
+  <button class="mob-close" id="mobClose">✕</button>
+  <a href="#services"  class="mob-link">Serviços</a>
+  <a href="#how"       class="mob-link">Como Funciona</a>
+  <a href="#benefits"  class="mob-link">Diferenciais</a>
+  <a href="#contact"   class="mob-link">Contato</a>
+  <a href="#contact" class="btn-yellow" style="margin-top:8px; font-size:1rem;">Solicitar Orçamento</a>
+</div>
+
+
+<!-- ══ HERO ══ -->
+<section id="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-dots"></div>
+  <div class="hero-stripe top"></div>
+  <div class="hero-stripe bottom"></div>
+
+  <div class="hero-inner">
+    <!-- Copy -->
+    <div>
+      <div class="hero-badge"><span class="badge-dot"></span>Entrega em até 24 horas</div>
+      <h1 class="hero-title">
+        <span class="line">ALUGUE SUA</span>
+        <span class="line line-yellow">CAÇAMBA</span>
+        <span class="line">AGORA</span>
+      </h1>
+      <p class="hero-sub">
+        Retire o entulho da sua obra com agilidade, segurança e preço justo.
+        Caçambas de todos os tamanhos, entrega rápida em toda a região.
+      </p>
+      <div class="hero-btns">
+        <a href="#contact" class="btn-yellow">Solicitar Orçamento</a>
+        <a href="#" class="btn-wa wa-link" target="_blank">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          Falar no WhatsApp
+        </a>
+      </div>
+    </div>
+
+    <!-- Dumpster SVG illustration -->
+    <div class="hero-visual">
+      <div class="dumpster-wrap">
+        <svg width="460" height="380" viewBox="0 0 460 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Shadow -->
+          <ellipse cx="230" cy="362" rx="150" ry="14" fill="rgba(0,0,0,.45)"/>
+          <!-- Body -->
+          <path d="M 65 88 L 395 88 L 362 328 L 98 328 Z" fill="#F5C400"/>
+          <!-- Hazard stripes (top section) -->
+          <clipPath id="hc">
+            <path d="M 65 88 L 395 88 L 382 152 L 78 152 Z"/>
+          </clipPath>
+          <g clip-path="url(#hc)">
+            <rect x="-10" y="78" width="490" height="90"
+              fill="url(#hpat)"/>
+          </g>
+          <defs>
+            <pattern id="hpat" x="0" y="0" width="44" height="44"
+              patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="22" height="44" fill="#F5C400"/>
+              <rect x="22" width="22" height="44" fill="#0D0D0D"/>
+            </pattern>
+          </defs>
+          <!-- White stripe -->
+          <path d="M 70 150 L 390 150 L 382 166 L 78 166 Z" fill="white" opacity=".92"/>
+          <!-- Left highlight -->
+          <path d="M 72 168 L 136 168 L 115 322 L 100 322 Z" fill="rgba(255,255,255,.11)"/>
+          <!-- Outline -->
+          <path d="M 65 88 L 395 88 L 362 328 L 98 328 Z" fill="none" stroke="#0D0D0D" stroke-width="5" stroke-linejoin="round"/>
+          <!-- Top rim -->
+          <rect x="50" y="78" width="360" height="18" rx="5" fill="#D4A800" stroke="#0D0D0D" stroke-width="3"/>
+          <!-- Handles -->
+          <rect x="54"  y="60" width="28" height="28" rx="5" fill="#C9A000" stroke="#0D0D0D" stroke-width="3"/>
+          <rect x="378" y="60" width="28" height="28" rx="5" fill="#C9A000" stroke="#0D0D0D" stroke-width="3"/>
+          <!-- Company name -->
+          <text x="230" y="245" font-family="Impact, Arial Black, sans-serif" font-size="40"
+            font-weight="900" fill="#0D0D0D" text-anchor="middle" letter-spacing="1">MORAES</text>
+          <text x="230" y="294" font-family="Impact, Arial Black, sans-serif" font-size="33"
+            font-weight="900" fill="#0D0D0D" text-anchor="middle" letter-spacing="1">CAÇAMBAS</text>
+          <!-- Bottom bar -->
+          <rect x="98" y="326" width="264" height="16" rx="5" fill="#C9A000" stroke="#0D0D0D" stroke-width="2"/>
+          <!-- Legs -->
+          <rect x="106" y="340" width="38" height="12" rx="4" fill="#8B7000" stroke="#0D0D0D" stroke-width="2"/>
+          <rect x="316" y="340" width="38" height="12" rx="4" fill="#8B7000" stroke="#0D0D0D" stroke-width="2"/>
+        </svg>
+
+        <!-- Falling debris -->
+        <div class="debris-piece" style="width:9px;height:6px;background:#F5C400;top:-8px;left:42%;animation-duration:2.8s;animation-delay:0s;"></div>
+        <div class="debris-piece" style="width:6px;height:6px;background:#aaa;border-radius:50%;top:-8px;left:57%;animation-duration:3.3s;animation-delay:.7s;"></div>
+        <div class="debris-piece" style="width:11px;height:5px;background:#F5C400;top:-8px;left:35%;animation-duration:2.6s;animation-delay:1.4s;"></div>
+        <div class="debris-piece" style="width:7px;height:9px;background:#888;top:-8px;left:62%;animation-duration:3.7s;animation-delay:.3s;"></div>
+        <div class="debris-piece" style="width:13px;height:4px;background:#C9A000;top:-8px;left:49%;animation-duration:2.3s;animation-delay:1.1s;"></div>
+        <div class="debris-piece" style="width:5px;height:5px;background:#ddd;border-radius:50%;top:-8px;left:38%;animation-duration:4.1s;animation-delay:1.8s;"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-bar"></div>
+
+
+<!-- ══ SERVICES ══ -->
+<section id="services">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <span class="sec-tag">Nossos Serviços</span>
+      <h2 class="sec-title">CAÇAMBAS PARA <span style="color:var(--yellow)">TODO TIPO DE OBRA</span></h2>
+      <p class="sec-sub">Escolha o tamanho certo para a sua necessidade. Entregamos no endereço que você quiser.</p>
+    </div>
+    <div class="cards-grid">
+
+      <div class="card reveal d1">
+        <svg class="card-icon" viewBox="0 0 72 72" fill="none">
+          <path d="M10 20 L62 20 L57 58 L15 58 Z" fill="#F5C400"/>
+          <clipPath id="cc1"><path d="M10 20 L62 20 L60 32 L12 32 Z"/></clipPath>
+          <g clip-path="url(#cc1)"><rect x="-2" y="15" width="80" height="22" fill="url(#cp1)"/></g>
+          <defs><pattern id="cp1" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="14" fill="#F5C400"/><rect x="7" width="7" height="14" fill="#0D0D0D"/></pattern></defs>
+          <path d="M10 20 L62 20 L57 58 L15 58 Z" fill="none" stroke="#0D0D0D" stroke-width="3"/>
+          <text x="36" y="52" font-family="Impact" font-size="15" fill="#0D0D0D" text-anchor="middle" font-weight="900">2m³</text>
+        </svg>
+        <div class="card-size">2m³</div>
+        <div class="card-name">Caçamba Pequena</div>
+        <div class="card-desc">Ideal para pequenas reformas domésticas e entulhos leves.</div>
+        <ul class="card-list">
+          <li>Reforma de banheiro</li>
+          <li>Limpeza de quintal</li>
+          <li>Resíduos de pintura</li>
+        </ul>
+      </div>
+
+      <div class="card reveal d2">
+        <svg class="card-icon" viewBox="0 0 72 72" fill="none">
+          <path d="M7 18 L65 18 L60 58 L12 58 Z" fill="#F5C400"/>
+          <clipPath id="cc2"><path d="M7 18 L65 18 L63 30 L9 30 Z"/></clipPath>
+          <g clip-path="url(#cc2)"><rect x="-2" y="13" width="82" height="22" fill="url(#cp2)"/></g>
+          <defs><pattern id="cp2" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="14" fill="#F5C400"/><rect x="7" width="7" height="14" fill="#0D0D0D"/></pattern></defs>
+          <path d="M7 18 L65 18 L60 58 L12 58 Z" fill="none" stroke="#0D0D0D" stroke-width="3"/>
+          <text x="36" y="52" font-family="Impact" font-size="15" fill="#0D0D0D" text-anchor="middle" font-weight="900">3m³</text>
+        </svg>
+        <div class="card-size">3m³</div>
+        <div class="card-name">Caçamba Média</div>
+        <div class="card-desc">Ótima para reformas de cômodos e obras de médio porte.</div>
+        <ul class="card-list">
+          <li>Reforma de cozinha</li>
+          <li>Demolição parcial</li>
+          <li>Entulho de alvenaria</li>
+        </ul>
+      </div>
+
+      <div class="card reveal d3">
+        <svg class="card-icon" viewBox="0 0 72 72" fill="none">
+          <path d="M4 16 L68 16 L63 58 L9 58 Z" fill="#F5C400"/>
+          <clipPath id="cc3"><path d="M4 16 L68 16 L66 28 L6 28 Z"/></clipPath>
+          <g clip-path="url(#cc3)"><rect x="-2" y="11" width="84" height="22" fill="url(#cp3)"/></g>
+          <defs><pattern id="cp3" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="14" fill="#F5C400"/><rect x="7" width="7" height="14" fill="#0D0D0D"/></pattern></defs>
+          <path d="M4 16 L68 16 L63 58 L9 58 Z" fill="none" stroke="#0D0D0D" stroke-width="3"/>
+          <text x="36" y="52" font-family="Impact" font-size="15" fill="#0D0D0D" text-anchor="middle" font-weight="900">5m³</text>
+        </svg>
+        <div class="card-size">5m³</div>
+        <div class="card-name">Caçamba Grande</div>
+        <div class="card-desc">Perfeita para obras maiores, construções e grandes reformas.</div>
+        <ul class="card-list">
+          <li>Construção civil</li>
+          <li>Demolição total</li>
+          <li>Grandes volumes</li>
+        </ul>
+      </div>
+
+      <div class="card reveal d4">
+        <svg class="card-icon" viewBox="0 0 72 72" fill="none">
+          <path d="M4 16 L68 16 L63 58 L9 58 Z" fill="#F5C400"/>
+          <clipPath id="cc4"><path d="M4 16 L68 16 L66 28 L6 28 Z"/></clipPath>
+          <g clip-path="url(#cc4)"><rect x="-2" y="11" width="84" height="22" fill="url(#cp4)"/></g>
+          <defs><pattern id="cp4" x="0" y="0" width="14" height="14" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="7" height="14" fill="#F5C400"/><rect x="7" width="7" height="14" fill="#0D0D0D"/></pattern></defs>
+          <line x1="36" y1="28" x2="34" y2="58" stroke="#C9A000" stroke-width="2.5"/>
+          <path d="M4 16 L68 16 L63 58 L9 58 Z" fill="none" stroke="#0D0D0D" stroke-width="3"/>
+          <text x="21" y="50" font-family="Impact" font-size="12" fill="#0D0D0D" text-anchor="middle" font-weight="900">5m³</text>
+          <circle cx="52" cy="44" r="5" fill="none" stroke="#0D0D0D" stroke-width="2"/>
+          <line x1="52" y1="39" x2="52" y2="35" stroke="#0D0D0D" stroke-width="2"/>
+        </svg>
+        <div class="card-size">5m³ c/ porta</div>
+        <div class="card-name">Caçamba com Porta</div>
+        <div class="card-desc">Porta lateral para facilitar o acesso e carregamento manual.</div>
+        <ul class="card-list">
+          <li>Cargas pesadas</li>
+          <li>Acesso fácil ao interior</li>
+          <li>Grandes reformas</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="hazard-bar"></div>
+
+
+<!-- ══ HOW IT WORKS ══ -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head reveal" style="text-align:center;">
+      <span class="sec-tag">Simples e Rápido</span>
+      <h2 class="sec-title">COMO <span style="color:var(--yellow)">FUNCIONA</span></h2>
+      <p class="sec-sub" style="margin:0 auto;">Em apenas 3 passos, sua caçamba estará na obra.</p>
+    </div>
+    <div class="steps">
+
+      <div class="step reveal d1">
+        <div class="step-num">
+          01
+          <div class="step-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#F5C400">
+              <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+            </svg>
+          </div>
+        </div>
+        <h3>ENTRE EM CONTATO</h3>
+        <p>Ligue ou mande mensagem pelo WhatsApp. Informe o endereço e o tipo de obra.</p>
+      </div>
+
+      <div class="step reveal d2">
+        <div class="step-num">
+          02
+          <div class="step-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#F5C400">
+              <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zm-.5 1.5 1.96 2.5H17V9.5h2.5zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm2.22-3C7.67 14.39 6.89 14 6 14s-1.67.39-2.22 1H3V6h12v9H8.22zm9.78 3c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/>
+            </svg>
+          </div>
+        </div>
+        <h3>AGENDAMOS A ENTREGA</h3>
+        <p>Escolhemos juntos o melhor horário. Caçamba entregue em até 24 horas.</p>
+      </div>
+
+      <div class="step reveal d3">
+        <div class="step-num">
+          03
+          <div class="step-badge">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="#F5C400">
+              <path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+            </svg>
+          </div>
+        </div>
+        <h3>RETIRAMOS QUANDO QUISER</h3>
+        <p>Encheu? É só avisar! Retiramos a caçamba e descartamos o entulho corretamente.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<div class="hazard-bar"></div>
+
+
+<!-- ══ BENEFITS ══ -->
+<section id="benefits">
+  <div class="wrap">
+    <div class="benefits-layout">
+
+      <div>
+        <div class="reveal">
+          <span class="sec-tag">Por Que Escolher</span>
+          <h2 class="sec-title">NOSSOS <span style="color:var(--yellow)">DIFERENCIAIS</span></h2>
+          <p class="sec-sub" style="margin-bottom:32px;">Somos a escolha certa para quem precisa de agilidade, confiança e bom atendimento.</p>
+        </div>
+        <div class="blist">
+
+          <div class="bitem reveal d1">
+            <div class="bicon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#F5C400">
+                <path d="M13 2.05v2.02c3.95.49 7 3.85 7 7.93 0 3.21-1.81 6-4.72 7.28L13 17v5h5l-1.22-1.22C19.91 19.07 22 15.76 22 12c0-5.18-3.95-9.45-9-9.95zM11 2.05C5.95 2.55 2 6.82 2 12c0 3.76 2.09 7.07 5.22 8.78L6 22h5v-5l-2.28 2.28C7.81 18 6 15.21 6 12c0-4.08 3.05-7.44 7-7.93V2.05z"/>
+              </svg>
+            </div>
+            <div class="btext">
+              <h4>Entrega Ultra-Rápida</h4>
+              <p>Caçamba no local em até 24h. Atendemos emergências com urgência.</p>
+            </div>
+          </div>
+
+          <div class="bitem reveal d2">
+            <div class="bicon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#F5C400">
+                <path d="M12 1 3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+              </svg>
+            </div>
+            <div class="btext">
+              <h4>Empresa Licenciada</h4>
+              <p>Resíduos descartados em locais autorizados e ambientalmente responsáveis.</p>
+            </div>
+          </div>
+
+          <div class="bitem reveal d3">
+            <div class="bicon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#F5C400">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
+              </svg>
+            </div>
+            <div class="btext">
+              <h4>Atendimento Personalizado</h4>
+              <p>Orientamos sobre o tamanho ideal de caçamba para cada tipo de obra.</p>
+            </div>
+          </div>
+
+          <div class="bitem reveal d4">
+            <div class="bicon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#F5C400">
+                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
+              </svg>
+            </div>
+            <div class="btext">
+              <h4>Preço Justo e Transparente</h4>
+              <p>Orçamento claro, sem surpresas. Preço competitivo e condições flexíveis.</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Visual -->
+      <div class="bvisual">
+        <div class="glow-ring"></div>
+        <svg width="340" height="300" viewBox="0 0 460 380" fill="none">
+          <path d="M 65 88 L 395 88 L 362 328 L 98 328 Z" fill="#F5C400"/>
+          <clipPath id="bhc">
+            <path d="M 65 88 L 395 88 L 382 152 L 78 152 Z"/>
+          </clipPath>
+          <g clip-path="url(#bhc)">
+            <rect x="-10" y="78" width="490" height="90" fill="url(#bhp)"/>
+          </g>
+          <defs>
+            <pattern id="bhp" x="0" y="0" width="44" height="44"
+              patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+              <rect width="22" height="44" fill="#F5C400"/>
+              <rect x="22" width="22" height="44" fill="#0D0D0D"/>
+            </pattern>
+          </defs>
+          <path d="M 70 150 L 390 150 L 382 166 L 78 166 Z" fill="white" opacity=".92"/>
+          <path d="M 65 88 L 395 88 L 362 328 L 98 328 Z" fill="none" stroke="#0D0D0D" stroke-width="5" stroke-linejoin="round"/>
+          <rect x="50" y="78" width="360" height="18" rx="5" fill="#D4A800" stroke="#0D0D0D" stroke-width="3"/>
+          <rect x="54"  y="60" width="28" height="28" rx="5" fill="#C9A000" stroke="#0D0D0D" stroke-width="3"/>
+          <rect x="378" y="60" width="28" height="28" rx="5" fill="#C9A000" stroke="#0D0D0D" stroke-width="3"/>
+          <text x="230" y="245" font-family="Impact, Arial Black, sans-serif" font-size="38" font-weight="900" fill="#0D0D0D" text-anchor="middle">MORAES</text>
+          <text x="230" y="292" font-family="Impact, Arial Black, sans-serif" font-size="31" font-weight="900" fill="#0D0D0D" text-anchor="middle">CAÇAMBAS</text>
+          <rect x="98" y="326" width="264" height="16" rx="5" fill="#C9A000" stroke="#0D0D0D" stroke-width="2"/>
+          <ellipse cx="230" cy="348" rx="140" ry="12" fill="rgba(0,0,0,.35)"/>
+        </svg>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ STATS ══ -->
+<section id="stats">
+  <div class="stats-grid">
+    <div class="stat-item reveal d1">
+      <div class="stat-num"><span class="counter" data-to="500">0</span><span class="stat-suf">+</span></div>
+      <div class="stat-label">Clientes Atendidos</div>
+    </div>
+    <div class="stat-item reveal d2">
+      <div class="stat-num"><span class="counter" data-to="1200">0</span><span class="stat-suf">+</span></div>
+      <div class="stat-label">Obras Servidas</div>
+    </div>
+    <div class="stat-item reveal d3">
+      <div class="stat-num"><span class="counter" data-to="24">0</span><span class="stat-suf">h</span></div>
+      <div class="stat-label">Entrega Garantida</div>
+    </div>
+    <div class="stat-item reveal d4">
+      <div class="stat-num"><span class="counter" data-to="10">0</span><span class="stat-suf">+</span></div>
+      <div class="stat-label">Anos de Experiência</div>
+    </div>
+  </div>
+</section>
+
+<div class="hazard-bar"></div>
+
+
+<!-- ══ CONTACT ══ -->
+<section id="contact">
+  <div class="wrap">
+    <div class="contact-layout">
+
+      <!-- Info -->
+      <div>
+        <div class="reveal">
+          <span class="sec-tag">Fale Conosco</span>
+          <h2 class="sec-title">SOLICITE SUA <span style="color:var(--yellow)">CAÇAMBA</span></h2>
+          <p class="sec-sub" style="margin-bottom:36px;">Entre em contato agora e receba um orçamento sem compromisso. Respondemos em minutos.</p>
+        </div>
+        <div class="cinfo">
+
+          <div class="citem reveal d1">
+            <div class="cicon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#F5C400">
+                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+              </svg>
+            </div>
+            <div>
+              <h4>WhatsApp</h4>
+              <a href="#" class="wa-link" target="_blank" id="waDisplay">(XX) XXXXX-XXXX</a>
+            </div>
+          </div>
+
+          <div class="citem reveal d2">
+            <div class="cicon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#F5C400">
+                <path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Telefone</h4>
+              <a href="#" id="telDisplay">(XX) XXXX-XXXX</a>
+            </div>
+          </div>
+
+          <div class="citem reveal d3">
+            <div class="cicon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#F5C400">
+                <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Área de Atendimento</h4>
+              <p>Região Metropolitana de São Paulo</p>
+            </div>
+          </div>
+
+          <div class="citem reveal d4">
+            <div class="cicon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="#F5C400">
+                <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/>
+              </svg>
+            </div>
+            <div>
+              <h4>Horário de Atendimento</h4>
+              <p>Segunda a Sábado: 07h – 18h</p>
+              <p style="font-size:.85rem;color:var(--muted);margin-top:2px;">Plantão WhatsApp 24h</p>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="cform reveal d2">
+        <h3>SOLICITAR ORÇAMENTO</h3>
+        <form id="quoteForm" onsubmit="submitForm(event)">
+          <div class="frow">
+            <div class="fgroup">
+              <label>Nome</label>
+              <input type="text" name="nome" placeholder="Seu nome completo" required>
+            </div>
+            <div class="fgroup">
+              <label>WhatsApp / Telefone</label>
+              <input type="tel" name="tel" placeholder="(XX) XXXXX-XXXX" required>
+            </div>
+          </div>
+          <div class="fgroup">
+            <label>Endereço de Entrega</label>
+            <input type="text" name="end" placeholder="Rua, número, bairro, cidade" required>
+          </div>
+          <div class="fgroup">
+            <label>Tamanho da Caçamba</label>
+            <select name="tam">
+              <option value="">Selecione o tamanho</option>
+              <option value="2m³ – Pequena">2m³ – Pequena</option>
+              <option value="3m³ – Média">3m³ – Média</option>
+              <option value="5m³ – Grande">5m³ – Grande</option>
+              <option value="5m³ com porta">5m³ com porta</option>
+              <option value="Não sei – me ajude a escolher">Não sei – me ajude a escolher</option>
+            </select>
+          </div>
+          <div class="fgroup">
+            <label>Observações (opcional)</label>
+            <textarea name="obs" rows="3" placeholder="Descreva sua necessidade..."></textarea>
+          </div>
+          <button type="submit" class="fsub">Enviar pelo WhatsApp</button>
+        </form>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══ FOOTER ══ -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <img src="logo.jpg" alt="Moraes Caçambas">
+        <p>Empresa especializada no aluguel de caçambas para entulho de obra. Rápido, confiável e com preço justo.</p>
+      </div>
+      <div class="fcol">
+        <h4>Links Rápidos</h4>
+        <ul>
+          <li><a href="#services">Serviços</a></li>
+          <li><a href="#how">Como Funciona</a></li>
+          <li><a href="#benefits">Diferenciais</a></li>
+          <li><a href="#contact">Solicitar Orçamento</a></li>
+        </ul>
+      </div>
+      <div class="fcol">
+        <h4>Contato</h4>
+        <div class="fcontact">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#F5C400">
+            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+          </svg>
+          <span id="footWa">WhatsApp: (XX) XXXXX-XXXX</span>
+        </div>
+        <div class="fcontact">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#F5C400">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+          </svg>
+          <span>São Paulo – SP</span>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <p>© 2025 Moraes Caçambas. Todos os direitos reservados.</p>
+      <div class="foot-stripes"><span></span><span></span><span></span><span></span><span></span></div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ══ WHATSAPP FLOAT ══ -->
+<a href="#" class="wa-float wa-link" target="_blank" title="Falar no WhatsApp">
+  <span class="wa-tip">Falar no WhatsApp</span>
+  <svg viewBox="0 0 24 24" fill="white">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+
+<script>
+  // ══════════════════════════════════════════════
+  //  CONFIGURAÇÃO — substitua pelo número real
+  //  Formato: código do país + DDD + número (só dígitos)
+  //  Exemplo: '5511987654321'
+  const WA_NUMBER  = '55XXXXXXXXXXX';
+  const WA_DISPLAY = '(XX) XXXXX-XXXX';
+  const TEL_NUMBER = 'XXXXXXXXXXX';
+  const TEL_DISPLAY = '(XX) XXXX-XXXX';
+  // ══════════════════════════════════════════════
+
+  // Inject WhatsApp links
+  document.querySelectorAll('.wa-link').forEach(el => {
+    el.href = `https://wa.me/${WA_NUMBER}`;
+  });
+  const waDisp = document.getElementById('waDisplay');
+  if (waDisp) { waDisp.textContent = WA_DISPLAY; waDisp.href = `https://wa.me/${WA_NUMBER}`; }
+  const telDisp = document.getElementById('telDisplay');
+  if (telDisp) { telDisp.textContent = TEL_DISPLAY; telDisp.href = `tel:+${TEL_NUMBER}`; }
+  const footWa = document.getElementById('footWa');
+  if (footWa) footWa.textContent = `WhatsApp: ${WA_DISPLAY}`;
+
+  // ── Navbar scroll ──
+  const navbar = document.getElementById('navbar');
+  window.addEventListener('scroll', () => {
+    navbar.classList.toggle('scrolled', window.scrollY > 60);
+  }, { passive: true });
+
+  // ── Mobile menu ──
+  const ham = document.getElementById('ham');
+  const mob = document.getElementById('mobNav');
+  const mobClose = document.getElementById('mobClose');
+  ham.addEventListener('click', () => mob.classList.add('open'));
+  mobClose.addEventListener('click', () => mob.classList.remove('open'));
+  mob.querySelectorAll('.mob-link').forEach(l => l.addEventListener('click', () => mob.classList.remove('open')));
+
+  // ── Scroll reveal ──
+  const ro = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); ro.unobserve(e.target); }
+    });
+  }, { threshold: 0.14 });
+  document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(el => ro.observe(el));
+
+  // ── Counters ──
+  function runCounter(el) {
+    const target = +el.dataset.to;
+    const t0 = performance.now();
+    const dur = 1800;
+    (function tick(now) {
+      const p = Math.min((now - t0) / dur, 1);
+      const e = 1 - (1 - p) ** 3;
+      el.textContent = Math.floor(e * target);
+      if (p < 1) requestAnimationFrame(tick);
+      else el.textContent = target;
+    })(t0);
+  }
+  const co = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { runCounter(e.target); co.unobserve(e.target); } });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('.counter').forEach(el => co.observe(el));
+
+  // ── Form → WhatsApp ──
+  function submitForm(e) {
+    e.preventDefault();
+    const d = new FormData(e.target);
+    const txt = encodeURIComponent(
+      `Olá! Gostaria de solicitar um orçamento de caçamba.\n\n` +
+      `👤 Nome: ${d.get('nome')}\n` +
+      `📱 Telefone: ${d.get('tel')}\n` +
+      `📍 Endereço: ${d.get('end')}\n` +
+      `📦 Tamanho: ${d.get('tam') || 'a definir'}\n` +
+      (d.get('obs') ? `💬 Obs: ${d.get('obs')}` : '')
+    );
+    window.open(`https://wa.me/${WA_NUMBER}?text=${txt}`, '_blank');
+  }
+
+  // ── Smooth scroll ──
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', ev => {
+      const t = document.querySelector(a.getAttribute('href'));
+      if (t) { ev.preventDefault(); t.scrollIntoView({ behavior: 'smooth' }); }
+    });
+  });
+</script>
+</body>
+</html>
