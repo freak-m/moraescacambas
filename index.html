@@ -234,7 +234,7 @@
       position: absolute; top: 0; left: 0; right: 0; height: 8px;
       background: repeating-linear-gradient(90deg, var(--yellow) 0 18px, transparent 18px 36px);
     }
-    .ss-visual svg { animation: dumpFloat 4.5s ease-in-out infinite; filter: drop-shadow(0 16px 32px rgba(245,196,0,.28)); }
+    .ss-visual svg, .ss-visual img { animation: dumpFloat 4.5s ease-in-out infinite; filter: drop-shadow(0 16px 32px rgba(245,196,0,.28)); }
 
     .ss-content { padding: 52px; background: var(--dark-2); }
     .ss-size { font-family: 'Bebas Neue', sans-serif; font-size: 4.5rem; color: var(--yellow); line-height: 1; margin-bottom: 6px; }
@@ -310,8 +310,8 @@
       filter: drop-shadow(0 20px 40px rgba(245,196,0,.32));
     }
     @keyframes imgFloat {
-      0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-14px); }
+      0%, 100% { transform: translateX(0); }
+      50%       { transform: translateX(-14px); }
     }
 
     /* ─────────────────────────────────────────
