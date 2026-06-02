@@ -465,6 +465,39 @@
     }
     .btn-add-ct:hover { border-color: var(--yellow); color: var(--yellow); background: rgba(245,196,0,.05); }
 
+    /* ── CONTACT CARD SECTION HEADER ── */
+    .ct-section-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 16px 20px; margin-bottom: 16px;
+      background: rgba(245,196,0,.06);
+      border: 1px solid rgba(245,196,0,.18);
+      border-radius: var(--radius);
+    }
+    .ct-badge-preview {
+      background: var(--yellow); color: #000;
+      font-size: .72rem; font-weight: 800;
+      padding: 4px 12px; border-radius: 20px;
+      letter-spacing: .08em;
+    }
+    .ct-section-desc { font-size: .82rem; color: var(--muted); }
+
+    /* ── CONTACT CARDS ── */
+    .ct-card {
+      background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 8px; margin-bottom: 10px; overflow: hidden;
+    }
+    .ct-card-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 14px;
+      background: var(--card); border-bottom: 1px solid var(--border);
+    }
+    .ct-card-icon {
+      flex-shrink: 0; width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(245,196,0,.1); border-radius: 6px;
+    }
+    .ct-card-fields { padding: 14px; }
+
     /* ── FIELD NOTE ── */
     .field-note {
       font-size: .8rem; color: var(--muted);
@@ -804,54 +837,45 @@
 
     <!-- ── CONTACT TAB ── -->
     <div class="tab-pane" id="tab-contact">
-      <div class="field-group">
-        <h3>Canais de Contato</h3>
-        <div id="ct-rows-list"></div>
-        <button class="btn-add-ct" id="btn-add-ct" type="button">+ Adicionar canal de contato</button>
+
+      <!-- Non-editable section label -->
+      <div class="ct-section-header">
+        <span class="ct-badge-preview">FALE CONOSCO</span>
+        <span class="ct-section-desc">Seção de contato do site</span>
       </div>
 
+      <!-- Título -->
       <div class="field-group">
-        <h3>Informações de Atendimento</h3>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Tag da seção</label>
-            <input type="text" id="ct-tag" placeholder="Fale Conosco">
-          </div>
-        </div>
+        <h3>Título</h3>
         <div class="form-row cols-2">
           <div class="form-field">
-            <label>Início do título <span>(texto normal)</span></label>
+            <label>Texto branco</label>
             <input type="text" id="ct-title-inp" placeholder="SOLICITE SUA">
           </div>
           <div class="form-field">
-            <label>Destaque em amarelo <span>(no h2)</span></label>
+            <label>Texto em amarelo</label>
             <input type="text" id="ct-hl" placeholder="CAÇAMBA">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Subtítulo da seção</label>
-            <div id="q-ct-subtitle"></div>
-          </div>
-        </div>
-        <div class="form-row cols-2">
-          <div class="form-field">
-            <label>Área de atendimento</label>
-            <input type="text" id="ct-area" placeholder="Região Metropolitana de Campinas">
-          </div>
-          <div class="form-field">
-            <label>Horário de atendimento</label>
-            <input type="text" id="ct-hours" placeholder="Segunda a Sábado: 07h – 18h">
-          </div>
-        </div>
-        <div class="form-row">
-          <div class="form-field">
-            <label>Nota do horário</label>
-            <input type="text" id="ct-hours-note" placeholder="Plantão WhatsApp 24h">
           </div>
         </div>
       </div>
 
+      <!-- Descrição -->
+      <div class="field-group">
+        <h3>Descrição</h3>
+        <div class="form-field">
+          <div id="q-ct-subtitle"></div>
+        </div>
+      </div>
+
+      <!-- Cards -->
+      <div class="field-group">
+        <h3>Cards de Informação</h3>
+        <p class="field-note">Os cards aparecem na coluna esquerda da seção de contato.</p>
+        <div id="ct-cards-list"></div>
+        <button class="btn-add-ct" id="btn-add-card" type="button">+ Adicionar card</button>
+      </div>
+
+      <!-- Painel WhatsApp (keep existing) -->
       <div class="field-group">
         <h3>Painel WhatsApp</h3>
         <div class="form-row">
@@ -868,9 +892,10 @@
         </div>
       </div>
 
+      <!-- Rodapé (keep existing) -->
       <div class="field-group">
         <h3>Rodapé</h3>
-        <p class="field-note">O número de WhatsApp exibido no rodapé é preenchido automaticamente pelo primeiro canal do tipo <strong>📱 WhatsApp</strong> cadastrado acima.</p>
+        <p class="field-note">O número de WhatsApp exibido no rodapé é preenchido automaticamente pelo primeiro card do tipo <strong>📱 WhatsApp</strong> cadastrado acima.</p>
         <div class="form-row cols-2">
           <div class="form-field">
             <label>Localização</label>
@@ -882,6 +907,7 @@
           </div>
         </div>
       </div>
+
     </div><!-- /tab-contact -->
 
   </div><!-- /tab-content -->
@@ -981,77 +1007,101 @@ document.querySelectorAll('.acc-header').forEach(hdr => {
 });
 
 // ══════════════════════════════════════════════════
-//  CONTACT CHANNEL ROWS
+//  CONTACT CARDS
 // ══════════════════════════════════════════════════
-const CT_TYPES = {
-  whatsapp: { icon: '📱', label: 'WhatsApp',  displayPh: '(19) 99327-7969',    linkLabel: 'Número para o link',       linkPh: '5519998773245', hasLink: true  },
-  phone:    { icon: '📞', label: 'Telefone',   displayPh: '(19) 99327-7969',    linkLabel: 'Número (ex: 19993277969)', linkPh: '19993277969',   hasLink: true  },
-  telegram: { icon: '✈️', label: 'Telegram',   displayPh: '@usuario',            linkLabel: 'Username ou número',      linkPh: '@usuario',      hasLink: true  },
-  email:    { icon: '📧', label: 'Email',       displayPh: 'contato@empresa.com', linkLabel: 'Endereço de email',       linkPh: 'email@...',     hasLink: true  },
-  other:    { icon: '🔗', label: 'Outro',       displayPh: 'Texto exibido',       linkLabel: 'URL',                    linkPh: 'https://...',   hasLink: false }
+const WA_SVG   = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>`;
+const PHONE_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>`;
+const TG_SVG    = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.562 8.248l-1.97 9.289c-.145.658-.537.818-1.084.508l-3-2.21-1.447 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.12L7.088 14.064l-2.95-.924c-.64-.204-.657-.64.135-.948l11.566-4.461c.537-.194 1.006.131.723.517z"/></svg>`;
+const EMAIL_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>`;
+const PIN_SVG   = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`;
+const CLOCK_SVG = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>`;
+const LINK_SVG  = `<svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M3.9 12c0-1.71 1.39-3.1 3.1-3.1h4V7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h4v-1.9H7c-1.71 0-3.1-1.39-3.1-3.1zM8 13h8v-2H8v2zm9-6h-4v1.9h4c1.71 0 3.1 1.39 3.1 3.1s-1.39 3.1-3.1 3.1h-4V17h4c2.76 0 5-2.24 5-5s-2.24-5-5-5z"/></svg>`;
+
+const CARD_TYPES = {
+  whatsapp: { icon: '📱', label: 'WhatsApp',           svg: WA_SVG,    fields: [{id:'display',label:'Exibição no site',ph:'(19) 99327-7969'},{id:'link',label:'Número para o link',ph:'5519998773245'}] },
+  phone:    { icon: '📞', label: 'Telefone',            svg: PHONE_SVG, fields: [{id:'display',label:'Exibição no site',ph:'(19) 99327-7969'},{id:'link',label:'Número (ex: 19993277969)',ph:'19993277969'}] },
+  telegram: { icon: '✈️', label: 'Telegram',            svg: TG_SVG,    fields: [{id:'display',label:'Exibição no site',ph:'@usuario'},{id:'link',label:'Username ou número',ph:'usuario'}] },
+  email:    { icon: '📧', label: 'Email',               svg: EMAIL_SVG, fields: [{id:'display',label:'Exibição no site',ph:'contato@empresa.com'},{id:'link',label:'Endereço de email',ph:'contato@...'}] },
+  area:     { icon: '📍', label: 'Área de Atendimento', svg: PIN_SVG,   fields: [{id:'text',label:'Área de atendimento',ph:'Região Metropolitana de Campinas'}] },
+  hours:    { icon: '🕐', label: 'Horário',             svg: CLOCK_SVG, fields: [{id:'text',label:'Horário',ph:'Segunda a Sábado: 07h – 18h'},{id:'note',label:'Nota',ph:'Plantão WhatsApp 24h'}] },
+  other:    { icon: '🔗', label: 'Outro',               svg: LINK_SVG,  fields: [{id:'label',label:'Título do card',ph:'Contato'},{id:'display',label:'Texto exibido',ph:'Texto...'}] }
 };
 
-function buildContactRow(data) {
-  data = data || { type: 'whatsapp', display: '', link: '' };
-  const type = data.type || 'whatsapp';
-  const meta = CT_TYPES[type] || CT_TYPES.whatsapp;
-  const typeOpts = Object.entries(CT_TYPES).map(([k, v]) =>
-    `<option value="${k}"${k === type ? ' selected' : ''}>${v.icon} ${v.label}</option>`
-  ).join('');
+function buildCardFields(card, cfg, data) {
+  const fieldsEl = card.querySelector('.ct-card-fields');
+  fieldsEl.innerHTML = '';
   const row = document.createElement('div');
-  row.className = 'ct-row';
-  row.innerHTML = `
-    <select class="ct-type-sel">${typeOpts}</select>
-    <div class="ct-row-fields">
-      <div class="form-field">
-        <label class="ct-display-lbl">Exibição no site</label>
-        <input type="text" class="ct-display-inp" placeholder="${meta.displayPh}" value="${(data.display||'').replace(/"/g,'&quot;')}">
-      </div>
-      <div class="form-field ct-link-wrap"${meta.hasLink ? '' : ' style="display:none"'}>
-        <label class="ct-link-lbl">${meta.linkLabel}</label>
-        <input type="text" class="ct-link-inp" placeholder="${meta.linkPh}" value="${(data.link||'').replace(/"/g,'&quot;')}">
-      </div>
+  row.className = cfg.fields.length > 1 ? 'form-row cols-2' : 'form-row';
+  cfg.fields.forEach(f => {
+    const div = document.createElement('div');
+    div.className = 'form-field';
+    div.innerHTML = `<label>${f.label}</label><input type="text" class="ct-f-${f.id}" placeholder="${f.ph}" value="${(data[f.id]||'').replace(/"/g,'&quot;')}">`;
+    row.appendChild(div);
+  });
+  fieldsEl.appendChild(row);
+}
+
+function buildContactCard(data) {
+  data = data || { type: 'whatsapp' };
+  const type = data.type || 'whatsapp';
+  const cfg = CARD_TYPES[type] || CARD_TYPES.whatsapp;
+  const typeOpts = Object.entries(CARD_TYPES).map(([k,v]) =>
+    `<option value="${k}"${k===type?' selected':''}>${v.icon} ${v.label}</option>`
+  ).join('');
+  const card = document.createElement('div');
+  card.className = 'ct-card';
+  card.innerHTML = `
+    <div class="ct-card-head">
+      <div class="ct-card-icon">${cfg.svg}</div>
+      <select class="ct-type-sel ct-card-type-sel">${typeOpts}</select>
+      <button class="ct-remove-btn" type="button" title="Remover" style="margin-top:0">−</button>
     </div>
-    <button class="ct-remove-btn" type="button" title="Remover">−</button>
-  `;
-  row.querySelector('.ct-type-sel').addEventListener('change', function() { ctRowTypeChange(this); });
-  row.querySelector('.ct-remove-btn').addEventListener('click', function() { ctRowRemove(this); });
-  return row;
+    <div class="ct-card-fields"></div>`;
+  card.querySelector('.ct-card-type-sel').addEventListener('change', function() { ctCardTypeChange(this); });
+  card.querySelector('.ct-remove-btn').addEventListener('click', function() { ctCardRemove(this); });
+  buildCardFields(card, cfg, data);
+  return card;
 }
 
-function populateContactRows(phones) {
-  const list = document.getElementById('ct-rows-list');
+function populateContactCards(cards) {
+  const list = document.getElementById('ct-cards-list');
   list.innerHTML = '';
-  const data = phones?.length ? phones : [{ type: 'whatsapp', display: '', link: '' }];
-  data.forEach(p => list.appendChild(buildContactRow(p)));
+  const data = cards?.length ? cards : [
+    { type: 'whatsapp', display: '', link: '' },
+    { type: 'area', text: '' },
+    { type: 'hours', text: '', note: '' }
+  ];
+  data.forEach(c => list.appendChild(buildContactCard(c)));
 }
 
-function ctRowTypeChange(sel) {
-  const row = sel.closest('.ct-row');
-  const meta = CT_TYPES[sel.value] || CT_TYPES.other;
-  row.querySelector('.ct-display-inp').placeholder = meta.displayPh;
-  const linkWrap = row.querySelector('.ct-link-wrap');
-  linkWrap.style.display = meta.hasLink ? '' : 'none';
-  row.querySelector('.ct-link-lbl').textContent = meta.linkLabel;
-  row.querySelector('.ct-link-inp').placeholder = meta.linkPh;
+function ctCardTypeChange(sel) {
+  const card = sel.closest('.ct-card');
+  const cfg = CARD_TYPES[sel.value] || CARD_TYPES.other;
+  card.querySelector('.ct-card-icon').innerHTML = cfg.svg;
+  buildCardFields(card, cfg, {});
   debouncedSync();
 }
 
-function ctRowRemove(btn) {
-  const list = document.getElementById('ct-rows-list');
-  if (list.children.length > 1) { btn.closest('.ct-row').remove(); debouncedSync(); }
+function ctCardRemove(btn) {
+  const list = document.getElementById('ct-cards-list');
+  if (list.children.length > 1) { btn.closest('.ct-card').remove(); debouncedSync(); }
 }
 
-function collectContactPhones() {
-  return Array.from(document.querySelectorAll('#ct-rows-list .ct-row')).map(row => ({
-    type:    row.querySelector('.ct-type-sel').value,
-    display: row.querySelector('.ct-display-inp').value.trim(),
-    link:    (row.querySelector('.ct-link-inp')?.value || '').trim()
-  }));
+function collectContactCards() {
+  return Array.from(document.querySelectorAll('#ct-cards-list .ct-card')).map(card => {
+    const type = card.querySelector('.ct-card-type-sel').value;
+    const cfg = CARD_TYPES[type] || CARD_TYPES.other;
+    const data = { type };
+    cfg.fields.forEach(f => {
+      const inp = card.querySelector(`.ct-f-${f.id}`);
+      if (inp) data[f.id] = inp.value.trim();
+    });
+    return data;
+  });
 }
 
-document.getElementById('btn-add-ct').addEventListener('click', () => {
-  document.getElementById('ct-rows-list').appendChild(buildContactRow());
+document.getElementById('btn-add-card').addEventListener('click', () => {
+  document.getElementById('ct-cards-list').appendChild(buildContactCard());
   debouncedSync();
 });
 
@@ -1178,23 +1228,22 @@ function populateForm(c) {
     });
   }
 
-  // Contact — phones (backward compat: convert old wa_number/tel_number fields)
-  let phones = c.contact?.phones;
-  if (!phones) {
-    phones = [];
-    if (c.contact?.wa_number || c.contact?.wa_display)
-      phones.push({ type: 'whatsapp', display: c.contact.wa_display || '', link: c.contact.wa_number || '' });
-    if (c.contact?.tel_number || c.contact?.tel_display)
-      phones.push({ type: 'phone', display: c.contact.tel_display || '', link: c.contact.tel_number || '' });
+  // Contact cards (backward compat: migrate from old phones/area/hours)
+  let cards = c.contact?.cards;
+  if (!cards) {
+    cards = [];
+    const phones = c.contact?.phones || [];
+    phones.forEach(p => cards.push({ type: p.type || 'whatsapp', display: p.display || '', link: p.link || '' }));
+    if (c.contact?.area) cards.push({ type: 'area', text: c.contact.area });
+    if (c.contact?.hours || c.contact?.hours_note) cards.push({ type: 'hours', text: c.contact.hours || '', note: c.contact.hours_note || '' });
+    // Also check old wa_number/wa_display
+    if (!phones.length && (c.contact?.wa_number || c.contact?.wa_display))
+      cards.unshift({ type: 'whatsapp', display: c.contact.wa_display || '', link: c.contact.wa_number || '' });
   }
-  populateContactRows(phones);
-  document.getElementById('ct-tag').value        = c.contact?.tag          || '';
-  document.getElementById('ct-title-inp').value  = c.contact?.title        || '';
+  populateContactCards(cards);
+  document.getElementById('ct-title-inp').value  = c.contact?.title || '';
   document.getElementById('ct-hl').value         = c.contact?.title_highlight || '';
   if (c.contact?.subtitle) quills['q-ct-subtitle'].root.innerHTML = c.contact.subtitle;
-  document.getElementById('ct-area').value       = c.contact?.area         || '';
-  document.getElementById('ct-hours').value      = c.contact?.hours        || '';
-  document.getElementById('ct-hours-note').value = c.contact?.hours_note   || '';
   if (c.contact?.wa_panel_label) quills['q-ct-wa-label'].root.innerHTML = c.contact.wa_panel_label;
   if (c.contact?.wa_panel_sub)   quills['q-ct-wa-sub'].root.innerHTML   = c.contact.wa_panel_sub;
 
@@ -1254,14 +1303,11 @@ function collectForm() {
       label:  val(`stat-${i}-lbl`)
     })),
     contact: {
-      tag:             val('ct-tag'),
+      tag:             'Fale Conosco',
       title:           val('ct-title-inp') || 'SOLICITE SUA',
       title_highlight: val('ct-hl'),
       subtitle:        qHTML('q-ct-subtitle'),
-      phones:          collectContactPhones(),
-      area:            val('ct-area'),
-      hours:           val('ct-hours'),
-      hours_note:      val('ct-hours-note'),
+      cards:           collectContactCards(),
       wa_panel_label:  qHTML('q-ct-wa-label'),
       wa_panel_sub:    qHTML('q-ct-wa-sub')
     },
@@ -1519,24 +1565,48 @@ function syncPreview() {
   });
 
   // Contact
-  set('contact-tag',        v('ct-tag'));
-  set('contact-title',      v('ct-title-inp') || 'SOLICITE SUA');
-  set('contact-title-hl',   v('ct-hl'));
-  set('contact-subtitle',   q('q-ct-subtitle'), true);
-  set('wa-panel-label',     q('q-ct-wa-label'), true);
-  set('wa-panel-sub',       q('q-ct-wa-sub'), true);
-  set('contact-area',       v('ct-area'));
-  set('contact-hours',      v('ct-hours'));
-  set('contact-hours-note', v('ct-hours-note'));
+  set('contact-tag',      'Fale Conosco');
+  set('contact-title',    v('ct-title-inp') || 'SOLICITE SUA');
+  set('contact-title-hl', v('ct-hl'));
+  set('contact-subtitle', q('q-ct-subtitle'), true);
+  set('wa-panel-label',   q('q-ct-wa-label'), true);
+  set('wa-panel-sub',     q('q-ct-wa-sub'), true);
 
-  const waEntry = collectContactPhones().find(p => p.type === 'whatsapp');
-  const waNum = waEntry?.link || '';
-  const waDis = waEntry?.display || '';
-  const waD = doc.getElementById('waDisplay');
-  if (waD) { waD.textContent = waDis; if (waNum) waD.href = `https://wa.me/${waNum}`; }
-  const fWa = doc.getElementById('footWa');
-  if (fWa) { fWa.textContent = waDis; if (waNum) fWa.href = `https://wa.me/${waNum}`; }
-  if (waNum) doc.querySelectorAll('.wa-link').forEach(el => { el.href = `https://wa.me/${waNum}`; });
+  // Render contact cards
+  const contactCardsEl = doc.getElementById('contact-cards');
+  if (contactCardsEl) {
+    const cards = collectContactCards();
+    let waDisplaySet = false;
+    contactCardsEl.innerHTML = cards.map((card, idx) => {
+      const cfg = CARD_TYPES[card.type] || CARD_TYPES.other;
+      const svgFull = cfg.svg.replace('width="16" height="16"', 'width="20" height="20"');
+      const delay = `d${(idx%3)+1}`;
+      let inner = '';
+      switch(card.type) {
+        case 'whatsapp': {
+          const href = card.link ? `https://wa.me/${card.link}` : '#';
+          const idAttr = !waDisplaySet ? ' id="waDisplay"' : '';
+          if (!waDisplaySet) waDisplaySet = true;
+          inner = `<h4>WhatsApp</h4><a href="${href}"${idAttr} class="wa-link" target="_blank">${card.display||''}</a>`;
+          break;
+        }
+        case 'phone':   inner = `<h4>Telefone</h4><a href="tel:+${card.link||''}">${card.display||''}</a>`; break;
+        case 'telegram': inner = `<h4>Telegram</h4><a href="https://t.me/${card.link||''}" target="_blank">${card.display||''}</a>`; break;
+        case 'email':   inner = `<h4>Email</h4><a href="mailto:${card.link||''}">${card.display||''}</a>`; break;
+        case 'area':    inner = `<h4>Área de Atendimento</h4><p>${card.text||''}</p>`; break;
+        case 'hours':   inner = `<h4>Horário de Atendimento</h4><p>${card.text||''}</p>${card.note?`<p style="font-size:.82rem;color:var(--muted);margin-top:2px;">${card.note}</p>`:''}`;  break;
+        default:        inner = `<h4>${card.label||'Contato'}</h4><p>${card.display||''}</p>`;
+      }
+      return `<div class="citem reveal ${delay}"><div class="cicon">${svgFull}</div><div>${inner}</div></div>`;
+    }).join('');
+    // Also update footWa and float-wa from first WhatsApp card
+    const waCard = cards.find(c => c.type === 'whatsapp');
+    if (waCard) {
+      const fWa = doc.getElementById('footWa');
+      if (fWa) { fWa.textContent = waCard.display||''; if (waCard.link) fWa.href=`https://wa.me/${waCard.link}`; }
+      if (waCard.link) doc.querySelectorAll('.wa-link').forEach(el => { el.href = `https://wa.me/${waCard.link}`; });
+    }
+  }
 
   // Footer
   set('foot-location', v('ft-location'));

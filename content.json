@@ -73,12 +73,11 @@
     "title": "SOLICITE SUA",
     "title_highlight": "CAÇAMBA",
     "subtitle": "<p>Entre em contato agora e receba um orçamento sem compromisso.</p><p>Respondemos em minutos pelo WhatsApp.</p>",
-    "phones": [
-      { "type": "whatsapp", "display": "(19) 99327-7969", "link": "5519993277969" }
+    "cards": [
+      { "type": "whatsapp", "display": "(19) 99327-7969", "link": "5519993277969" },
+      { "type": "area", "text": "Região Metropolitana de Campinas" },
+      { "type": "hours", "text": "Segunda a Sábado: 07h – 18h", "note": "Plantão WhatsApp 24h" }
     ],
-    "area": "Região Metropolitana de Campinas",
-    "hours": "Segunda a Sábado: 07h – 18h",
-    "hours_note": "Plantão WhatsApp 24h",
     "wa_panel_label": "<p>Atendemos no WhatsApp!</p>",
     "wa_panel_sub": "<p>Toque na animação ou mande uma mensagem agora e receba seu orçamento em minutos.</p>"
   },
