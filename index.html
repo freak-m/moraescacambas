@@ -347,7 +347,7 @@
 
     /* WhatsApp animation panel */
     .wa-panel {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
       text-align: center; padding: 48px 32px;
       background: var(--dark-2); border-radius: 20px;
       border: 1px solid rgba(255,255,255,.06);
@@ -380,10 +380,10 @@
       50%      { transform: scale(1.07); box-shadow: 0 0 0 12px rgba(37,211,102,.0); }
     }
     .wa-panel-label {
-      font-size: 1.05rem; font-weight: 700; color: #ddd; margin-bottom: 6px;
+      font-size: 1.05rem; font-weight: 700; color: #ddd; margin-bottom: 6px; margin-top: auto;
     }
     .wa-panel-sub {
-      font-size: .87rem; color: var(--muted); margin-bottom: 28px; line-height: 1.5;
+      font-size: .87rem; color: var(--muted); margin-bottom: 0; line-height: 1.5;
     }
     .btn-wa-large {
       background: var(--green); color: var(--white);
