@@ -1624,16 +1624,16 @@ function injectPreviewStyles(doc) {
     }
     @keyframes cmsFlash {
       0%   { outline: 4px solid #F5C400; box-shadow: none; }
-      18%  { outline: 4px solid #e05555; box-shadow: inset 0 0 0 9999px rgba(224,85,85,.18), 0 0 0 4px #e05555; }
-      36%  { outline: 4px solid #F5C400; box-shadow: none; }
-      54%  { outline: 4px solid #e05555; box-shadow: inset 0 0 0 9999px rgba(224,85,85,.18), 0 0 0 4px #e05555; }
-      72%  { outline: 4px solid #F5C400; box-shadow: none; }
+      20%  { outline: 4px solid #e05555; box-shadow: inset 0 0 0 9999px rgba(224,85,85,.18), 0 0 0 4px #e05555; }
+      40%  { outline: 4px solid #F5C400; box-shadow: none; }
+      60%  { outline: 4px solid #e05555; box-shadow: inset 0 0 0 9999px rgba(224,85,85,.18), 0 0 0 4px #e05555; }
+      80%  { outline: 4px solid #F5C400; box-shadow: none; }
       100% { outline: 3px solid #F5C400; box-shadow: none; }
     }
     .cms-focus-flash {
       outline: 3px solid #F5C400 !important;
       outline-offset: -3px;
-      animation: cmsFlash .9s ease forwards;
+      animation: cmsFlash 2.2s ease forwards;
     }
     .cms-badge {
       position: fixed;
@@ -1670,19 +1670,20 @@ function focusPreviewSection(sectionId) {
   const section = doc.getElementById(sectionId);
   if (!section) return;
 
-  // Flash red twice then settle on yellow outline
-  section.classList.add('cms-focus-flash');
-  setTimeout(() => {
-    section.classList.remove('cms-focus-flash');
-    section.classList.add('cms-focus');
-  }, 850);
-
   const badge = doc.createElement('div');
   badge.className = 'cms-badge';
   badge.innerHTML = '✏ Editando esta seção';
   doc.body.appendChild(badge);
 
+  // Scroll first, then flash after scroll completes (~700ms)
   section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  setTimeout(() => {
+    section.classList.add('cms-focus-flash');
+    setTimeout(() => {
+      section.classList.remove('cms-focus-flash');
+      section.classList.add('cms-focus');
+    }, 2250);
+  }, 700);
 }
 
 function setupPreview() {
