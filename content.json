@@ -5,16 +5,16 @@
     "keywords": "aluguel de caçamba campinas, caçamba entulho campinas, caçamba obra campinas, locação caçamba campinas, caçamba 5m³, retirada entulho campinas, caçamba construção campinas, moraes caçambas, entulho obra campinas, caçamba região metropolitana campinas"
   },
   "hero": {
-    "subtitle": "Retire o entulho da sua obra com agilidade, segurança e preço justo.\n        Caçamba de 5m³ com entrega rápida em toda a região."
+    "subtitle": "<p>Retire o entulho da sua obra com agilidade, segurança e preço justo.\n        Caçamba de 5m³ com entrega rápida em toda a região.</p>"
   },
   "services": {
-    "tag": "Nosso Serviço",
+    "tag": "Nossos Serviços",
     "title": "CAÇAMBA",
     "title_highlight": "5m³",
     "subtitle": "Tamanho ideal para reformas, demolições e construções de todos os portes.",
     "size": "5m³",
     "name": "Caçamba Grande — A Escolha Certa",
-    "description": "Nossa caçamba de 5m³ é a mais requisitada para obras de reforma e construção.\n          Comporta grandes volumes de entulho com praticidade, segurança e agilidade.",
+    "description": "<p>Nossa caçamba de 5m³ é a mais requisitada para obras de reforma e construção.\n          Comporta grandes volumes de entulho com praticidade, segurança e agilidade.</p>",
     "features": [
       "Reformas completas de residências",
       "Demolição parcial ou total",
@@ -29,15 +29,15 @@
     "steps": [
       {
         "title": "ENTRE EM CONTATO",
-        "description": "Ligue ou mande mensagem pelo WhatsApp. Informe o endereço e o tipo de obra."
+        "description": "<p>Ligue ou mande mensagem pelo WhatsApp. Informe o endereço e o tipo de obra.</p>"
       },
       {
         "title": "AGENDAMOS A ENTREGA",
-        "description": "Escolhemos juntos o melhor horário. Caçamba entregue em até 24 horas."
+        "description": "<p>Escolhemos juntos o melhor horário. Caçamba entregue em até 24 horas.</p>"
       },
       {
         "title": "RETIRAMOS QUANDO QUISER",
-        "description": "Encheu? Só avisar! Retiramos a caçamba e descartamos o entulho corretamente."
+        "description": "<p>Encheu? Só avisar! Retiramos a caçamba e descartamos o entulho corretamente.</p>"
       }
     ]
   },
@@ -46,33 +46,49 @@
     "items": [
       {
         "title": "Entrega Ultra-Rápida",
-        "description": "Caçamba no local em até 24h. Atendemos emergências com urgência."
+        "description": "<p>Caçamba no local em até 24h. Atendemos emergências com urgência.</p>"
       },
       {
         "title": "Empresa Licenciada",
-        "description": "Resíduos descartados em locais autorizados e ambientalmente responsáveis."
+        "description": "<p>Resíduos descartados em locais autorizados e ambientalmente responsáveis.</p>"
       },
       {
         "title": "Atendimento Personalizado",
-        "description": "Orientamos sobre o tamanho ideal de caçamba para cada tipo de obra."
+        "description": "<p>Orientamos sobre o tamanho ideal de caçamba para cada tipo de obra.</p>"
       },
       {
         "title": "Preço Justo e Transparente",
-        "description": "Orçamento claro, sem surpresas. Preço competitivo e condições flexíveis."
+        "description": "<p>Orçamento claro, sem surpresas. Preço competitivo e condições flexíveis.</p>"
       }
     ]
   },
   "stats": [
-    { "value": 500, "suffix": "+", "label": "Clientes Atendidos" },
-    { "value": 1200, "suffix": "+", "label": "Obras Servidas" },
-    { "value": 24, "suffix": "h", "label": "Entrega Garantida" },
-    { "value": 10, "suffix": "+", "label": "Anos de Experiência" }
+    {
+      "value": 500,
+      "suffix": "+",
+      "label": "Clientes Atendidos"
+    },
+    {
+      "value": 1200,
+      "suffix": "+",
+      "label": "Obras Servidas"
+    },
+    {
+      "value": 24,
+      "suffix": "h",
+      "label": "Entrega Garantida"
+    },
+    {
+      "value": 10,
+      "suffix": "+",
+      "label": "Anos de Experiência"
+    }
   ],
   "contact": {
     "tag": "Fale Conosco",
     "title": "SOLICITE SUA",
     "title_highlight": "CAÇAMBA",
-    "subtitle": "Entre em contato agora e receba um orçamento sem compromisso.<br>\n            Respondemos em minutos pelo WhatsApp.",
+    "subtitle": "<p>Entre em contato agora e receba um orçamento sem compromisso.</p><p><br></p><p>\n            Respondemos em minutos pelo WhatsApp.</p>",
     "wa_number": "5519993277969",
     "wa_display": "(19) 99327-7969",
     "tel_number": "19993277969",
@@ -80,8 +96,8 @@
     "area": "Região Metropolitana de Campinas",
     "hours": "Segunda a Sábado: 07h – 18h",
     "hours_note": "Plantão WhatsApp 24h",
-    "wa_panel_label": "Atendemos no WhatsApp!",
-    "wa_panel_sub": "Toque na animação ou mande uma mensagem agora e receba seu orçamento em minutos."
+    "wa_panel_label": "<p>Atendemos no WhatsApp!</p>",
+    "wa_panel_sub": "<p>Toque na animação ou mande uma mensagem agora e receba seu orçamento em minutos.</p>"
   },
   "footer": {
     "location": "Campinas – SP",
