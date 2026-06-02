@@ -1,0 +1,90 @@
+{
+  "seo": {
+    "title": "Moraes Caçambas – Aluguel de Caçamba em Campinas e Região | Entrega Rápida",
+    "description": "Aluguel de caçambas para entulho de obra em Campinas e Região Metropolitana. Caçamba 5m³ com entrega em até 24h, preço justo e empresa licenciada. Ligue ou chame no WhatsApp (19) 99327-7969.",
+    "keywords": "aluguel de caçamba campinas, caçamba entulho campinas, caçamba obra campinas, locação caçamba campinas, caçamba 5m³, retirada entulho campinas, caçamba construção campinas, moraes caçambas, entulho obra campinas, caçamba região metropolitana campinas"
+  },
+  "hero": {
+    "subtitle": "Retire o entulho da sua obra com agilidade, segurança e preço justo.\n        Caçamba de 5m³ com entrega rápida em toda a região."
+  },
+  "services": {
+    "tag": "Nosso Serviço",
+    "title": "CAÇAMBA",
+    "title_highlight": "5m³",
+    "subtitle": "Tamanho ideal para reformas, demolições e construções de todos os portes.",
+    "size": "5m³",
+    "name": "Caçamba Grande — A Escolha Certa",
+    "description": "Nossa caçamba de 5m³ é a mais requisitada para obras de reforma e construção.\n          Comporta grandes volumes de entulho com praticidade, segurança e agilidade.",
+    "features": [
+      "Reformas completas de residências",
+      "Demolição parcial ou total",
+      "Construção civil e fundações",
+      "Grandes volumes de alvenaria e concreto",
+      "Entulho de jardins e terrenos",
+      "Resíduos de obras comerciais"
+    ]
+  },
+  "how": {
+    "subtitle": "Em 3 passos simples, sua caçamba estará na obra.",
+    "steps": [
+      {
+        "title": "ENTRE EM CONTATO",
+        "description": "Ligue ou mande mensagem pelo WhatsApp. Informe o endereço e o tipo de obra."
+      },
+      {
+        "title": "AGENDAMOS A ENTREGA",
+        "description": "Escolhemos juntos o melhor horário. Caçamba entregue em até 24 horas."
+      },
+      {
+        "title": "RETIRAMOS QUANDO QUISER",
+        "description": "Encheu? Só avisar! Retiramos a caçamba e descartamos o entulho corretamente."
+      }
+    ]
+  },
+  "benefits": {
+    "subtitle": "Somos a escolha certa para quem precisa de agilidade, confiança e bom atendimento.",
+    "items": [
+      {
+        "title": "Entrega Ultra-Rápida",
+        "description": "Caçamba no local em até 24h. Atendemos emergências com urgência."
+      },
+      {
+        "title": "Empresa Licenciada",
+        "description": "Resíduos descartados em locais autorizados e ambientalmente responsáveis."
+      },
+      {
+        "title": "Atendimento Personalizado",
+        "description": "Orientamos sobre o tamanho ideal de caçamba para cada tipo de obra."
+      },
+      {
+        "title": "Preço Justo e Transparente",
+        "description": "Orçamento claro, sem surpresas. Preço competitivo e condições flexíveis."
+      }
+    ]
+  },
+  "stats": [
+    { "value": 500, "suffix": "+", "label": "Clientes Atendidos" },
+    { "value": 1200, "suffix": "+", "label": "Obras Servidas" },
+    { "value": 24, "suffix": "h", "label": "Entrega Garantida" },
+    { "value": 10, "suffix": "+", "label": "Anos de Experiência" }
+  ],
+  "contact": {
+    "tag": "Fale Conosco",
+    "title": "SOLICITE SUA",
+    "title_highlight": "CAÇAMBA",
+    "subtitle": "Entre em contato agora e receba um orçamento sem compromisso.<br>\n            Respondemos em minutos pelo WhatsApp.",
+    "wa_number": "5519993277969",
+    "wa_display": "(19) 99327-7969",
+    "tel_number": "19993277969",
+    "tel_display": "(19) 99327-7969",
+    "area": "Região Metropolitana de Campinas",
+    "hours": "Segunda a Sábado: 07h – 18h",
+    "hours_note": "Plantão WhatsApp 24h",
+    "wa_panel_label": "Atendemos no WhatsApp!",
+    "wa_panel_sub": "Toque na animação ou mande uma mensagem agora e receba seu orçamento em minutos."
+  },
+  "footer": {
+    "location": "Campinas – SP",
+    "hours": "Seg – Sáb: 07h – 18h · WhatsApp 24h"
+  }
+}

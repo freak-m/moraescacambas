@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Painel Administrativo – Moraes Caçambas</title>
+  <link rel="stylesheet" href="https://cdn.quilljs.com/1.3.7/quill.snow.css">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg:       #0D0D0D;
+      --card:     #1a1a1a;
+      --card2:    #222222;
+      --border:   #2a2a2a;
+      --border2:  #333333;
+      --yellow:   #F5C400;
+      --yellow-d: #C9A000;
+      --white:    #FFFFFF;
+      --muted:    #888888;
+      --muted2:   #aaaaaa;
+      --green:    #25D366;
+      --red:      #e05555;
+      --radius:   10px;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+    }
+
+    /* ── LOGIN ── */
+    #login-screen {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--bg);
+      padding: 20px;
+    }
+    .login-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 48px 44px;
+      width: 100%; max-width: 420px;
+      text-align: center;
+      box-shadow: 0 24px 64px rgba(0,0,0,.6);
+    }
+    .login-logo {
+      width: 120px; height: auto;
+      margin: 0 auto 24px;
+      display: block;
+      filter: drop-shadow(0 6px 18px rgba(245,196,0,.3));
+    }
+    .login-card h1 {
+      font-size: 1.35rem; font-weight: 700;
+      color: var(--white); margin-bottom: 6px;
+    }
+    .login-card p {
+      font-size: .88rem; color: var(--muted);
+      margin-bottom: 28px; line-height: 1.5;
+    }
+    .login-input {
+      width: 100%;
+      background: var(--card2);
+      border: 1.5px solid var(--border2);
+      border-radius: var(--radius);
+      color: var(--white);
+      font-size: .93rem;
+      padding: 13px 16px;
+      outline: none;
+      transition: border-color .2s;
+      margin-bottom: 14px;
+    }
+    .login-input:focus { border-color: var(--yellow); }
+    .btn-primary {
+      width: 100%;
+      background: var(--yellow);
+      color: #000;
+      border: none; cursor: pointer;
+      border-radius: var(--radius);
+      font-size: .95rem; font-weight: 700;
+      padding: 14px;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      letter-spacing: .03em;
+    }
+    .btn-primary:hover { background: var(--yellow-d); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(245,196,0,.35); }
+    .btn-primary:active { transform: none; }
+    #login-error {
+      margin-top: 14px;
+      font-size: .84rem; color: var(--red);
+      min-height: 20px;
+    }
+
+    /* ── ADMIN WRAPPER ── */
+    #admin-screen { display: none; }
+    #admin-screen.visible { display: block; }
+
+    /* ── HEADER ── */
+    .adm-header {
+      background: var(--card);
+      border-bottom: 2px solid var(--yellow);
+      padding: 0 32px;
+      display: flex; align-items: center; gap: 16px;
+      height: 62px;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .adm-header img {
+      height: 34px; width: auto;
+      filter: drop-shadow(0 2px 8px rgba(245,196,0,.25));
+    }
+    .adm-header h1 {
+      font-size: .96rem; font-weight: 700;
+      color: var(--white); flex: 1;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .adm-header h1 span { color: var(--yellow); }
+    .btn-publish {
+      background: var(--yellow); color: #000;
+      border: none; cursor: pointer;
+      border-radius: 50px;
+      font-size: .84rem; font-weight: 800;
+      padding: 9px 22px;
+      transition: background .2s, transform .15s, box-shadow .2s;
+      letter-spacing: .04em;
+      white-space: nowrap;
+    }
+    .btn-publish:hover { background: var(--yellow-d); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(245,196,0,.4); }
+    .btn-logout {
+      background: none; border: 1px solid var(--border2);
+      color: var(--muted); cursor: pointer;
+      border-radius: 50px;
+      font-size: .82rem; font-weight: 600;
+      padding: 7px 16px;
+      transition: all .2s;
+    }
+    .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+      background: #1e3a2a;
+      border: 1.5px solid var(--green);
+      border-radius: var(--radius);
+      padding: 14px 22px;
+      font-size: .88rem; font-weight: 600;
+      color: #6ef0a2;
+      box-shadow: 0 8px 32px rgba(0,0,0,.5);
+      transform: translateY(80px); opacity: 0;
+      transition: transform .35s cubic-bezier(.2,.8,.3,1), opacity .35s;
+      max-width: 360px;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { background: #3a1e1e; border-color: var(--red); color: #f08080; }
+
+    /* ── TABS ── */
+    .tab-bar {
+      background: var(--card);
+      border-bottom: 1px solid var(--border);
+      display: flex; gap: 0;
+      padding: 0 32px;
+    }
+    .tab-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: .9rem; font-weight: 600;
+      padding: 16px 22px;
+      border-bottom: 3px solid transparent;
+      transition: color .2s, border-color .2s;
+      letter-spacing: .02em;
+    }
+    .tab-btn.active { color: var(--yellow); border-bottom-color: var(--yellow); }
+    .tab-btn:hover:not(.active) { color: var(--muted2); }
+
+    /* ── CONTENT AREA ── */
+    .tab-content { padding: 32px; max-width: 960px; margin: 0 auto; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    /* ── FIELD GROUPS ── */
+    .field-group {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 20px;
+    }
+    .field-group h3 {
+      font-size: .78rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: .1em;
+      color: var(--yellow);
+      margin-bottom: 20px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .field-group h3::after {
+      content: ''; flex: 1; height: 1px;
+      background: var(--border);
+    }
+
+    .form-row {
+      display: grid; gap: 16px;
+      margin-bottom: 16px;
+    }
+    .form-row.cols-2 { grid-template-columns: 1fr 1fr; }
+    .form-row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .form-row:last-child { margin-bottom: 0; }
+
+    .form-field { display: flex; flex-direction: column; gap: 6px; }
+    .form-field label {
+      font-size: .78rem; font-weight: 600;
+      color: var(--muted2); text-transform: uppercase; letter-spacing: .07em;
+    }
+    .form-field label span {
+      font-size: .72rem; color: var(--muted);
+      text-transform: none; letter-spacing: 0;
+      font-weight: 400;
+    }
+    .form-field input[type="text"],
+    .form-field input[type="number"],
+    .form-field input[type="password"],
+    .form-field textarea {
+      background: var(--card2);
+      border: 1.5px solid var(--border2);
+      border-radius: 8px;
+      color: var(--white);
+      font-size: .9rem;
+      padding: 10px 14px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color .2s;
+      resize: vertical;
+    }
+    .form-field input:focus,
+    .form-field textarea:focus { border-color: var(--yellow); }
+    .form-field textarea { min-height: 80px; }
+    .form-field textarea.small { min-height: 60px; }
+
+    /* Quill override */
+    .ql-toolbar { background: var(--card2) !important; border: 1.5px solid var(--border2) !important; border-radius: 8px 8px 0 0 !important; }
+    .ql-toolbar .ql-stroke { stroke: var(--muted2) !important; }
+    .ql-toolbar .ql-fill { fill: var(--muted2) !important; }
+    .ql-toolbar button:hover .ql-stroke { stroke: var(--yellow) !important; }
+    .ql-toolbar button:hover .ql-fill { fill: var(--yellow) !important; }
+    .ql-toolbar button.ql-active .ql-stroke { stroke: var(--yellow) !important; }
+    .ql-toolbar button.ql-active .ql-fill { fill: var(--yellow) !important; }
+    .ql-toolbar .ql-picker-label { color: var(--muted2) !important; }
+    .ql-container { background: var(--card2) !important; border: 1.5px solid var(--border2) !important; border-top: none !important; border-radius: 0 0 8px 8px !important; }
+    .ql-editor { color: var(--white) !important; font-size: .9rem !important; min-height: 80px !important; }
+    .ql-editor.ql-blank::before { color: var(--muted) !important; font-style: normal !important; }
+    .ql-container:focus-within { border-color: var(--yellow) !important; }
+
+    /* ── ACCORDION ── */
+    .accordion { margin-bottom: 12px; border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+    .acc-header {
+      background: var(--card);
+      padding: 18px 22px;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer;
+      transition: background .2s;
+      user-select: none;
+    }
+    .acc-header:hover { background: var(--card2); }
+    .acc-header.open { background: var(--card2); }
+    .acc-header h2 {
+      font-size: .93rem; font-weight: 700;
+      color: var(--white); flex: 1;
+    }
+    .acc-icon {
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(245,196,0,.12);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: transform .25s, background .2s;
+    }
+    .acc-icon svg { width: 14px; height: 14px; }
+    .acc-icon svg path { fill: var(--yellow); }
+    .acc-header.open .acc-icon { transform: rotate(180deg); background: rgba(245,196,0,.22); }
+    .acc-body {
+      background: #161616;
+      padding: 0;
+      max-height: 0; overflow: hidden;
+      transition: max-height .4s cubic-bezier(.2,.8,.3,1), padding .3s;
+    }
+    .acc-body.open { max-height: 3000px; padding: 24px 22px 28px; }
+
+    /* ── STATS ROWS ── */
+    .stat-row {
+      display: grid; grid-template-columns: 2fr 1fr 3fr;
+      gap: 14px; margin-bottom: 12px; align-items: end;
+    }
+    .stat-row:last-child { margin-bottom: 0; }
+    .stat-row-label {
+      font-size: .78rem; color: var(--muted);
+      text-transform: uppercase; letter-spacing: .07em;
+      margin-bottom: 6px; font-weight: 600;
+    }
+    .stat-row-num {
+      font-size: .75rem; text-align: center;
+      padding: 3px 0 6px;
+      color: var(--yellow); font-weight: 700;
+    }
+
+    /* ── IMAGE UPLOAD ── */
+    .img-upload-row {
+      display: flex; align-items: center; gap: 14px;
+      background: var(--card2);
+      border: 1.5px dashed var(--border2);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-top: 4px;
+    }
+    .img-current {
+      font-size: .85rem; color: var(--muted2);
+      flex: 1; font-family: 'Courier New', monospace;
+    }
+    .img-current strong { color: var(--yellow); }
+    .btn-upload {
+      background: rgba(245,196,0,.12);
+      border: 1px solid rgba(245,196,0,.25);
+      color: var(--yellow);
+      cursor: pointer;
+      border-radius: 6px;
+      font-size: .82rem; font-weight: 600;
+      padding: 7px 14px;
+      transition: all .2s; white-space: nowrap;
+    }
+    .btn-upload:hover { background: rgba(245,196,0,.2); border-color: var(--yellow); }
+    .img-hidden-input { display: none; }
+    .upload-progress {
+      font-size: .78rem; color: var(--muted);
+      margin-top: 4px; min-height: 18px;
+    }
+    .upload-progress.success { color: var(--green); }
+    .upload-progress.error { color: var(--red); }
+
+    /* ── DIVIDER ── */
+    .divider {
+      border: none; border-top: 1px solid var(--border);
+      margin: 20px 0;
+    }
+    .sub-label {
+      font-size: .8rem; font-weight: 700;
+      color: var(--muted); text-transform: uppercase;
+      letter-spacing: .08em; margin-bottom: 12px;
+      margin-top: 20px;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 680px) {
+      .adm-header { padding: 0 16px; gap: 10px; }
+      .adm-header h1 { font-size: .82rem; }
+      .tab-bar { padding: 0 12px; }
+      .tab-btn { padding: 14px 14px; font-size: .82rem; }
+      .tab-content { padding: 16px; }
+      .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .stat-row .form-field:last-child { grid-column: span 2; }
+      .login-card { padding: 36px 24px; }
+    }
+
+    /* ── LOADING SPINNER ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(0,0,0,.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      display: inline-block; vertical-align: middle; margin-left: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <img src="../moraescacambaslogo.png" alt="Moraes Caçambas" class="login-logo">
+    <h1>Painel Administrativo</h1>
+    <p>Cole o Token GitHub para entrar</p>
+    <input type="password" id="token-input" class="login-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
+    <button class="btn-primary" id="login-btn">Entrar</button>
+    <div id="login-error"></div>
+  </div>
+</div>
+
+<!-- ══ ADMIN ══ -->
+<div id="admin-screen">
+
+  <header class="adm-header">
+    <img src="../moraescacambaslogo.png" alt="Logo">
+    <h1>Painel Administrativo &ndash; <span>Moraes Caçambas</span></h1>
+    <button class="btn-publish" id="publish-btn">&#x1F680; Publicar</button>
+    <button class="btn-logout" id="logout-btn">Sair</button>
+  </header>
+
+  <nav class="tab-bar">
+    <button class="tab-btn active" data-tab="seo">SEO</button>
+    <button class="tab-btn" data-tab="sections">Seções</button>
+    <button class="tab-btn" data-tab="contact">Contato</button>
+  </nav>
+
+  <div class="tab-content">
+
+    <!-- ── SEO TAB ── -->
+    <div class="tab-pane active" id="tab-seo">
+      <div class="field-group">
+        <h3>Otimização para Buscadores</h3>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Título da página <span>(aparece na aba do navegador)</span></label>
+            <input type="text" id="seo-title" placeholder="Moraes Caçambas – Aluguel de Caçamba...">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Descrição <span>(Google · meta description)</span></label>
+            <textarea id="seo-desc" class="small" placeholder="Descrição exibida nos resultados do Google..."></textarea>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Palavras-chave <span>(separadas por vírgula)</span></label>
+            <textarea id="seo-keywords" class="small" placeholder="aluguel de caçamba campinas, caçamba entulho..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTIONS TAB ── -->
+    <div class="tab-pane" id="tab-sections">
+
+      <!-- HERO -->
+      <div class="accordion">
+        <div class="acc-header" data-acc="hero">
+          <div class="acc-icon">
+            <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          </div>
+          <h2>Hero</h2>
+          <div class="acc-icon" style="margin-left:auto">
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
+        </div>
+        <div class="acc-body" id="acc-hero">
+          <div class="form-field">
+            <label>Subtítulo</label>
+            <div id="q-hero-subtitle"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOSSO SERVIÇO -->
+      <div class="accordion">
+        <div class="acc-header" data-acc="service">
+          <div class="acc-icon">
+            <svg viewBox="0 0 24 24"><path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm13.5-9 1.96 2.5H17V9h2.5zM18 18c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+          </div>
+          <h2>Nosso Serviço</h2>
+          <div class="acc-icon" style="margin-left:auto">
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
+        </div>
+        <div class="acc-body" id="acc-service">
+          <div class="form-row cols-2">
+            <div class="form-field">
+              <label>Tag da seção</label>
+              <input type="text" id="services-tag-inp" placeholder="Nosso Serviço">
+            </div>
+            <div class="form-field">
+              <label>Destaque em amarelo <span>(ex: 5m³)</span></label>
+              <input type="text" id="services-hl-inp" placeholder="5m³">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Subtítulo da seção</label>
+              <input type="text" id="services-sub-inp" placeholder="Tamanho ideal para reformas...">
+            </div>
+          </div>
+          <div class="form-row cols-2">
+            <div class="form-field">
+              <label>Tamanho <span>(ex: 5m³)</span></label>
+              <input type="text" id="services-size-inp" placeholder="5m³">
+            </div>
+            <div class="form-field">
+              <label>Nome do serviço</label>
+              <input type="text" id="services-name-inp" placeholder="Caçamba Grande — A Escolha Certa">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Descrição</label>
+              <div id="q-services-desc"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Características <span>(uma por linha)</span></label>
+              <textarea id="services-features-inp" placeholder="Reformas completas de residências&#10;Demolição parcial ou total&#10;Construção civil e fundações"></textarea>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Imagem do serviço</label>
+              <div class="img-upload-row">
+                <div class="img-current">Arquivo: <strong id="svc-img-name">moraescacambaslogo.png</strong></div>
+                <button class="btn-upload" onclick="document.getElementById('svc-img-file').click()">Trocar imagem</button>
+                <input type="file" class="img-hidden-input" id="svc-img-file" accept="image/*" data-target="svc-img-name" data-path="">
+              </div>
+              <div class="upload-progress" id="svc-img-progress"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COMO FUNCIONA -->
+      <div class="accordion">
+        <div class="acc-header" data-acc="how">
+          <div class="acc-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          </div>
+          <h2>Como Funciona</h2>
+          <div class="acc-icon" style="margin-left:auto">
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
+        </div>
+        <div class="acc-body" id="acc-how">
+          <div class="form-row">
+            <div class="form-field">
+              <label>Subtítulo da seção</label>
+              <input type="text" id="how-sub-inp" placeholder="Em 3 passos simples...">
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="sub-label">Passo 1</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Título</label>
+              <input type="text" id="how-s1-title" placeholder="ENTRE EM CONTATO">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Descrição</label>
+              <div id="q-how-s1"></div>
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="sub-label">Passo 2</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Título</label>
+              <input type="text" id="how-s2-title" placeholder="AGENDAMOS A ENTREGA">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Descrição</label>
+              <div id="q-how-s2"></div>
+            </div>
+          </div>
+          <hr class="divider">
+          <div class="sub-label">Passo 3</div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Título</label>
+              <input type="text" id="how-s3-title" placeholder="RETIRAMOS QUANDO QUISER">
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Descrição</label>
+              <div id="q-how-s3"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOSSOS DIFERENCIAIS -->
+      <div class="accordion">
+        <div class="acc-header" data-acc="benefits">
+          <div class="acc-icon">
+            <svg viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+          </div>
+          <h2>Nossos Diferenciais</h2>
+          <div class="acc-icon" style="margin-left:auto">
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
+        </div>
+        <div class="acc-body" id="acc-benefits">
+          <div class="form-row">
+            <div class="form-field">
+              <label>Subtítulo da seção</label>
+              <input type="text" id="benefits-sub-inp" placeholder="Somos a escolha certa...">
+            </div>
+          </div>
+          <hr class="divider">
+          <div id="benefits-fields"></div>
+          <div class="form-row" style="margin-top:20px">
+            <div class="form-field">
+              <label>Imagem dos diferenciais</label>
+              <div class="img-upload-row">
+                <div class="img-current">Arquivo: <strong id="ben-img-name">diferenciais.png</strong></div>
+                <button class="btn-upload" onclick="document.getElementById('ben-img-file').click()">Trocar imagem</button>
+                <input type="file" class="img-hidden-input" id="ben-img-file" accept="image/*" data-target="ben-img-name" data-path="">
+              </div>
+              <div class="upload-progress" id="ben-img-progress"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ESTATÍSTICAS -->
+      <div class="accordion">
+        <div class="acc-header" data-acc="stats">
+          <div class="acc-icon">
+            <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+          </div>
+          <h2>Estatísticas</h2>
+          <div class="acc-icon" style="margin-left:auto">
+            <svg viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+          </div>
+        </div>
+        <div class="acc-body" id="acc-stats">
+          <div id="stats-fields"></div>
+        </div>
+      </div>
+
+    </div><!-- /tab-sections -->
+
+    <!-- ── CONTACT TAB ── -->
+    <div class="tab-pane" id="tab-contact">
+      <div class="field-group">
+        <h3>WhatsApp &amp; Telefone</h3>
+        <div class="form-row cols-2">
+          <div class="form-field">
+            <label>WhatsApp <span>(número com código do país)</span></label>
+            <input type="text" id="ct-wa-number" placeholder="5519993277969">
+          </div>
+          <div class="form-field">
+            <label>WhatsApp <span>(exibição)</span></label>
+            <input type="text" id="ct-wa-display" placeholder="(19) 99327-7969">
+          </div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-field">
+            <label>Telefone <span>(número)</span></label>
+            <input type="text" id="ct-tel-number" placeholder="19993277969">
+          </div>
+          <div class="form-field">
+            <label>Telefone <span>(exibição)</span></label>
+            <input type="text" id="ct-tel-display" placeholder="(19) 99327-7969">
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <h3>Informações de Atendimento</h3>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Tag da seção</label>
+            <input type="text" id="ct-tag" placeholder="Fale Conosco">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Destaque em amarelo <span>(no h2)</span></label>
+            <input type="text" id="ct-hl" placeholder="CAÇAMBA">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Subtítulo da seção</label>
+            <div id="q-ct-subtitle"></div>
+          </div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-field">
+            <label>Área de atendimento</label>
+            <input type="text" id="ct-area" placeholder="Região Metropolitana de Campinas">
+          </div>
+          <div class="form-field">
+            <label>Horário de atendimento</label>
+            <input type="text" id="ct-hours" placeholder="Segunda a Sábado: 07h – 18h">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Nota do horário</label>
+            <input type="text" id="ct-hours-note" placeholder="Plantão WhatsApp 24h">
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <h3>Painel WhatsApp</h3>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Texto principal do painel</label>
+            <div id="q-ct-wa-label"></div>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Subtítulo do painel</label>
+            <div id="q-ct-wa-sub"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <h3>Rodapé</h3>
+        <div class="form-row cols-2">
+          <div class="form-field">
+            <label>Localização</label>
+            <input type="text" id="ft-location" placeholder="Campinas – SP">
+          </div>
+          <div class="form-field">
+            <label>Horário</label>
+            <input type="text" id="ft-hours" placeholder="Seg – Sáb: 07h – 18h · WhatsApp 24h">
+          </div>
+        </div>
+      </div>
+    </div><!-- /tab-contact -->
+
+  </div><!-- /tab-content -->
+</div><!-- /admin-screen -->
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
+<script>
+// ══════════════════════════════════════════════════
+//  CONFIG
+// ══════════════════════════════════════════════════
+const REPO   = 'freak-m/moraescacambas';
+const API    = 'https://api.github.com';
+const CONTENT_PATH = 'content.json';
+
+// ── QUILL INSTANCES ──
+const QUILL_TOOLBAR = [
+  ['bold','italic','underline'],
+  [{'list':'ordered'},{'list':'bullet'}],
+  ['link','clean']
+];
+const quills = {};
+function mkQuill(id, placeholder) {
+  quills[id] = new Quill('#' + id, {
+    theme: 'snow',
+    placeholder: placeholder || '',
+    modules: { toolbar: QUILL_TOOLBAR }
+  });
+  return quills[id];
+}
+
+// ── TOAST ──
+let toastTimer;
+function showToast(msg, isError) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.toggle('error', !!isError);
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 4000);
+}
+
+// ── TABS ──
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ── ACCORDION ──
+document.querySelectorAll('.acc-header').forEach(hdr => {
+  hdr.addEventListener('click', () => {
+    const body = document.getElementById('acc-' + hdr.dataset.acc);
+    hdr.classList.toggle('open');
+    body.classList.toggle('open');
+  });
+});
+
+// ══════════════════════════════════════════════════
+//  BUILD BENEFIT FIELDS (4 benefits)
+// ══════════════════════════════════════════════════
+function buildBenefitFields() {
+  const container = document.getElementById('benefits-fields');
+  for (let i = 1; i <= 4; i++) {
+    const sub = document.createElement('div');
+    sub.innerHTML = `
+      <div class="sub-label">Diferencial ${i}</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Título</label>
+          <input type="text" id="ben-${i}-title">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Descrição</label>
+          <div id="q-ben-${i}"></div>
+        </div>
+      </div>
+      ${i < 4 ? '<hr class="divider">' : ''}
+    `;
+    container.appendChild(sub);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  BUILD STATS FIELDS (4 stats)
+// ══════════════════════════════════════════════════
+function buildStatsFields() {
+  const container = document.getElementById('stats-fields');
+  const labels = ['Número', 'Sufixo', 'Rótulo'];
+  for (let i = 0; i < 4; i++) {
+    const row = document.createElement('div');
+    row.className = 'stat-row';
+    row.innerHTML = `
+      <div class="form-field">
+        <div class="stat-row-label">Número</div>
+        <input type="number" id="stat-${i}-val" min="0">
+      </div>
+      <div class="form-field">
+        <div class="stat-row-label">Sufixo</div>
+        <input type="text" id="stat-${i}-suf" placeholder="+" maxlength="5">
+      </div>
+      <div class="form-field">
+        <div class="stat-row-label">Rótulo</div>
+        <input type="text" id="stat-${i}-lbl" placeholder="Clientes Atendidos">
+      </div>
+    `;
+    container.appendChild(row);
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  INIT QUILL EDITORS (called after DOM ready)
+// ══════════════════════════════════════════════════
+function initEditors() {
+  mkQuill('q-hero-subtitle', 'Texto de introdução do hero...');
+  mkQuill('q-services-desc', 'Descrição da caçamba...');
+  mkQuill('q-how-s1', 'Descrição do passo 1...');
+  mkQuill('q-how-s2', 'Descrição do passo 2...');
+  mkQuill('q-how-s3', 'Descrição do passo 3...');
+  for (let i = 1; i <= 4; i++) mkQuill(`q-ben-${i}`, `Descrição do diferencial ${i}...`);
+  mkQuill('q-ct-subtitle', 'Subtítulo da seção de contato...');
+  mkQuill('q-ct-wa-label', 'Texto do painel WhatsApp...');
+  mkQuill('q-ct-wa-sub', 'Subtítulo do painel WhatsApp...');
+}
+
+// ══════════════════════════════════════════════════
+//  POPULATE FORM FROM content.json data
+// ══════════════════════════════════════════════════
+function populateForm(c) {
+  // SEO
+  document.getElementById('seo-title').value    = c.seo?.title    || '';
+  document.getElementById('seo-desc').value     = c.seo?.description || '';
+  document.getElementById('seo-keywords').value = c.seo?.keywords || '';
+
+  // Hero
+  if (c.hero?.subtitle) quills['q-hero-subtitle'].root.innerHTML = c.hero.subtitle;
+
+  // Services
+  document.getElementById('services-tag-inp').value  = c.services?.tag            || '';
+  document.getElementById('services-hl-inp').value   = c.services?.title_highlight || '';
+  document.getElementById('services-sub-inp').value  = c.services?.subtitle        || '';
+  document.getElementById('services-size-inp').value = c.services?.size            || '';
+  document.getElementById('services-name-inp').value = c.services?.name            || '';
+  if (c.services?.description) quills['q-services-desc'].root.innerHTML = c.services.description;
+  if (c.services?.features) document.getElementById('services-features-inp').value = c.services.features.join('\n');
+
+  // How
+  document.getElementById('how-sub-inp').value  = c.how?.subtitle || '';
+  if (c.how?.steps) {
+    c.how.steps.forEach((s, i) => {
+      const n = i + 1;
+      document.getElementById(`how-s${n}-title`).value = s.title || '';
+      quills[`q-how-s${n}`].root.innerHTML = s.description || '';
+    });
+  }
+
+  // Benefits
+  document.getElementById('benefits-sub-inp').value = c.benefits?.subtitle || '';
+  if (c.benefits?.items) {
+    c.benefits.items.forEach((b, i) => {
+      const n = i + 1;
+      const titleEl = document.getElementById(`ben-${n}-title`);
+      if (titleEl) titleEl.value = b.title || '';
+      quills[`q-ben-${n}`].root.innerHTML = b.description || '';
+    });
+  }
+
+  // Stats
+  if (c.stats) {
+    c.stats.forEach((s, i) => {
+      const valEl = document.getElementById(`stat-${i}-val`);
+      const sufEl = document.getElementById(`stat-${i}-suf`);
+      const lblEl = document.getElementById(`stat-${i}-lbl`);
+      if (valEl) valEl.value = s.value || 0;
+      if (sufEl) sufEl.value = s.suffix || '';
+      if (lblEl) lblEl.value = s.label || '';
+    });
+  }
+
+  // Contact
+  document.getElementById('ct-wa-number').value  = c.contact?.wa_number   || '';
+  document.getElementById('ct-wa-display').value = c.contact?.wa_display   || '';
+  document.getElementById('ct-tel-number').value = c.contact?.tel_number   || '';
+  document.getElementById('ct-tel-display').value= c.contact?.tel_display  || '';
+  document.getElementById('ct-tag').value        = c.contact?.tag          || '';
+  document.getElementById('ct-hl').value         = c.contact?.title_highlight || '';
+  if (c.contact?.subtitle) quills['q-ct-subtitle'].root.innerHTML = c.contact.subtitle;
+  document.getElementById('ct-area').value       = c.contact?.area         || '';
+  document.getElementById('ct-hours').value      = c.contact?.hours        || '';
+  document.getElementById('ct-hours-note').value = c.contact?.hours_note   || '';
+  if (c.contact?.wa_panel_label) quills['q-ct-wa-label'].root.innerHTML = c.contact.wa_panel_label;
+  if (c.contact?.wa_panel_sub)   quills['q-ct-wa-sub'].root.innerHTML   = c.contact.wa_panel_sub;
+
+  // Footer
+  document.getElementById('ft-location').value = c.footer?.location || '';
+  document.getElementById('ft-hours').value    = c.footer?.hours    || '';
+}
+
+// ══════════════════════════════════════════════════
+//  COLLECT FORM VALUES → content object
+// ══════════════════════════════════════════════════
+function collectForm() {
+  const qHTML = id => quills[id]?.root.innerHTML || '';
+  const val   = id => document.getElementById(id)?.value?.trim() || '';
+
+  const features = val('services-features-inp')
+    .split('\n')
+    .map(l => l.trim())
+    .filter(Boolean);
+
+  return {
+    seo: {
+      title:       val('seo-title'),
+      description: val('seo-desc'),
+      keywords:    val('seo-keywords')
+    },
+    hero: {
+      subtitle: qHTML('q-hero-subtitle')
+    },
+    services: {
+      tag:             val('services-tag-inp'),
+      title:           'CAÇAMBA',
+      title_highlight: val('services-hl-inp'),
+      subtitle:        val('services-sub-inp'),
+      size:            val('services-size-inp'),
+      name:            val('services-name-inp'),
+      description:     qHTML('q-services-desc'),
+      features
+    },
+    how: {
+      subtitle: val('how-sub-inp'),
+      steps: [1, 2, 3].map(n => ({
+        title:       val(`how-s${n}-title`),
+        description: qHTML(`q-how-s${n}`)
+      }))
+    },
+    benefits: {
+      subtitle: val('benefits-sub-inp'),
+      items: [1, 2, 3, 4].map(n => ({
+        title:       val(`ben-${n}-title`),
+        description: qHTML(`q-ben-${n}`)
+      }))
+    },
+    stats: [0, 1, 2, 3].map(i => ({
+      value:  parseInt(val(`stat-${i}-val`)) || 0,
+      suffix: val(`stat-${i}-suf`),
+      label:  val(`stat-${i}-lbl`)
+    })),
+    contact: {
+      tag:             val('ct-tag'),
+      title:           'SOLICITE SUA',
+      title_highlight: val('ct-hl'),
+      subtitle:        qHTML('q-ct-subtitle'),
+      wa_number:       val('ct-wa-number'),
+      wa_display:      val('ct-wa-display'),
+      tel_number:      val('ct-tel-number'),
+      tel_display:     val('ct-tel-display'),
+      area:            val('ct-area'),
+      hours:           val('ct-hours'),
+      hours_note:      val('ct-hours-note'),
+      wa_panel_label:  qHTML('q-ct-wa-label'),
+      wa_panel_sub:    qHTML('q-ct-wa-sub')
+    },
+    footer: {
+      location: val('ft-location'),
+      hours:    val('ft-hours')
+    }
+  };
+}
+
+// ══════════════════════════════════════════════════
+//  GITHUB API HELPERS
+// ══════════════════════════════════════════════════
+function getToken() { return sessionStorage.getItem('gh_token') || ''; }
+
+async function ghGet(path) {
+  const r = await fetch(`${API}/repos/${REPO}/contents/${path}`, {
+    headers: { Authorization: `token ${getToken()}`, Accept: 'application/vnd.github.v3+json' }
+  });
+  return r;
+}
+
+async function ghPut(path, content, sha, message) {
+  const body = { message, content: btoa(unescape(encodeURIComponent(content))) };
+  if (sha) body.sha = sha;
+  const r = await fetch(`${API}/repos/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `token ${getToken()}`,
+      Accept: 'application/vnd.github.v3+json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(body)
+  });
+  return r;
+}
+
+// ══════════════════════════════════════════════════
+//  LOAD content.json FROM GITHUB
+// ══════════════════════════════════════════════════
+async function loadContent() {
+  try {
+    const r = await ghGet(CONTENT_PATH);
+    if (!r.ok) return null;
+    const data = await r.json();
+    const decoded = decodeURIComponent(escape(atob(data.content.replace(/\n/g, ''))));
+    return JSON.parse(decoded);
+  } catch(e) {
+    return null;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  PUBLISH
+// ══════════════════════════════════════════════════
+async function publish() {
+  const btn = document.getElementById('publish-btn');
+  btn.innerHTML = 'Salvando <span class="spinner"></span>';
+  btn.disabled = true;
+
+  try {
+    // Get current SHA
+    const getR = await ghGet(CONTENT_PATH);
+    if (!getR.ok) throw new Error('Não foi possível buscar o arquivo atual.');
+    const currentData = await getR.json();
+    const sha = currentData.sha;
+
+    // Build JSON
+    const content = collectForm();
+    const jsonStr = JSON.stringify(content, null, 2);
+
+    // PUT
+    const putR = await ghPut(CONTENT_PATH, jsonStr, sha, 'Admin: update content');
+    if (!putR.ok) {
+      const err = await putR.json().catch(() => ({}));
+      throw new Error(err.message || `Erro ${putR.status}`);
+    }
+
+    showToast('✓ Publicado com sucesso! O site atualiza em ~1 minuto.');
+  } catch(e) {
+    showToast('Erro ao publicar: ' + e.message, true);
+  } finally {
+    btn.innerHTML = '🚀 Publicar';
+    btn.disabled = false;
+  }
+}
+
+// ══════════════════════════════════════════════════
+//  IMAGE UPLOAD
+// ══════════════════════════════════════════════════
+async function uploadImage(fileInput) {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  const targetId  = fileInput.dataset.target;
+  const progressId = fileInput.id.replace('-file', '-progress');
+  const progressEl = document.getElementById(progressId);
+  const nameEl     = document.getElementById(targetId);
+
+  if (progressEl) { progressEl.textContent = 'Fazendo upload...'; progressEl.className = 'upload-progress'; }
+
+  try {
+    const reader = new FileReader();
+    const base64 = await new Promise((res, rej) => {
+      reader.onload  = e => res(e.target.result.split(',')[1]);
+      reader.onerror = rej;
+      reader.readAsDataURL(file);
+    });
+
+    const filename = file.name;
+
+    // Check if file exists (to get SHA)
+    let sha = null;
+    const checkR = await fetch(`${API}/repos/${REPO}/contents/${filename}`, {
+      headers: { Authorization: `token ${getToken()}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (checkR.ok) {
+      const existing = await checkR.json();
+      sha = existing.sha;
+    }
+
+    // Upload
+    const body = { message: `Admin: upload image ${filename}`, content: base64 };
+    if (sha) body.sha = sha;
+
+    const putR = await fetch(`${API}/repos/${REPO}/contents/${filename}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `token ${getToken()}`,
+        Accept: 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (!putR.ok) {
+      const err = await putR.json().catch(() => ({}));
+      throw new Error(err.message || `Erro ${putR.status}`);
+    }
+
+    if (nameEl) nameEl.textContent = filename;
+    if (progressEl) { progressEl.textContent = '✓ Upload concluído: ' + filename; progressEl.className = 'upload-progress success'; }
+  } catch(e) {
+    if (progressEl) { progressEl.textContent = 'Erro: ' + e.message; progressEl.className = 'upload-progress error'; }
+  }
+
+  fileInput.value = '';
+}
+
+// Wire up image file inputs
+document.addEventListener('change', e => {
+  if (e.target.matches('.img-hidden-input')) uploadImage(e.target);
+});
+
+// ══════════════════════════════════════════════════
+//  LOGIN
+// ══════════════════════════════════════════════════
+async function login(token) {
+  const errEl = document.getElementById('login-error');
+  const btn   = document.getElementById('login-btn');
+  errEl.textContent = '';
+  btn.innerHTML = 'Verificando <span class="spinner"></span>';
+  btn.disabled = true;
+
+  try {
+    const r = await fetch(`${API}/repos/${REPO}`, {
+      headers: { Authorization: `token ${token}`, Accept: 'application/vnd.github.v3+json' }
+    });
+    if (!r.ok) throw new Error('Token inválido. Tente novamente.');
+
+    // Store token
+    sessionStorage.setItem('gh_token', token);
+
+    // Show admin
+    document.getElementById('login-screen').style.display = 'none';
+    const adminScreen = document.getElementById('admin-screen');
+    adminScreen.classList.add('visible');
+
+    // Build dynamic sections, init editors, then load content
+    buildBenefitFields();
+    buildStatsFields();
+    initEditors();
+
+    const c = await loadContent();
+    if (c) populateForm(c);
+
+  } catch(e) {
+    errEl.textContent = e.message;
+  } finally {
+    btn.innerHTML = 'Entrar';
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('login-btn').addEventListener('click', () => {
+  const t = document.getElementById('token-input').value.trim();
+  if (t) login(t);
+});
+document.getElementById('token-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') document.getElementById('login-btn').click();
+});
+
+document.getElementById('publish-btn').addEventListener('click', publish);
+
+document.getElementById('logout-btn').addEventListener('click', () => {
+  sessionStorage.removeItem('gh_token');
+  document.getElementById('admin-screen').classList.remove('visible');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('token-input').value = '';
+});
+
+// ── AUTO-LOGIN if token in sessionStorage ──
+(function autoLogin() {
+  const existing = sessionStorage.getItem('gh_token');
+  if (!existing) return;
+  // We need to build DOM first, so simulate login flow
+  document.getElementById('login-screen').style.display = 'none';
+  const adminScreen = document.getElementById('admin-screen');
+  adminScreen.classList.add('visible');
+  buildBenefitFields();
+  buildStatsFields();
+  initEditors();
+  loadContent().then(c => { if (c) populateForm(c); });
+})();
+</script>
+</body>
+</html>
