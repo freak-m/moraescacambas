@@ -304,15 +304,9 @@
     @keyframes glowPulse { 0%,100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.25); opacity: .5; } }
     .bvisual svg { position: relative; z-index: 1; }
 
-    /* Rotated float for benefits dumpster */
     .bvisual-rotator {
       position: relative; z-index: 1;
-      animation: floatRotated 5s ease-in-out infinite;
       filter: drop-shadow(0 20px 40px rgba(245,196,0,.32));
-    }
-    @keyframes floatRotated {
-      0%, 100% { transform: rotate(30deg) translateY(0); }
-      50%       { transform: rotate(30deg) translateY(-20px); }
     }
 
     /* ─────────────────────────────────────────
