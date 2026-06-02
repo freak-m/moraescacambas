@@ -838,7 +838,7 @@
       <div>
         <div class="reveal">
           <span class="sec-tag" id="contact-tag">Fale Conosco</span>
-          <h2 class="sec-title">SOLICITE SUA <span style="color:var(--yellow)" id="contact-title-hl">CAÇAMBA</span></h2>
+          <h2 class="sec-title"><span id="contact-title">SOLICITE SUA</span> <span style="color:var(--yellow)" id="contact-title-hl">CAÇAMBA</span></h2>
           <p class="sec-sub" style="margin-bottom:36px;" id="contact-subtitle">
             Entre em contato agora e receba um orçamento sem compromisso.<br>
             Respondemos em minutos pelo WhatsApp.
@@ -1033,6 +1033,7 @@
     }
     if (c.contact) {
       set('contact-tag', c.contact.tag);
+      set('contact-title', c.contact.title);
       set('contact-title-hl', c.contact.title_highlight);
       set('contact-subtitle', c.contact.subtitle, true);
       set('contact-area', c.contact.area);
