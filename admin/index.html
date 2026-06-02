@@ -465,6 +465,17 @@
     }
     .btn-add-ct:hover { border-color: var(--yellow); color: var(--yellow); background: rgba(245,196,0,.05); }
 
+    /* ── FIELD NOTE ── */
+    .field-note {
+      font-size: .8rem; color: var(--muted);
+      background: rgba(245,196,0,.06);
+      border-left: 3px solid rgba(245,196,0,.3);
+      border-radius: 0 6px 6px 0;
+      padding: 8px 12px; margin-bottom: 18px;
+      line-height: 1.5;
+    }
+    .field-note strong { color: var(--muted2); font-weight: 600; }
+
     /* ── DIVIDER ── */
     .divider {
       border: none; border-top: 1px solid var(--border);
@@ -855,6 +866,7 @@
 
       <div class="field-group">
         <h3>Rodapé</h3>
+        <p class="field-note">O número de WhatsApp exibido no rodapé é preenchido automaticamente pelo primeiro canal do tipo <strong>📱 WhatsApp</strong> cadastrado acima.</p>
         <div class="form-row cols-2">
           <div class="form-field">
             <label>Localização</label>
@@ -1533,7 +1545,19 @@ function injectPreviewStyles(doc) {
     .cms-focus {
       outline: 3px solid #F5C400 !important;
       outline-offset: -3px;
-      transition: outline .2s;
+    }
+    @keyframes cmsFlash {
+      0%   { outline-color: #F5C400; }
+      15%  { outline-color: #e05555; }
+      30%  { outline-color: #F5C400; }
+      45%  { outline-color: #e05555; }
+      60%  { outline-color: #F5C400; }
+      100% { outline-color: #F5C400; }
+    }
+    .cms-focus-flash {
+      outline: 3px solid #F5C400 !important;
+      outline-offset: -3px;
+      animation: cmsFlash .8s ease forwards;
     }
     .cms-badge {
       position: fixed;
@@ -1544,7 +1568,6 @@ function injectPreviewStyles(doc) {
       padding: 5px 13px; border-radius: 20px;
       box-shadow: 0 3px 12px rgba(0,0,0,.45);
       pointer-events: none; letter-spacing: .04em;
-      display: flex; align-items: center; gap: 5px;
       animation: cmsBadgeIn .2s cubic-bezier(.2,.8,.3,1);
     }
     @keyframes cmsBadgeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
@@ -1562,14 +1585,21 @@ function focusPreviewSection(sectionId) {
   injectPreviewStyles(doc);
 
   // Clear previous
-  doc.querySelectorAll('.cms-focus').forEach(el => el.classList.remove('cms-focus'));
+  doc.querySelectorAll('.cms-focus, .cms-focus-flash').forEach(el => {
+    el.classList.remove('cms-focus', 'cms-focus-flash');
+  });
   doc.querySelectorAll('.cms-badge').forEach(el => el.remove());
 
   if (!sectionId) return;
   const section = doc.getElementById(sectionId);
   if (!section) return;
 
-  section.classList.add('cms-focus');
+  // Flash red twice then settle on yellow outline
+  section.classList.add('cms-focus-flash');
+  setTimeout(() => {
+    section.classList.remove('cms-focus-flash');
+    section.classList.add('cms-focus');
+  }, 850);
 
   const badge = doc.createElement('div');
   badge.className = 'cms-badge';
