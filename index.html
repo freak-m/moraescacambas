@@ -306,7 +306,12 @@
 
     .bvisual-rotator {
       position: relative; z-index: 1;
+      animation: imgFloat 4s ease-in-out infinite;
       filter: drop-shadow(0 20px 40px rgba(245,196,0,.32));
+    }
+    @keyframes imgFloat {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-20px); }
     }
 
     /* ─────────────────────────────────────────
@@ -753,7 +758,7 @@
       <div class="bvisual reveal">
         <div class="glow-ring"></div>
         <div class="bvisual-rotator">
-          <img src="diferenciais.png" alt="Moraes Caçambas" style="max-width:300px;width:100%;height:auto;display:block;">
+          <img src="diferenciais.png" alt="Moraes Caçambas" style="max-width:375px;width:100%;height:auto;display:block;">
         </div>
       </div>
 
