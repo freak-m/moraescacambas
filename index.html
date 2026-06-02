@@ -306,12 +306,12 @@
 
     .bvisual-rotator {
       position: relative; z-index: 1;
-      animation: imgFloat 4s ease-in-out infinite;
+      animation: imgFloat 7s cubic-bezier(0.45, 0, 0.55, 1) infinite;
       filter: drop-shadow(0 20px 40px rgba(245,196,0,.32));
     }
     @keyframes imgFloat {
       0%, 100% { transform: translateY(0); }
-      50%       { transform: translateY(-20px); }
+      50%       { transform: translateY(-14px); }
     }
 
     /* ─────────────────────────────────────────
