@@ -98,45 +98,90 @@
     #admin-screen { display: none; }
     #admin-screen.visible { display: block; }
 
-    /* ── HEADER ── */
-    .adm-header {
+    /* ── LAYOUT ── */
+    .adm-layout {
+      display: flex; min-height: 100vh;
+    }
+
+    /* ── SIDEBAR ── */
+    .adm-sidebar {
+      width: 220px; flex-shrink: 0;
       background: var(--card);
-      border-bottom: 2px solid var(--yellow);
-      padding: 0 32px;
-      display: flex; align-items: center; gap: 16px;
-      height: 62px;
-      position: sticky; top: 0; z-index: 100;
+      border-right: 1px solid var(--border);
+      display: flex; flex-direction: column;
+      position: sticky; top: 0; height: 100vh;
+      overflow-y: auto;
     }
-    .adm-header img {
-      height: 34px; width: auto;
-      filter: drop-shadow(0 2px 8px rgba(245,196,0,.25));
+    .sidebar-logo {
+      padding: 24px 20px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      text-align: center;
     }
-    .adm-header h1 {
-      font-size: .96rem; font-weight: 700;
-      color: var(--white); flex: 1;
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    .sidebar-logo img {
+      height: 48px; width: auto;
+      filter: drop-shadow(0 2px 8px rgba(245,196,0,.3));
     }
-    .adm-header h1 span { color: var(--yellow); }
+    .sidebar-logo span {
+      font-size: .78rem; font-weight: 600;
+      color: var(--muted); line-height: 1.3;
+    }
+    .sidebar-logo span strong { color: var(--yellow); font-weight: 800; }
+
+    /* ── SIDEBAR NAV ── */
+    .sidebar-nav {
+      display: flex; flex-direction: column; gap: 4px;
+      padding: 16px 12px; flex: 1;
+    }
+    .tab-btn {
+      background: none; border: none; cursor: pointer;
+      color: var(--muted); font-size: .88rem; font-weight: 600;
+      padding: 11px 14px;
+      border-radius: 8px;
+      text-align: left;
+      transition: color .2s, background .2s;
+      letter-spacing: .02em;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .tab-btn .nav-icon { font-size: 1rem; flex-shrink: 0; }
+    .tab-btn.active {
+      color: var(--yellow);
+      background: rgba(245,196,0,.1);
+    }
+    .tab-btn:hover:not(.active) {
+      color: var(--muted2);
+      background: rgba(255,255,255,.04);
+    }
+
+    /* ── SIDEBAR FOOTER ── */
+    .sidebar-footer {
+      padding: 16px 12px 20px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 8px;
+    }
     .btn-publish {
       background: var(--yellow); color: #000;
       border: none; cursor: pointer;
-      border-radius: 50px;
+      border-radius: 8px;
       font-size: .84rem; font-weight: 800;
-      padding: 9px 22px;
+      padding: 11px 16px;
       transition: background .2s, transform .15s, box-shadow .2s;
       letter-spacing: .04em;
-      white-space: nowrap;
+      width: 100%; text-align: center;
     }
-    .btn-publish:hover { background: var(--yellow-d); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(245,196,0,.4); }
+    .btn-publish:hover { background: var(--yellow-d); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(245,196,0,.4); }
     .btn-logout {
       background: none; border: 1px solid var(--border2);
       color: var(--muted); cursor: pointer;
-      border-radius: 50px;
+      border-radius: 8px;
       font-size: .82rem; font-weight: 600;
-      padding: 7px 16px;
-      transition: all .2s;
+      padding: 9px 16px;
+      transition: all .2s; width: 100%; text-align: center;
     }
     .btn-logout:hover { border-color: var(--red); color: var(--red); }
+
+    /* ── MAIN CONTENT ── */
+    .adm-main { flex: 1; overflow-y: auto; min-width: 0; }
 
     /* ── TOAST ── */
     .toast {
@@ -154,24 +199,6 @@
     }
     .toast.show { transform: translateY(0); opacity: 1; }
     .toast.error { background: #3a1e1e; border-color: var(--red); color: #f08080; }
-
-    /* ── TABS ── */
-    .tab-bar {
-      background: var(--card);
-      border-bottom: 1px solid var(--border);
-      display: flex; gap: 0;
-      padding: 0 32px;
-    }
-    .tab-btn {
-      background: none; border: none; cursor: pointer;
-      color: var(--muted); font-size: .9rem; font-weight: 600;
-      padding: 16px 22px;
-      border-bottom: 3px solid transparent;
-      transition: color .2s, border-color .2s;
-      letter-spacing: .02em;
-    }
-    .tab-btn.active { color: var(--yellow); border-bottom-color: var(--yellow); }
-    .tab-btn:hover:not(.active) { color: var(--muted2); }
 
     /* ── CONTENT AREA ── */
     .tab-content { padding: 32px; max-width: 960px; margin: 0 auto; }
@@ -347,11 +374,20 @@
     }
 
     /* ── RESPONSIVE ── */
-    @media (max-width: 680px) {
-      .adm-header { padding: 0 16px; gap: 10px; }
-      .adm-header h1 { font-size: .82rem; }
-      .tab-bar { padding: 0 12px; }
-      .tab-btn { padding: 14px 14px; font-size: .82rem; }
+    @media (max-width: 768px) {
+      .adm-layout { flex-direction: column; }
+      .adm-sidebar {
+        width: 100%; height: auto; position: static;
+        flex-direction: row; flex-wrap: wrap;
+        border-right: none; border-bottom: 1px solid var(--border);
+      }
+      .sidebar-logo { flex-direction: row; padding: 12px 16px; border-bottom: none; border-right: 1px solid var(--border); }
+      .sidebar-logo img { height: 32px; }
+      .sidebar-logo span { font-size: .72rem; }
+      .sidebar-nav { flex-direction: row; padding: 8px 12px; gap: 4px; flex: 1; }
+      .tab-btn { padding: 8px 12px; font-size: .82rem; border-radius: 6px; }
+      .sidebar-footer { flex-direction: row; padding: 8px 12px; border-top: none; border-left: 1px solid var(--border); }
+      .btn-publish, .btn-logout { width: auto; padding: 8px 14px; font-size: .8rem; }
       .tab-content { padding: 16px; }
       .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; }
       .stat-row { grid-template-columns: 1fr 1fr; }
@@ -387,20 +423,25 @@
 
 <!-- ══ ADMIN ══ -->
 <div id="admin-screen">
+  <div class="adm-layout">
 
-  <header class="adm-header">
-    <img src="../moraescacambaslogo.png" alt="Logo">
-    <h1>Painel Administrativo &ndash; <span>Moraes Caçambas</span></h1>
-    <button class="btn-publish" id="publish-btn">&#x1F680; Publicar</button>
-    <button class="btn-logout" id="logout-btn">Sair</button>
-  </header>
+    <aside class="adm-sidebar">
+      <div class="sidebar-logo">
+        <img src="../moraescacambaslogo.png" alt="Logo">
+        <span>Painel<br><strong>Moraes Caçambas</strong></span>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="tab-btn active" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
+        <button class="tab-btn" data-tab="sections"><span class="nav-icon">📝</span> Seções</button>
+        <button class="tab-btn" data-tab="contact"><span class="nav-icon">📞</span> Contato</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-publish" id="publish-btn">🚀 Publicar</button>
+        <button class="btn-logout" id="logout-btn">Sair</button>
+      </div>
+    </aside>
 
-  <nav class="tab-bar">
-    <button class="tab-btn active" data-tab="seo">SEO</button>
-    <button class="tab-btn" data-tab="sections">Seções</button>
-    <button class="tab-btn" data-tab="contact">Contato</button>
-  </nav>
-
+    <main class="adm-main">
   <div class="tab-content">
 
     <!-- ── SEO TAB ── -->
@@ -725,6 +766,8 @@
     </div><!-- /tab-contact -->
 
   </div><!-- /tab-content -->
+    </main>
+  </div><!-- /adm-layout -->
 </div><!-- /admin-screen -->
 
 <!-- Toast -->
