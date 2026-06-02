@@ -24,12 +24,11 @@
       --radius:   10px;
     }
 
-    html { scroll-behavior: smooth; }
-    body {
+    html, body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
       color: var(--white);
-      min-height: 100vh;
+      height: 100%; overflow: hidden;
     }
 
     /* ── LOGIN ── */
@@ -96,11 +95,11 @@
 
     /* ── ADMIN WRAPPER ── */
     #admin-screen { display: none; }
-    #admin-screen.visible { display: block; }
+    #admin-screen.visible { display: flex; height: 100vh; flex-direction: column; }
 
     /* ── LAYOUT ── */
     .adm-layout {
-      display: flex; min-height: 100vh;
+      display: flex; flex: 1; overflow: hidden;
     }
 
     /* ── SIDEBAR ── */
@@ -181,7 +180,37 @@
     .btn-logout:hover { border-color: var(--red); color: var(--red); }
 
     /* ── MAIN CONTENT ── */
-    .adm-main { flex: 1; overflow-y: auto; min-width: 0; }
+    .adm-main { flex: 1; display: flex; overflow: hidden; min-width: 0; }
+
+    /* ── EDITOR PANEL ── */
+    .adm-editor { width: 560px; flex-shrink: 0; overflow-y: auto; border-right: 1px solid var(--border); }
+
+    /* ── PREVIEW PANEL ── */
+    .adm-preview {
+      flex: 1; display: flex; flex-direction: column; min-width: 0;
+      background: #111;
+    }
+    .adm-preview.hidden { display: none; }
+    .preview-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px;
+      background: var(--card); border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .preview-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--yellow); flex-shrink: 0; animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:.35} }
+    .preview-label { font-size: .8rem; font-weight: 700; color: var(--muted2); flex: 1; letter-spacing: .05em; text-transform: uppercase; }
+    .preview-btn {
+      background: rgba(255,255,255,.06); border: 1px solid var(--border2);
+      color: var(--muted2); cursor: pointer;
+      border-radius: 6px; font-size: .78rem; font-weight: 600;
+      padding: 5px 11px; transition: all .2s; white-space: nowrap;
+    }
+    .preview-btn:hover { background: rgba(255,255,255,.1); color: var(--white); }
+    #preview-iframe {
+      flex: 1; border: none; width: 100%; height: 100%;
+      background: #fff;
+    }
 
     /* ── TOAST ── */
     .toast {
@@ -260,8 +289,8 @@
     }
     .form-field input:focus,
     .form-field textarea:focus { border-color: var(--yellow); }
-    .form-field textarea { min-height: 80px; }
-    .form-field textarea.small { min-height: 60px; }
+    .form-field textarea { min-height: 120px; }
+    .form-field textarea.small { min-height: 100px; }
 
     /* Quill override */
     .ql-toolbar { background: var(--card2) !important; border: 1.5px solid var(--border2) !important; border-radius: 8px 8px 0 0 !important; }
@@ -373,7 +402,21 @@
       margin-top: 20px;
     }
 
+    /* ── PREVIEW TOGGLE BTN IN SIDEBAR ── */
+    .preview-toggle-sidebar {
+      background: rgba(245,196,0,.08); border: 1px solid rgba(245,196,0,.2);
+      color: var(--yellow); cursor: pointer;
+      border-radius: 8px; font-size: .82rem; font-weight: 700;
+      padding: 9px 14px; transition: all .2s; width: 100%;
+      text-align: center; letter-spacing: .02em; margin-bottom: 4px;
+    }
+    .preview-toggle-sidebar:hover { background: rgba(245,196,0,.15); }
+
     /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .adm-preview { display: none; }
+      .adm-preview.force-show { display: flex; position: fixed; inset: 0; z-index: 500; }
+    }
     @media (max-width: 768px) {
       .adm-layout { flex-direction: column; }
       .adm-sidebar {
@@ -381,13 +424,14 @@
         flex-direction: row; flex-wrap: wrap;
         border-right: none; border-bottom: 1px solid var(--border);
       }
+      .adm-editor { width: 100%; }
       .sidebar-logo { flex-direction: row; padding: 12px 16px; border-bottom: none; border-right: 1px solid var(--border); }
       .sidebar-logo img { height: 32px; }
       .sidebar-logo span { font-size: .72rem; }
       .sidebar-nav { flex-direction: row; padding: 8px 12px; gap: 4px; flex: 1; }
       .tab-btn { padding: 8px 12px; font-size: .82rem; border-radius: 6px; }
-      .sidebar-footer { flex-direction: row; padding: 8px 12px; border-top: none; border-left: 1px solid var(--border); }
-      .btn-publish, .btn-logout { width: auto; padding: 8px 14px; font-size: .8rem; }
+      .sidebar-footer { flex-direction: row; padding: 8px 12px; border-top: none; border-left: 1px solid var(--border); align-items: center; }
+      .btn-publish, .btn-logout, .preview-toggle-sidebar { width: auto; padding: 8px 14px; font-size: .8rem; margin-bottom: 0; }
       .tab-content { padding: 16px; }
       .form-row.cols-2, .form-row.cols-3 { grid-template-columns: 1fr; }
       .stat-row { grid-template-columns: 1fr 1fr; }
@@ -414,7 +458,7 @@
   <div class="login-card">
     <img src="../moraescacambaslogo.png" alt="Moraes Caçambas" class="login-logo">
     <h1>Painel Administrativo</h1>
-    <p>Cole o Token GitHub para entrar</p>
+    <p>Cole o Token de desenvolvedor para entrar</p>
     <input type="password" id="token-input" class="login-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx" autocomplete="off">
     <button class="btn-primary" id="login-btn">Entrar</button>
     <div id="login-error"></div>
@@ -436,12 +480,14 @@
         <button class="tab-btn" data-tab="contact"><span class="nav-icon">📞</span> Contato</button>
       </nav>
       <div class="sidebar-footer">
+        <button class="preview-toggle-sidebar" id="preview-toggle-btn">👁 Preview</button>
         <button class="btn-publish" id="publish-btn">🚀 Publicar</button>
         <button class="btn-logout" id="logout-btn">Sair</button>
       </div>
     </aside>
 
     <main class="adm-main">
+    <div class="adm-editor">
   <div class="tab-content">
 
     <!-- ── SEO TAB ── -->
@@ -766,6 +812,18 @@
     </div><!-- /tab-contact -->
 
   </div><!-- /tab-content -->
+    </div><!-- /adm-editor -->
+
+    <div class="adm-preview" id="adm-preview">
+      <div class="preview-bar">
+        <span class="preview-dot"></span>
+        <span class="preview-label">Preview ao vivo</span>
+        <button class="preview-btn" id="preview-refresh-btn">↻ Atualizar</button>
+        <button class="preview-btn" id="preview-close-btn">✕ Fechar</button>
+      </div>
+      <iframe id="preview-iframe" src="../index.html" title="Preview"></iframe>
+    </div><!-- /adm-preview -->
+
     </main>
   </div><!-- /adm-layout -->
 </div><!-- /admin-screen -->
@@ -1187,6 +1245,146 @@ document.addEventListener('change', e => {
 });
 
 // ══════════════════════════════════════════════════
+//  LIVE PREVIEW
+// ══════════════════════════════════════════════════
+let syncTimer;
+function debouncedSync() {
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(syncPreview, 250);
+}
+
+function syncPreview() {
+  const iframe = document.getElementById('preview-iframe');
+  if (!iframe) return;
+  let doc;
+  try { doc = iframe.contentDocument; } catch(e) { return; }
+  if (!doc || !doc.body) return;
+
+  const set = (id, val, html) => {
+    const el = doc.getElementById(id);
+    if (!el || val == null) return;
+    if (html) el.innerHTML = val; else el.textContent = val;
+  };
+  const v = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  const q = id => quills[id]?.root.innerHTML || '';
+
+  // Title
+  const t = v('seo-title'); if (t) doc.title = t;
+
+  // Hero
+  set('hero-subtitle', q('q-hero-subtitle'), true);
+
+  // Services
+  set('services-tag',      v('services-tag-inp'));
+  set('services-title-hl', v('services-hl-inp'));
+  set('services-subtitle', v('services-sub-inp'));
+  set('services-size',     v('services-size-inp'));
+  set('services-name',     v('services-name-inp'));
+  set('services-desc',     q('q-services-desc'), true);
+  const ulEl = doc.getElementById('services-features');
+  if (ulEl) {
+    const feats = v('services-features-inp').split('\n').map(l => l.trim()).filter(Boolean);
+    ulEl.innerHTML = feats.map(f => `<li>${f}</li>`).join('');
+  }
+
+  // How
+  set('how-subtitle', v('how-sub-inp'));
+  for (let n = 1; n <= 3; n++) {
+    set(`how-step-${n}-title`, v(`how-s${n}-title`));
+    set(`how-step-${n}-desc`,  q(`q-how-s${n}`), true);
+  }
+
+  // Benefits
+  set('benefits-subtitle', v('benefits-sub-inp'));
+  for (let n = 1; n <= 4; n++) {
+    const te = document.getElementById(`ben-${n}-title`);
+    if (te) set(`benefit-${n}-title`, te.value);
+    set(`benefit-${n}-desc`, q(`q-ben-${n}`), true);
+  }
+
+  // Stats
+  doc.querySelectorAll('.stat-item').forEach((item, i) => {
+    const ctr = item.querySelector('.counter');
+    const suf = item.querySelector('.stat-suf');
+    const lbl = item.querySelector('.stat-label');
+    const vv = document.getElementById(`stat-${i}-val`);
+    const vs = document.getElementById(`stat-${i}-suf`);
+    const vl = document.getElementById(`stat-${i}-lbl`);
+    if (ctr && vv) ctr.textContent = vv.value;
+    if (suf && vs) suf.textContent = vs.value;
+    if (lbl && vl) lbl.textContent = vl.value;
+  });
+
+  // Contact
+  set('contact-tag',        v('ct-tag'));
+  set('contact-title-hl',   v('ct-hl'));
+  set('contact-subtitle',   q('q-ct-subtitle'), true);
+  set('wa-panel-label',     q('q-ct-wa-label'), true);
+  set('wa-panel-sub',       q('q-ct-wa-sub'), true);
+  set('contact-area',       v('ct-area'));
+  set('contact-hours',      v('ct-hours'));
+  set('contact-hours-note', v('ct-hours-note'));
+
+  const waNum = v('ct-wa-number');
+  const waDis = v('ct-wa-display');
+  const waD = doc.getElementById('waDisplay');
+  if (waD) { waD.textContent = waDis; if (waNum) waD.href = `https://wa.me/${waNum}`; }
+  const fWa = doc.getElementById('footWa');
+  if (fWa) { fWa.textContent = waDis; if (waNum) fWa.href = `https://wa.me/${waNum}`; }
+  if (waNum) doc.querySelectorAll('.wa-link').forEach(el => { el.href = `https://wa.me/${waNum}`; });
+
+  // Footer
+  set('foot-location', v('ft-location'));
+  set('foot-hours',    v('ft-hours'));
+}
+
+function setupPreview() {
+  const iframe = document.getElementById('preview-iframe');
+  if (!iframe) return;
+  iframe.onload = () => setTimeout(syncPreview, 700);
+}
+
+function wirePreviewListeners() {
+  // Plain inputs & textareas (use event delegation)
+  document.getElementById('admin-screen').addEventListener('input', e => {
+    if (e.target.matches('input, textarea') && !e.target.closest('#login-screen')) {
+      debouncedSync();
+    }
+  });
+  // Quill editors (wired after initEditors)
+  Object.values(quills).forEach(qe => qe.on('text-change', debouncedSync));
+}
+
+// Preview toggle
+function setupPreviewToggle() {
+  const panel    = document.getElementById('adm-preview');
+  const toggleBtn = document.getElementById('preview-toggle-btn');
+  const closeBtn  = document.getElementById('preview-close-btn');
+  const refreshBtn = document.getElementById('preview-refresh-btn');
+
+  function showPreview() {
+    panel.classList.remove('hidden');
+    if (window.innerWidth <= 900) panel.classList.add('force-show');
+    toggleBtn.textContent = '👁 Ocultar';
+    syncPreview();
+  }
+  function hidePreview() {
+    panel.classList.add('hidden');
+    panel.classList.remove('force-show');
+    toggleBtn.textContent = '👁 Preview';
+  }
+
+  toggleBtn.addEventListener('click', () => {
+    panel.classList.contains('hidden') ? showPreview() : hidePreview();
+  });
+  closeBtn.addEventListener('click', hidePreview);
+  refreshBtn.addEventListener('click', () => {
+    const iframe = document.getElementById('preview-iframe');
+    if (iframe) { iframe.src = iframe.src; }
+  });
+}
+
+// ══════════════════════════════════════════════════
 //  LOGIN
 // ══════════════════════════════════════════════════
 async function login(token) {
@@ -1214,9 +1412,12 @@ async function login(token) {
     buildBenefitFields();
     buildStatsFields();
     initEditors();
+    setupPreview();
+    setupPreviewToggle();
+    wirePreviewListeners();
 
     const c = await loadContent();
-    if (c) populateForm(c);
+    if (c) { populateForm(c); setTimeout(syncPreview, 800); }
 
   } catch(e) {
     errEl.textContent = e.message;
@@ -1254,7 +1455,10 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   buildBenefitFields();
   buildStatsFields();
   initEditors();
-  loadContent().then(c => { if (c) populateForm(c); });
+  setupPreview();
+  setupPreviewToggle();
+  wirePreviewListeners();
+  loadContent().then(c => { if (c) { populateForm(c); setTimeout(syncPreview, 800); } });
 })();
 </script>
 </body>
