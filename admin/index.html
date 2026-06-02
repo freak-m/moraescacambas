@@ -431,6 +431,40 @@
     .upload-progress.success { color: var(--green); }
     .upload-progress.error { color: var(--red); }
 
+    /* ── CONTACT ROWS ── */
+    .ct-row {
+      display: flex; align-items: flex-start; gap: 10px;
+      padding: 14px; background: var(--card2);
+      border: 1px solid var(--border2); border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    .ct-type-sel {
+      background: var(--card); border: 1.5px solid var(--border2);
+      color: var(--white); font-size: .84rem;
+      padding: 8px 10px; border-radius: 7px;
+      outline: none; cursor: pointer;
+      flex-shrink: 0; width: 148px;
+      transition: border-color .2s;
+    }
+    .ct-type-sel:focus { border-color: var(--yellow); }
+    .ct-row-fields { display: flex; gap: 10px; flex: 1; flex-wrap: wrap; }
+    .ct-row-fields .form-field { flex: 1; min-width: 130px; }
+    .ct-remove-btn {
+      background: rgba(224,85,85,.1); border: 1px solid rgba(224,85,85,.22);
+      color: var(--red); cursor: pointer; border-radius: 6px;
+      width: 30px; height: 30px; font-size: 1.15rem; font-weight: 700;
+      flex-shrink: 0; margin-top: 22px;
+      transition: all .2s; display: flex; align-items: center; justify-content: center;
+    }
+    .ct-remove-btn:hover { background: rgba(224,85,85,.25); }
+    .btn-add-ct {
+      background: rgba(255,255,255,.03); border: 1.5px dashed var(--border2);
+      color: var(--muted2); cursor: pointer; border-radius: 8px;
+      width: 100%; font-size: .85rem; font-weight: 600; padding: 10px;
+      transition: all .2s; letter-spacing: .03em; margin-top: 4px;
+    }
+    .btn-add-ct:hover { border-color: var(--yellow); color: var(--yellow); background: rgba(245,196,0,.05); }
+
     /* ── DIVIDER ── */
     .divider {
       border: none; border-top: 1px solid var(--border);
@@ -760,27 +794,9 @@
     <!-- ── CONTACT TAB ── -->
     <div class="tab-pane" id="tab-contact">
       <div class="field-group">
-        <h3>WhatsApp &amp; Telefone</h3>
-        <div class="form-row cols-2">
-          <div class="form-field">
-            <label>WhatsApp <span>(número com código do país)</span></label>
-            <input type="text" id="ct-wa-number" placeholder="5519993277969">
-          </div>
-          <div class="form-field">
-            <label>WhatsApp <span>(exibição)</span></label>
-            <input type="text" id="ct-wa-display" placeholder="(19) 99327-7969">
-          </div>
-        </div>
-        <div class="form-row cols-2">
-          <div class="form-field">
-            <label>Telefone <span>(número)</span></label>
-            <input type="text" id="ct-tel-number" placeholder="19993277969">
-          </div>
-          <div class="form-field">
-            <label>Telefone <span>(exibição)</span></label>
-            <input type="text" id="ct-tel-display" placeholder="(19) 99327-7969">
-          </div>
-        </div>
+        <h3>Canais de Contato</h3>
+        <div id="ct-rows-list"></div>
+        <button class="btn-add-ct" id="btn-add-ct" type="button">+ Adicionar canal de contato</button>
       </div>
 
       <div class="field-group">
@@ -933,10 +949,94 @@ document.querySelectorAll('.acc-header').forEach(hdr => {
   hdr.addEventListener('click', () => {
     const body = document.getElementById('acc-' + hdr.dataset.acc);
     const opening = !hdr.classList.contains('open');
+    // Close any other open accordion first
+    if (opening) {
+      document.querySelectorAll('.acc-header.open').forEach(other => {
+        if (other !== hdr) {
+          other.classList.remove('open');
+          document.getElementById('acc-' + other.dataset.acc)?.classList.remove('open');
+        }
+      });
+    }
     hdr.classList.toggle('open');
     body.classList.toggle('open');
     if (opening) focusPreviewSection(ACC_SECTION[hdr.dataset.acc] ?? null);
   });
+});
+
+// ══════════════════════════════════════════════════
+//  CONTACT CHANNEL ROWS
+// ══════════════════════════════════════════════════
+const CT_TYPES = {
+  whatsapp: { icon: '📱', label: 'WhatsApp',  displayPh: '(19) 99327-7969',    linkLabel: 'Número para o link',       linkPh: '5519998773245', hasLink: true  },
+  phone:    { icon: '📞', label: 'Telefone',   displayPh: '(19) 99327-7969',    linkLabel: 'Número (ex: 19993277969)', linkPh: '19993277969',   hasLink: true  },
+  telegram: { icon: '✈️', label: 'Telegram',   displayPh: '@usuario',            linkLabel: 'Username ou número',      linkPh: '@usuario',      hasLink: true  },
+  email:    { icon: '📧', label: 'Email',       displayPh: 'contato@empresa.com', linkLabel: 'Endereço de email',       linkPh: 'email@...',     hasLink: true  },
+  other:    { icon: '🔗', label: 'Outro',       displayPh: 'Texto exibido',       linkLabel: 'URL',                    linkPh: 'https://...',   hasLink: false }
+};
+
+function buildContactRow(data) {
+  data = data || { type: 'whatsapp', display: '', link: '' };
+  const type = data.type || 'whatsapp';
+  const meta = CT_TYPES[type] || CT_TYPES.whatsapp;
+  const typeOpts = Object.entries(CT_TYPES).map(([k, v]) =>
+    `<option value="${k}"${k === type ? ' selected' : ''}>${v.icon} ${v.label}</option>`
+  ).join('');
+  const row = document.createElement('div');
+  row.className = 'ct-row';
+  row.innerHTML = `
+    <select class="ct-type-sel">${typeOpts}</select>
+    <div class="ct-row-fields">
+      <div class="form-field">
+        <label class="ct-display-lbl">Exibição no site</label>
+        <input type="text" class="ct-display-inp" placeholder="${meta.displayPh}" value="${(data.display||'').replace(/"/g,'&quot;')}">
+      </div>
+      <div class="form-field ct-link-wrap"${meta.hasLink ? '' : ' style="display:none"'}>
+        <label class="ct-link-lbl">${meta.linkLabel}</label>
+        <input type="text" class="ct-link-inp" placeholder="${meta.linkPh}" value="${(data.link||'').replace(/"/g,'&quot;')}">
+      </div>
+    </div>
+    <button class="ct-remove-btn" type="button" title="Remover">−</button>
+  `;
+  row.querySelector('.ct-type-sel').addEventListener('change', function() { ctRowTypeChange(this); });
+  row.querySelector('.ct-remove-btn').addEventListener('click', function() { ctRowRemove(this); });
+  return row;
+}
+
+function populateContactRows(phones) {
+  const list = document.getElementById('ct-rows-list');
+  list.innerHTML = '';
+  const data = phones?.length ? phones : [{ type: 'whatsapp', display: '', link: '' }];
+  data.forEach(p => list.appendChild(buildContactRow(p)));
+}
+
+function ctRowTypeChange(sel) {
+  const row = sel.closest('.ct-row');
+  const meta = CT_TYPES[sel.value] || CT_TYPES.other;
+  row.querySelector('.ct-display-inp').placeholder = meta.displayPh;
+  const linkWrap = row.querySelector('.ct-link-wrap');
+  linkWrap.style.display = meta.hasLink ? '' : 'none';
+  row.querySelector('.ct-link-lbl').textContent = meta.linkLabel;
+  row.querySelector('.ct-link-inp').placeholder = meta.linkPh;
+  debouncedSync();
+}
+
+function ctRowRemove(btn) {
+  const list = document.getElementById('ct-rows-list');
+  if (list.children.length > 1) { btn.closest('.ct-row').remove(); debouncedSync(); }
+}
+
+function collectContactPhones() {
+  return Array.from(document.querySelectorAll('#ct-rows-list .ct-row')).map(row => ({
+    type:    row.querySelector('.ct-type-sel').value,
+    display: row.querySelector('.ct-display-inp').value.trim(),
+    link:    (row.querySelector('.ct-link-inp')?.value || '').trim()
+  }));
+}
+
+document.getElementById('btn-add-ct').addEventListener('click', () => {
+  document.getElementById('ct-rows-list').appendChild(buildContactRow());
+  debouncedSync();
 });
 
 // ══════════════════════════════════════════════════
@@ -1062,11 +1162,16 @@ function populateForm(c) {
     });
   }
 
-  // Contact
-  document.getElementById('ct-wa-number').value  = c.contact?.wa_number   || '';
-  document.getElementById('ct-wa-display').value = c.contact?.wa_display   || '';
-  document.getElementById('ct-tel-number').value = c.contact?.tel_number   || '';
-  document.getElementById('ct-tel-display').value= c.contact?.tel_display  || '';
+  // Contact — phones (backward compat: convert old wa_number/tel_number fields)
+  let phones = c.contact?.phones;
+  if (!phones) {
+    phones = [];
+    if (c.contact?.wa_number || c.contact?.wa_display)
+      phones.push({ type: 'whatsapp', display: c.contact.wa_display || '', link: c.contact.wa_number || '' });
+    if (c.contact?.tel_number || c.contact?.tel_display)
+      phones.push({ type: 'phone', display: c.contact.tel_display || '', link: c.contact.tel_number || '' });
+  }
+  populateContactRows(phones);
   document.getElementById('ct-tag').value        = c.contact?.tag          || '';
   document.getElementById('ct-hl').value         = c.contact?.title_highlight || '';
   if (c.contact?.subtitle) quills['q-ct-subtitle'].root.innerHTML = c.contact.subtitle;
@@ -1136,10 +1241,7 @@ function collectForm() {
       title:           'SOLICITE SUA',
       title_highlight: val('ct-hl'),
       subtitle:        qHTML('q-ct-subtitle'),
-      wa_number:       val('ct-wa-number'),
-      wa_display:      val('ct-wa-display'),
-      tel_number:      val('ct-tel-number'),
-      tel_display:     val('ct-tel-display'),
+      phones:          collectContactPhones(),
       area:            val('ct-area'),
       hours:           val('ct-hours'),
       hours_note:      val('ct-hours-note'),
@@ -1221,7 +1323,7 @@ async function publish() {
       throw new Error(err.message || `Erro ${putR.status}`);
     }
 
-    showToast('✓ Publicado com sucesso! O site atualiza em ~1 minuto.');
+    showToast('✓ Publicado com sucesso! O site atualiza em torno de 5 minutos.');
   } catch(e) {
     showToast('Erro ao publicar: ' + e.message, true);
   } finally {
@@ -1409,8 +1511,9 @@ function syncPreview() {
   set('contact-hours',      v('ct-hours'));
   set('contact-hours-note', v('ct-hours-note'));
 
-  const waNum = v('ct-wa-number');
-  const waDis = v('ct-wa-display');
+  const waEntry = collectContactPhones().find(p => p.type === 'whatsapp');
+  const waNum = waEntry?.link || '';
+  const waDis = waEntry?.display || '';
   const waD = doc.getElementById('waDisplay');
   if (waD) { waD.textContent = waDis; if (waNum) waD.href = `https://wa.me/${waNum}`; }
   const fWa = doc.getElementById('footWa');

@@ -1040,11 +1040,13 @@
       set('contact-hours-note', c.contact.hours_note);
       set('wa-panel-label', c.contact.wa_panel_label);
       set('wa-panel-sub', c.contact.wa_panel_sub);
-      if (c.contact.wa_number) document.querySelectorAll('.wa-link').forEach(el => { el.href = `https://wa.me/${c.contact.wa_number}`; });
-      const waD = document.getElementById('waDisplay'); if (waD) { waD.textContent = c.contact.wa_display||''; if(c.contact.wa_number) waD.href=`https://wa.me/${c.contact.wa_number}`; }
-      const telD = document.getElementById('telDisplay'); if (telD) { telD.textContent = c.contact.tel_display||''; if(c.contact.tel_number) telD.href=`tel:+${c.contact.tel_number}`; }
-      const fWa = document.getElementById('footWa'); if (fWa) { fWa.textContent = c.contact.wa_display||''; if(c.contact.wa_number) fWa.href=`https://wa.me/${c.contact.wa_number}`; }
-      const fltBtn = document.querySelector('.float-wa'); if (fltBtn && c.contact.wa_number) fltBtn.href = `https://wa.me/${c.contact.wa_number}`;
+      const _waE = (c.contact.phones||[]).find(p=>p.type==='whatsapp');
+      const _waN = _waE?.link || c.contact.wa_number || '';
+      const _waD = _waE?.display || c.contact.wa_display || '';
+      if (_waN) document.querySelectorAll('.wa-link').forEach(el => { el.href = `https://wa.me/${_waN}`; });
+      const waD = document.getElementById('waDisplay'); if (waD) { waD.textContent = _waD; if (_waN) waD.href=`https://wa.me/${_waN}`; }
+      const fWa = document.getElementById('footWa'); if (fWa) { fWa.textContent = _waD; if (_waN) fWa.href=`https://wa.me/${_waN}`; }
+      const fltBtn = document.querySelector('.float-wa'); if (fltBtn && _waN) fltBtn.href = `https://wa.me/${_waN}`;
     }
     if (c.footer) {
       set('foot-location', c.footer.location);

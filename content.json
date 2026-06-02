@@ -63,36 +63,19 @@
     ]
   },
   "stats": [
-    {
-      "value": 500,
-      "suffix": "+",
-      "label": "Clientes Atendidos"
-    },
-    {
-      "value": 1200,
-      "suffix": "+",
-      "label": "Obras Servidas"
-    },
-    {
-      "value": 24,
-      "suffix": "h",
-      "label": "Entrega Garantida"
-    },
-    {
-      "value": 10,
-      "suffix": "+",
-      "label": "Anos de Experiência"
-    }
+    { "value": 500, "suffix": "+", "label": "Clientes Atendidos" },
+    { "value": 1200, "suffix": "+", "label": "Obras Servidas" },
+    { "value": 24, "suffix": "h", "label": "Entrega Garantida" },
+    { "value": 10, "suffix": "+", "label": "Anos de Experiência" }
   ],
   "contact": {
     "tag": "Fale Conosco",
     "title": "SOLICITE SUA",
     "title_highlight": "CAÇAMBA",
-    "subtitle": "<p>Entre em contato agora e receba um orçamento sem compromisso.</p><p><br></p><p>\n            Respondemos em minutos pelo WhatsApp.</p>",
-    "wa_number": "5519993277969",
-    "wa_display": "(19) 99327-7969",
-    "tel_number": "19993277969",
-    "tel_display": "(19) 99327-7969",
+    "subtitle": "<p>Entre em contato agora e receba um orçamento sem compromisso.</p><p>Respondemos em minutos pelo WhatsApp.</p>",
+    "phones": [
+      { "type": "whatsapp", "display": "(19) 99327-7969", "link": "5519993277969" }
+    ],
     "area": "Região Metropolitana de Campinas",
     "hours": "Segunda a Sábado: 07h – 18h",
     "hours_note": "Plantão WhatsApp 24h",
