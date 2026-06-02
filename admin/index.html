@@ -370,7 +370,48 @@
       font-size: .85rem; color: var(--muted2);
       flex: 1; font-family: 'Courier New', monospace;
     }
-    .img-current strong { color: var(--yellow); }
+    .img-current strong {
+      color: var(--yellow);
+      cursor: pointer;
+      text-decoration: underline;
+      text-decoration-style: dotted;
+      text-underline-offset: 3px;
+      transition: color .15s;
+    }
+    .img-current strong:hover { color: #fff; }
+
+    /* ── IMAGE LIGHTBOX ── */
+    #img-lightbox {
+      display: none;
+      position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,.88);
+      align-items: center; justify-content: center;
+      padding: 32px;
+      cursor: zoom-out;
+      animation: lbFadeIn .2s ease;
+    }
+    #img-lightbox.open { display: flex; }
+    @keyframes lbFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    #img-lightbox img {
+      max-width: 100%; max-height: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.8);
+      animation: lbScaleIn .22s cubic-bezier(.2,.8,.3,1);
+      cursor: default;
+    }
+    @keyframes lbScaleIn { from { transform: scale(.88); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    #img-lightbox-close {
+      position: fixed; top: 18px; right: 22px;
+      background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+      color: #fff; cursor: pointer;
+      border-radius: 50%; width: 36px; height: 36px;
+      font-size: 1.1rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      transition: background .15s;
+      z-index: 9001;
+    }
+    #img-lightbox-close:hover { background: rgba(255,255,255,.22); }
     .btn-upload {
       background: rgba(245,196,0,.12);
       border: 1px solid rgba(245,196,0,.25);
@@ -831,6 +872,12 @@
 <!-- Toast -->
 <div class="toast" id="toast"></div>
 
+<!-- Image Lightbox -->
+<div id="img-lightbox">
+  <button id="img-lightbox-close" title="Fechar">✕</button>
+  <img id="img-lightbox-img" src="" alt="Preview da imagem">
+</div>
+
 <script src="https://cdn.quilljs.com/1.3.7/quill.min.js"></script>
 <script>
 // ══════════════════════════════════════════════════
@@ -1243,6 +1290,37 @@ async function uploadImage(fileInput) {
 document.addEventListener('change', e => {
   if (e.target.matches('.img-hidden-input')) uploadImage(e.target);
 });
+
+// ══════════════════════════════════════════════════
+//  IMAGE LIGHTBOX
+// ══════════════════════════════════════════════════
+(function() {
+  const lb    = document.getElementById('img-lightbox');
+  const lbImg = document.getElementById('img-lightbox-img');
+  const lbClose = document.getElementById('img-lightbox-close');
+
+  function openLightbox(filename) {
+    lbImg.src = '../' + filename;
+    lb.classList.add('open');
+  }
+  function closeLightbox() {
+    lb.classList.remove('open');
+    lbImg.src = '';
+  }
+
+  // Click on filename strong elements
+  document.addEventListener('click', e => {
+    const strong = e.target.closest('.img-current strong');
+    if (strong) { openLightbox(strong.textContent.trim()); }
+  });
+
+  // Close on overlay click or close button
+  lb.addEventListener('click', e => { if (e.target === lb) closeLightbox(); });
+  lbClose.addEventListener('click', closeLightbox);
+
+  // Close on ESC
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+})();
 
 // ══════════════════════════════════════════════════
 //  LIVE PREVIEW
