@@ -915,12 +915,16 @@ function showToast(msg, isError) {
 }
 
 // ── TABS ──
+const ACC_SECTION = { hero: 'hero', service: 'services', how: 'how', benefits: 'benefits', stats: 'stats' };
+const TAB_SECTION = { contact: 'contact', seo: null, sections: null };
+
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    focusPreviewSection(TAB_SECTION[btn.dataset.tab] ?? null);
   });
 });
 
@@ -928,8 +932,10 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 document.querySelectorAll('.acc-header').forEach(hdr => {
   hdr.addEventListener('click', () => {
     const body = document.getElementById('acc-' + hdr.dataset.acc);
+    const opening = !hdr.classList.contains('open');
     hdr.classList.toggle('open');
     body.classList.toggle('open');
+    if (opening) focusPreviewSection(ACC_SECTION[hdr.dataset.acc] ?? null);
   });
 });
 
@@ -1416,10 +1422,67 @@ function syncPreview() {
   set('foot-hours',    v('ft-hours'));
 }
 
+function injectPreviewStyles(doc) {
+  if (doc.getElementById('cms-preview-styles')) return;
+  const s = doc.createElement('style');
+  s.id = 'cms-preview-styles';
+  s.textContent = `
+    .cms-focus {
+      outline: 3px solid #F5C400 !important;
+      outline-offset: -3px;
+      transition: outline .2s;
+    }
+    .cms-badge {
+      position: fixed;
+      top: 14px; right: 14px; z-index: 99999;
+      background: #F5C400; color: #000;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 11px; font-weight: 800;
+      padding: 5px 13px; border-radius: 20px;
+      box-shadow: 0 3px 12px rgba(0,0,0,.45);
+      pointer-events: none; letter-spacing: .04em;
+      display: flex; align-items: center; gap: 5px;
+      animation: cmsBadgeIn .2s cubic-bezier(.2,.8,.3,1);
+    }
+    @keyframes cmsBadgeIn { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:none; } }
+  `;
+  doc.head.appendChild(s);
+}
+
+function focusPreviewSection(sectionId) {
+  const iframe = document.getElementById('preview-iframe');
+  if (!iframe) return;
+  let doc;
+  try { doc = iframe.contentDocument; } catch(e) { return; }
+  if (!doc || !doc.body) return;
+
+  injectPreviewStyles(doc);
+
+  // Clear previous
+  doc.querySelectorAll('.cms-focus').forEach(el => el.classList.remove('cms-focus'));
+  doc.querySelectorAll('.cms-badge').forEach(el => el.remove());
+
+  if (!sectionId) return;
+  const section = doc.getElementById(sectionId);
+  if (!section) return;
+
+  section.classList.add('cms-focus');
+
+  const badge = doc.createElement('div');
+  badge.className = 'cms-badge';
+  badge.innerHTML = '✏ Editando esta seção';
+  doc.body.appendChild(badge);
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function setupPreview() {
   const iframe = document.getElementById('preview-iframe');
   if (!iframe) return;
-  iframe.onload = () => setTimeout(syncPreview, 700);
+  iframe.onload = () => {
+    setTimeout(syncPreview, 700);
+    try { injectPreviewStyles(iframe.contentDocument); } catch(e) {}
+  };
 }
 
 function wirePreviewListeners() {
