@@ -1063,7 +1063,7 @@
             case 'hours':    inner=`<h4>Horário de Atendimento</h4><p>${card.text||''}</p>${card.note?`<p style="font-size:.82rem;color:var(--muted);margin-top:2px;">${card.note}</p>`:''}`; break;
             default:         inner=`<h4>${card.label||'Contato'}</h4><p>${card.display||''}</p>`;
           }
-          return `<div class="citem reveal ${delay}"><div class="cicon">${svg}</div><div>${inner}</div></div>`;
+          return `<div class="citem reveal visible ${delay}"><div class="cicon">${svg}</div><div>${inner}</div></div>`;
         }).join('');
         // Footer & float-wa from first WhatsApp card
         const waCard = c.contact.cards.find(c=>c.type==='whatsapp');
