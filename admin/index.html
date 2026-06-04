@@ -499,6 +499,14 @@
     }
     .ct-card-fields { padding: 14px; }
 
+    /* ── FAQ ROWS ── */
+    .faq-row {
+      background: var(--card2); border: 1px solid var(--border2);
+      border-radius: 8px; padding: 14px; margin-bottom: 10px;
+      display: flex; flex-direction: column; gap: 10px; position: relative;
+    }
+    .faq-row .ct-remove-btn { position: absolute; top: 10px; right: 10px; margin: 0; }
+
     /* ── FOOTER CARDS (Rodapé tab) ── */
     .ft-card {
       display: flex; align-items: flex-start; gap: 14px;
@@ -651,6 +659,62 @@
           </div>
         </div>
       </div>
+
+      <!-- og:image -->
+      <div class="field-group">
+        <h3>Imagem de Compartilhamento</h3>
+        <p class="field-note">Foto exibida ao compartilhar o link no WhatsApp e Facebook (og:image). Use uma URL de imagem pública.</p>
+        <div class="form-row">
+          <div class="form-field">
+            <label>URL da imagem <span>(recomendado: 1200×630px)</span></label>
+            <input type="text" id="seo-og-image" placeholder="https://moraescacambas.com.br/imagem.jpg">
+          </div>
+        </div>
+      </div>
+
+      <!-- LocalBusiness -->
+      <div class="field-group">
+        <h3>Dados do Negócio <span style="font-size:.75rem;color:var(--muted);font-weight:400">(Google Knowledge Panel)</span></h3>
+        <p class="field-note">Gera o painel lateral do Google com nome, telefone, endereço e horário da empresa.</p>
+        <div class="form-row cols-2">
+          <div class="form-field">
+            <label>Nome do negócio</label>
+            <input type="text" id="schema-name" placeholder="Moraes Caçambas">
+          </div>
+          <div class="form-field">
+            <label>Telefone</label>
+            <input type="text" id="schema-phone" placeholder="+55 19 99327-7969">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-field">
+            <label>Endereço <span>(logradouro, número, bairro)</span></label>
+            <input type="text" id="schema-address" placeholder="Rua Exemplo, 123, Jardim Exemplo">
+          </div>
+        </div>
+        <div class="form-row cols-2">
+          <div class="form-field">
+            <label>Área de atendimento</label>
+            <input type="text" id="schema-area" placeholder="Região Metropolitana de Campinas">
+          </div>
+          <div class="form-field">
+            <label>Horário <span>(abre / fecha)</span></label>
+            <div class="form-row cols-2" style="gap:8px;margin:0">
+              <input type="text" id="schema-opens" placeholder="07:00">
+              <input type="text" id="schema-closes" placeholder="18:00">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FAQ -->
+      <div class="field-group">
+        <h3>Perguntas Frequentes <span style="font-size:.75rem;color:var(--muted);font-weight:400">(FAQ Schema)</span></h3>
+        <p class="field-note">Aparece no Google como perguntas e respostas expansíveis abaixo do resultado de busca.</p>
+        <div id="faq-list"></div>
+        <button class="btn-add-ct" id="btn-add-faq" type="button">+ Adicionar pergunta</button>
+      </div>
+
     </div>
 
     <!-- ── SECTIONS TAB ── -->
@@ -1151,6 +1215,48 @@ document.getElementById('btn-add-card').addEventListener('click', () => {
 });
 
 // ══════════════════════════════════════════════════
+//  FAQ ROWS
+// ══════════════════════════════════════════════════
+function buildFaqRow(data) {
+  data = data || { q: '', a: '' };
+  const row = document.createElement('div');
+  row.className = 'faq-row';
+  row.innerHTML = `
+    <button class="ct-remove-btn" type="button" title="Remover">−</button>
+    <div class="form-field">
+      <label>Pergunta</label>
+      <input type="text" class="faq-q" placeholder="Ex: Qual o prazo de entrega?" value="${(data.q||'').replace(/"/g,'&quot;')}">
+    </div>
+    <div class="form-field">
+      <label>Resposta</label>
+      <textarea class="faq-a" rows="2" placeholder="Ex: Entregamos em até 24h úteis após o agendamento.">${data.a||''}</textarea>
+    </div>`;
+  row.querySelector('.ct-remove-btn').addEventListener('click', function() {
+    const list = document.getElementById('faq-list');
+    if (list.children.length > 1) { this.closest('.faq-row').remove(); debouncedSync(); }
+  });
+  row.querySelectorAll('input, textarea').forEach(el => el.addEventListener('input', () => debouncedSync()));
+  return row;
+}
+
+function populateFaq(faqs) {
+  const list = document.getElementById('faq-list');
+  list.innerHTML = '';
+  (faqs?.length ? faqs : [{ q: '', a: '' }]).forEach(f => list.appendChild(buildFaqRow(f)));
+}
+
+function collectFaq() {
+  return Array.from(document.querySelectorAll('#faq-list .faq-row')).map(row => ({
+    q: row.querySelector('.faq-q').value.trim(),
+    a: row.querySelector('.faq-a').value.trim()
+  })).filter(f => f.q);
+}
+
+document.getElementById('btn-add-faq').addEventListener('click', () => {
+  document.getElementById('faq-list').appendChild(buildFaqRow());
+});
+
+// ══════════════════════════════════════════════════
 //  BUILD BENEFIT FIELDS (4 benefits)
 // ══════════════════════════════════════════════════
 function buildBenefitFields() {
@@ -1224,9 +1330,18 @@ function initEditors() {
 // ══════════════════════════════════════════════════
 function populateForm(c) {
   // SEO
-  document.getElementById('seo-title').value    = c.seo?.title    || '';
+  document.getElementById('seo-title').value    = c.seo?.title       || '';
   document.getElementById('seo-desc').value     = c.seo?.description || '';
-  document.getElementById('seo-keywords').value = c.seo?.keywords || '';
+  document.getElementById('seo-keywords').value = c.seo?.keywords    || '';
+  document.getElementById('seo-og-image').value = c.seo?.og_image    || '';
+  const sl = c.seo?.schema_local || {};
+  document.getElementById('schema-name').value    = sl.name    || '';
+  document.getElementById('schema-phone').value   = sl.phone   || '';
+  document.getElementById('schema-address').value = sl.address || '';
+  document.getElementById('schema-area').value    = sl.area    || '';
+  document.getElementById('schema-opens').value   = sl.opens   || '';
+  document.getElementById('schema-closes').value  = sl.closes  || '';
+  populateFaq(c.seo?.faq);
 
   // Hero
   if (c.hero?.subtitle) quills['q-hero-subtitle'].root.innerHTML = c.hero.subtitle;
@@ -1313,7 +1428,17 @@ function collectForm() {
     seo: {
       title:       val('seo-title'),
       description: val('seo-desc'),
-      keywords:    val('seo-keywords')
+      keywords:    val('seo-keywords'),
+      og_image:    val('seo-og-image'),
+      schema_local: {
+        name:    val('schema-name'),
+        phone:   val('schema-phone'),
+        address: val('schema-address'),
+        area:    val('schema-area'),
+        opens:   val('schema-opens'),
+        closes:  val('schema-closes')
+      },
+      faq: collectFaq()
     },
     hero: {
       subtitle: qHTML('q-hero-subtitle')

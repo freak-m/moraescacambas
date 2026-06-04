@@ -26,7 +26,7 @@
   <meta property="og:url" content="https://moraescacambas.com.br/">
   <meta property="og:title" content="Moraes Caçambas – Aluguel de Caçamba em Campinas | Entrega Rápida">
   <meta property="og:description" content="Aluguel de caçambas para entulho de obra em Campinas e Região Metropolitana. Caçamba 5m³, entrega em até 24h. Chame no WhatsApp (19) 99327-7969.">
-  <meta property="og:image" content="https://moraescacambas.com.br/moraescacambaslogo.png">
+  <meta property="og:image" id="og-image" content="https://moraescacambas.com.br/moraescacambaslogo.png">
   <meta property="og:image:width" content="1234">
   <meta property="og:image:height" content="1080">
   <meta property="og:image:alt" content="Moraes Caçambas – Aluguel de Caçambas em Campinas">
@@ -38,7 +38,7 @@
   <meta name="twitter:image" content="https://moraescacambas.com.br/moraescacambaslogo.png">
 
   <!-- ── SCHEMA.ORG – LocalBusiness ── -->
-  <script type="application/ld+json">
+  <script type="application/ld+json" id="schema-local">
   {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -102,6 +102,9 @@
     "serviceType": "Aluguel de caçambas para entulho"
   }
   </script>
+  <!-- ── SCHEMA.ORG – FAQPage (populated by content loader) ── -->
+  <script type="application/ld+json" id="schema-faq"></script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1033,6 +1036,37 @@
     if (c.seo?.title) document.title = c.seo.title;
     if (c.seo?.description) document.querySelector('meta[name="description"]')?.setAttribute('content', c.seo.description);
     if (c.seo?.keywords) document.querySelector('meta[name="keywords"]')?.setAttribute('content', c.seo.keywords);
+    if (c.seo?.og_image) document.getElementById('og-image')?.setAttribute('content', c.seo.og_image);
+    // LocalBusiness schema
+    const sl = c.seo?.schema_local;
+    if (sl) {
+      const schEl = document.getElementById('schema-local');
+      if (schEl) {
+        try {
+          const sc = JSON.parse(schEl.textContent);
+          if (sl.name)    sc.name = sl.name;
+          if (sl.phone)   { sc.telephone = sl.phone; if (sc.contactPoint) sc.contactPoint.telephone = sl.phone; sc.sameAs = [`https://wa.me/${sl.phone.replace(/\D/g,'')}`]; }
+          if (sl.address) sc.address.streetAddress = sl.address;
+          if (sl.area)    sc.areaServed = { '@type': 'AdministrativeArea', name: sl.area };
+          if (sl.opens && sl.closes && sc.openingHoursSpecification?.[0]) {
+            sc.openingHoursSpecification[0].opens  = sl.opens;
+            sc.openingHoursSpecification[0].closes = sl.closes;
+          }
+          schEl.textContent = JSON.stringify(sc);
+        } catch(e) {}
+      }
+    }
+    // FAQPage schema
+    if (c.seo?.faq?.length) {
+      const faqEl = document.getElementById('schema-faq');
+      if (faqEl) faqEl.textContent = JSON.stringify({
+        '@context': 'https://schema.org', '@type': 'FAQPage',
+        mainEntity: c.seo.faq.filter(f=>f.q).map(f => ({
+          '@type': 'Question', name: f.q,
+          acceptedAnswer: { '@type': 'Answer', text: f.a }
+        }))
+      });
+    }
     if (c.hero?.subtitle) set('hero-subtitle', c.hero.subtitle, true);
     if (c.services) {
       set('services-tag', c.services.tag);
