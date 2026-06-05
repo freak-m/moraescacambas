@@ -565,12 +565,12 @@
       .hero-btns  { justify-content: center; }
       .hero-trust { justify-content: center; }
       .hero-badge { margin-left: auto; margin-right: auto; }
-      /* Dumpster appears BELOW the text on mobile */
       .hero-visual {
+        order: -1;
         display: flex;
         justify-content: center;
-        margin-top: 32px;
-        animation: fadeUp .8s .5s ease both; /* simpler entrance on mobile */
+        margin-bottom: 24px;
+        animation: fadeUp .8s .2s ease both;
       }
       .hero-visual svg { width: 280px; height: auto; }
       .dump-float { filter: drop-shadow(0 14px 28px rgba(245,196,0,.3)); }
