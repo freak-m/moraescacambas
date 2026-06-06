@@ -525,6 +525,27 @@
     }
     .ft-card-body input[type="text"] { width: 100%; }
 
+    /* ── DASHBOARD ── */
+    .dash-metrics { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 20px; }
+    .dash-metric { background: var(--card2); border: 1px solid var(--border2); border-radius: 10px; padding: 18px 16px; }
+    .dash-metric-val { font-size: 2rem; font-weight: 800; color: var(--yellow); line-height: 1; letter-spacing: -.02em; }
+    .dash-metric-label { font-size: .7rem; color: var(--muted); margin-top: 6px; text-transform: uppercase; letter-spacing: .07em; }
+    .dash-chart-wrap { display: flex; align-items: flex-end; gap: 5px; height: 110px; }
+    .dash-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+    .dash-bar { width: 100%; background: var(--yellow); border-radius: 3px 3px 0 0; min-height: 3px; opacity: .9; }
+    .dash-bar.today { opacity: 1; }
+    .dash-bar-day { font-size: .6rem; color: var(--muted); }
+    .dash-bar-num { font-size: .65rem; color: #ccc; font-weight: 600; }
+    .dash-sep { height: 1px; background: var(--border); margin: 4px 0 16px; }
+    .dash-country-row { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+    .dash-country-flag { font-size: 1rem; width: 22px; text-align: center; flex-shrink: 0; }
+    .dash-country-name { flex: 1; font-size: .82rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .dash-country-bar-bg { width: 90px; height: 6px; background: var(--border2); border-radius: 3px; overflow: hidden; flex-shrink: 0; }
+    .dash-country-bar { height: 100%; background: var(--yellow); border-radius: 3px; }
+    .dash-country-pct { font-size: .72rem; color: var(--muted); width: 34px; text-align: right; flex-shrink: 0; }
+    .dash-error-box { background: rgba(224,85,85,.08); border: 1px solid rgba(224,85,85,.3); border-radius: 8px; padding: 16px; color: #e05555; font-size: .84rem; margin-bottom: 14px; }
+    @media(max-width:480px) { .dash-metrics { grid-template-columns: 1fr 1fr; } }
+
     /* ── FIELD NOTE ── */
     .field-note {
       font-size: .8rem; color: var(--muted);
@@ -624,6 +645,7 @@
         <button class="tab-btn active" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
         <button class="tab-btn" data-tab="sections"><span class="nav-icon">📝</span> Seções</button>
         <button class="tab-btn" data-tab="contact"><span class="nav-icon">🏠</span> Rodapé</button>
+        <button class="tab-btn" data-tab="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
       </nav>
       <div class="sidebar-footer">
         <button class="preview-toggle-sidebar" id="preview-toggle-btn">👁 Preview</button>
@@ -1019,6 +1041,90 @@
 
     </div><!-- /tab-contact -->
 
+    <!-- ── DASHBOARD TAB ── -->
+    <div class="tab-pane" id="tab-dashboard">
+
+      <!-- Setup -->
+      <div id="dash-setup">
+        <div class="ct-section-header" style="margin-bottom:20px">
+          <span class="ct-badge-preview">CLOUDFLARE</span>
+          <span class="ct-section-desc">Configure uma vez — fica salvo neste dispositivo</span>
+        </div>
+        <div class="field-group">
+          <h3>Conectar Analytics</h3>
+          <p class="field-note">Insira as credenciais do Cloudflare para exibir métricas de visitas do site.</p>
+          <div class="form-row" style="margin-top:14px">
+            <div class="form-field">
+              <label>Zone ID</label>
+              <input type="text" id="cf-zone-id" placeholder="abc1234def5678...">
+              <p class="field-note" style="margin-top:5px">Onde achar: <strong>cloudflare.com → seu site → Overview → Zone ID</strong> (lado direito da página)</p>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>API Token</label>
+              <input type="password" id="cf-token-inp" placeholder="••••••••••••••••••">
+              <p class="field-note" style="margin-top:5px">Crie em: <strong>My Profile → API Tokens → Create Token</strong> → selecione <strong>Zone Analytics (Read)</strong></p>
+            </div>
+          </div>
+          <div id="cf-setup-error" class="dash-error-box" style="display:none"></div>
+          <button class="btn-primary" id="cf-connect-btn" type="button" style="margin-top:4px">Conectar e ver métricas</button>
+        </div>
+      </div>
+
+      <!-- Loading -->
+      <div id="dash-loading" style="display:none;text-align:center;padding:60px 0;color:var(--muted)">
+        <div class="spinner" style="width:26px;height:26px;border-color:rgba(245,196,0,.3);border-top-color:var(--yellow);margin:0 auto 14px"></div>
+        Carregando métricas do Cloudflare…
+      </div>
+
+      <!-- Error -->
+      <div id="dash-error" style="display:none">
+        <div class="dash-error-box" id="dash-error-msg"></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-add-ct" id="dash-retry-btn" type="button">↻ Tentar novamente</button>
+          <button class="btn-add-ct" id="dash-reset-btn" type="button">⚙ Reconfigurar</button>
+        </div>
+      </div>
+
+      <!-- Data -->
+      <div id="dash-data" style="display:none">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:8px">
+          <span style="font-size:.78rem;color:var(--muted)" id="dash-period-label">Últimos 7 dias</span>
+          <div style="display:flex;gap:8px">
+            <button class="preview-btn" id="dash-refresh-btn">↻ Atualizar</button>
+            <button class="preview-btn" id="dash-reset-btn2">⚙ Reconfigurar</button>
+          </div>
+        </div>
+
+        <div class="dash-metrics">
+          <div class="dash-metric">
+            <div class="dash-metric-val" id="dm-uniques">—</div>
+            <div class="dash-metric-label">Visitantes únicos</div>
+          </div>
+          <div class="dash-metric">
+            <div class="dash-metric-val" id="dm-pageviews">—</div>
+            <div class="dash-metric-label">Page Views</div>
+          </div>
+          <div class="dash-metric">
+            <div class="dash-metric-val" id="dm-requests">—</div>
+            <div class="dash-metric-label">Requisições</div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <h3>Visitas por dia</h3>
+          <div class="dash-chart-wrap" id="dash-chart"></div>
+        </div>
+
+        <div class="field-group">
+          <h3>Top Países</h3>
+          <div id="dash-countries"></div>
+        </div>
+      </div>
+
+    </div><!-- /tab-dashboard -->
+
   </div><!-- /tab-content -->
     </div><!-- /adm-editor -->
 
@@ -1092,7 +1198,166 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     focusPreviewSection(TAB_SECTION[btn.dataset.tab] ?? null);
+    if (btn.dataset.tab === 'dashboard') initDashboard();
   });
+});
+
+// ══════════════════════════════════════════════════
+//  DASHBOARD — Cloudflare Analytics
+// ══════════════════════════════════════════════════
+const CF_ZONE_KEY  = 'cf_zone_id';
+const CF_TOKEN_KEY = 'cf_api_token';
+
+function dashShow(id) {
+  ['dash-setup','dash-loading','dash-error','dash-data'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? '' : 'none';
+  });
+}
+
+function initDashboard() {
+  const zoneId = localStorage.getItem(CF_ZONE_KEY);
+  const token  = localStorage.getItem(CF_TOKEN_KEY);
+  if (!zoneId || !token) { dashShow('dash-setup'); return; }
+  loadDashboardData(zoneId, token);
+}
+
+async function loadDashboardData(zoneId, token) {
+  dashShow('dash-loading');
+  try {
+    const data = await fetchCfAnalytics(zoneId, token);
+    renderDashboard(data);
+    dashShow('dash-data');
+  } catch(e) {
+    document.getElementById('dash-error-msg').textContent = e.message;
+    dashShow('dash-error');
+  }
+}
+
+async function fetchCfAnalytics(zoneId, token) {
+  const now   = new Date();
+  const start = new Date(now); start.setDate(start.getDate() - 6);
+  const fmt   = d => d.toISOString().split('T')[0];
+
+  const query = `{
+    viewer {
+      zones(filter: {zoneTag: "${zoneId}"}) {
+        daily: httpRequests1dGroups(
+          limit: 7 orderBy: [date_ASC]
+          filter: {date_geq: "${fmt(start)}", date_leq: "${fmt(now)}"}
+        ) {
+          dimensions { date }
+          sum { pageViews requests countryMap { clientCountryName requests } }
+          uniq { uniques }
+        }
+      }
+    }
+  }`;
+
+  const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+    method: 'POST',
+    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
+  if (!res.ok) throw new Error(`Erro na API do Cloudflare: ${res.status}`);
+  const json = await res.json();
+  if (json.errors?.length) throw new Error(json.errors[0].message);
+  const zones = json.data?.viewer?.zones;
+  if (!zones?.length) throw new Error('Zone ID não encontrado. Verifique o Zone ID configurado.');
+  return zones[0].daily || [];
+}
+
+function fmtNum(n) {
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'k';
+  return String(n);
+}
+
+const COUNTRY_FLAGS = {
+  'Brazil':'🇧🇷','United States':'🇺🇸','Portugal':'🇵🇹','Argentina':'🇦🇷',
+  'Germany':'🇩🇪','France':'🇫🇷','United Kingdom':'🇬🇧','Spain':'🇪🇸',
+  'Netherlands':'🇳🇱','Canada':'🇨🇦','Australia':'🇦🇺','Japan':'🇯🇵',
+  'India':'🇮🇳','Mexico':'🇲🇽','Chile':'🇨🇱','Colombia':'🇨🇴'
+};
+
+function renderDashboard(days) {
+  // Totals
+  let totUniq = 0, totPV = 0, totReq = 0;
+  const countryMap = {};
+  days.forEach(d => {
+    totUniq += d.uniq?.uniques || 0;
+    totPV   += d.sum?.pageViews || 0;
+    totReq  += d.sum?.requests  || 0;
+    (d.sum?.countryMap || []).forEach(c => {
+      countryMap[c.clientCountryName] = (countryMap[c.clientCountryName] || 0) + c.requests;
+    });
+  });
+  document.getElementById('dm-uniques').textContent   = fmtNum(totUniq);
+  document.getElementById('dm-pageviews').textContent = fmtNum(totPV);
+  document.getElementById('dm-requests').textContent  = fmtNum(totReq);
+
+  // Bar chart
+  const maxVal = Math.max(...days.map(d => d.uniq?.uniques || 0), 1);
+  const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const chartEl = document.getElementById('dash-chart');
+  chartEl.innerHTML = days.map((d, i) => {
+    const v   = d.uniq?.uniques || 0;
+    const pct = Math.round((v / maxVal) * 100);
+    const dt  = new Date(d.dimensions.date + 'T12:00:00');
+    const lbl = dayNames[dt.getDay()];
+    const isToday = i === days.length - 1;
+    return `<div class="dash-bar-col">
+      <span class="dash-bar-num">${v > 0 ? fmtNum(v) : ''}</span>
+      <div class="dash-bar${isToday?' today':''}" style="height:${Math.max(pct,3)}%"></div>
+      <span class="dash-bar-day">${lbl}</span>
+    </div>`;
+  }).join('');
+
+  // Countries
+  const sorted = Object.entries(countryMap).sort((a,b) => b[1]-a[1]).slice(0,6);
+  const maxC = sorted[0]?.[1] || 1;
+  document.getElementById('dash-countries').innerHTML = sorted.length
+    ? sorted.map(([name, val]) => {
+        const pct = Math.round((val / maxC) * 100);
+        const flag = COUNTRY_FLAGS[name] || '🌐';
+        return `<div class="dash-country-row">
+          <span class="dash-country-flag">${flag}</span>
+          <span class="dash-country-name">${name}</span>
+          <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${pct}%"></div></div>
+          <span class="dash-country-pct">${fmtNum(val)}</span>
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--muted);font-size:.84rem">Nenhum dado disponível.</p>';
+}
+
+// Setup / connect
+document.getElementById('cf-connect-btn').addEventListener('click', async () => {
+  const zoneId = document.getElementById('cf-zone-id').value.trim();
+  const token  = document.getElementById('cf-token-inp').value.trim();
+  const errEl  = document.getElementById('cf-setup-error');
+  errEl.style.display = 'none';
+  if (!zoneId || !token) { errEl.textContent = 'Preencha os dois campos.'; errEl.style.display = ''; return; }
+  localStorage.setItem(CF_ZONE_KEY, zoneId);
+  localStorage.setItem(CF_TOKEN_KEY, token);
+  await loadDashboardData(zoneId, token);
+  if (document.getElementById('dash-error').style.display !== 'none') {
+    localStorage.removeItem(CF_ZONE_KEY); localStorage.removeItem(CF_TOKEN_KEY);
+  }
+});
+
+function dashReset() {
+  localStorage.removeItem(CF_ZONE_KEY); localStorage.removeItem(CF_TOKEN_KEY);
+  document.getElementById('cf-zone-id').value = '';
+  document.getElementById('cf-token-inp').value = '';
+  dashShow('dash-setup');
+}
+
+document.getElementById('dash-retry-btn').addEventListener('click', () => {
+  loadDashboardData(localStorage.getItem(CF_ZONE_KEY), localStorage.getItem(CF_TOKEN_KEY));
+});
+document.getElementById('dash-reset-btn').addEventListener('click',  dashReset);
+document.getElementById('dash-reset-btn2').addEventListener('click', dashReset);
+document.getElementById('dash-refresh-btn').addEventListener('click', () => {
+  loadDashboardData(localStorage.getItem(CF_ZONE_KEY), localStorage.getItem(CF_TOKEN_KEY));
 });
 
 // ── ACCORDION ──
