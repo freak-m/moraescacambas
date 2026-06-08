@@ -645,7 +645,7 @@
         <button class="tab-btn active" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
         <button class="tab-btn" data-tab="sections"><span class="nav-icon">📝</span> Seções</button>
         <button class="tab-btn" data-tab="contact"><span class="nav-icon">🏠</span> Rodapé</button>
-        <button class="tab-btn" data-tab="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
+        <button class="tab-btn active" data-tab="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
       </nav>
       <div class="sidebar-footer">
         <button class="preview-toggle-sidebar" id="preview-toggle-btn">👁 Preview</button>
@@ -659,7 +659,7 @@
   <div class="tab-content">
 
     <!-- ── SEO TAB ── -->
-    <div class="tab-pane active" id="tab-seo">
+    <div class="tab-pane" id="tab-seo">
       <div class="field-group">
         <h3>Otimização para Buscadores</h3>
         <div class="form-row">
@@ -1042,7 +1042,7 @@
     </div><!-- /tab-contact -->
 
     <!-- ── DASHBOARD TAB ── -->
-    <div class="tab-pane" id="tab-dashboard">
+    <div class="tab-pane active" id="tab-dashboard">
 
       <!-- Setup -->
       <div id="dash-setup">
@@ -2312,6 +2312,7 @@ document.getElementById('logout-btn').addEventListener('click', () => {
   setupPreviewToggle();
   wirePreviewListeners();
   loadContent().then(c => { if (c) { populateForm(c); setTimeout(syncPreview, 800); } });
+  initDashboard();
 })();
 </script>
 </body>
