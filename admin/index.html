@@ -1176,6 +1176,55 @@
         </div>
       </div>
 
+      <!-- ── INTEGRATIONS ── -->
+      <div class="field-group" style="margin-top:32px" id="integrations-section">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+          <h3>Anúncios &amp; Verificação</h3>
+          <span style="font-size:.74rem;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--muted)">Salvo com Publicar</span>
+        </div>
+        <p class="field-note" style="margin-bottom:20px">Cole aqui os códigos fornecidos pelo Google e pela Meta para conectar o site às plataformas de anúncio.</p>
+
+        <!-- Google -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.5 1.2 8.9 3.2l6.6-6.6C35.4 2.5 30 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.7 6C12.1 13.3 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4.1 7.1-10.1 7.1-17.1z"/><path fill="#FBBC05" d="M10.3 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.7-6C.9 16.3 0 20 0 24s.9 7.7 2.6 10.7l7.7-6z"/><path fill="#34A853" d="M24 48c6 0 11.1-2 14.8-5.4l-7.6-5.9c-2 1.4-4.6 2.2-7.2 2.2-6.4 0-11.9-3.8-14.2-9.4l-7.7 6C6.6 42.6 14.6 48 24 48z"/></svg>
+            <strong style="font-size:.9rem;color:var(--white)">Google</strong>
+          </div>
+          <div class="form-row cols-2">
+            <div class="form-field">
+              <label>Search Console — Verificação</label>
+              <input type="text" id="int-google-verify" placeholder="abc123XYZ...">
+              <p class="field-note" style="margin-top:4px">Cole só o valor do campo <code style="background:#111;padding:1px 5px;border-radius:3px;font-size:.78rem">content="…"</code> da meta tag fornecida pelo Search Console</p>
+            </div>
+            <div class="form-field">
+              <label>Google Analytics — ID de Medição</label>
+              <input type="text" id="int-google-analytics" placeholder="G-XXXXXXXXXX">
+              <p class="field-note" style="margin-top:4px">Google Analytics → Admin → Fluxos de dados → ID de medição</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+            <strong style="font-size:.9rem;color:var(--white)">Meta (Facebook)</strong>
+          </div>
+          <div class="form-row cols-2">
+            <div class="form-field">
+              <label>Meta Pixel — ID</label>
+              <input type="text" id="int-meta-pixel" placeholder="000000000000000">
+              <p class="field-note" style="margin-top:4px">Meta Ads Manager → Fontes de Dados → Pixels → ID do Pixel</p>
+            </div>
+            <div class="form-field">
+              <label>Business Manager — Verificação de Domínio</label>
+              <input type="text" id="int-meta-verify" placeholder="código de verificação">
+              <p class="field-note" style="margin-top:4px">Meta Business → Configurações → Segurança da Marca → Domínios</p>
+            </div>
+          </div>
+        </div>
+      </div><!-- /integrations-section -->
+
     </div><!-- /tab-dashboard -->
 
   </div><!-- /tab-content -->
@@ -1742,6 +1791,13 @@ function populateForm(c) {
   // Footer
   document.getElementById('ft-location').value = c.footer?.location || '';
   document.getElementById('ft-hours').value    = c.footer?.hours    || '';
+
+  // Integrations
+  const ig = c.integrations || {};
+  document.getElementById('int-google-verify').value    = ig.google_verify    || '';
+  document.getElementById('int-google-analytics').value = ig.google_analytics || '';
+  document.getElementById('int-meta-pixel').value       = ig.meta_pixel       || '';
+  document.getElementById('int-meta-verify').value      = ig.meta_verify      || '';
 }
 
 // ══════════════════════════════════════════════════
@@ -1816,6 +1872,12 @@ function collectForm() {
     footer: {
       location: val('ft-location'),
       hours:    val('ft-hours')
+    },
+    integrations: {
+      google_verify:    val('int-google-verify'),
+      google_analytics: val('int-google-analytics'),
+      meta_pixel:       val('int-meta-pixel'),
+      meta_verify:      val('int-meta-verify')
     }
   };
 }

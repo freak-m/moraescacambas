@@ -121,5 +121,11 @@
   "footer": {
     "location": "Campinas – SP",
     "hours": "Seg – Sáb: 07h – 18h · WhatsApp 24h"
+  },
+  "integrations": {
+    "google_verify": "",
+    "google_analytics": "",
+    "meta_pixel": "",
+    "meta_verify": ""
   }
 }
