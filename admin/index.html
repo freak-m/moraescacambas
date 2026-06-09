@@ -209,6 +209,8 @@
 
     /* ── EDITOR PANEL ── */
     .adm-editor { width: 560px; flex-shrink: 0; overflow-y: auto; border-right: 1px solid var(--border); }
+    .adm-editor.expand { width: 100%; flex: 1; flex-shrink: 1; border-right: none; }
+    .adm-editor.expand .tab-content { max-width: 1100px; }
 
     /* ── PREVIEW PANEL ── */
     .adm-preview {
@@ -687,7 +689,7 @@
     </aside>
 
     <main class="adm-main">
-    <div class="adm-editor">
+    <div class="adm-editor expand" id="adm-editor">
   <div class="tab-content">
 
     <!-- ── SEO TAB ── -->
@@ -1335,10 +1337,13 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
     const preview = document.getElementById('adm-preview');
+    const editor  = document.getElementById('adm-editor');
     if (NO_PREVIEW_TABS.has(btn.dataset.tab)) {
       preview.classList.add('hidden');
+      editor.classList.add('expand');
     } else {
       preview.classList.remove('hidden');
+      editor.classList.remove('expand');
     }
     focusPreviewSection(TAB_SECTION[btn.dataset.tab] ?? null);
     if (btn.dataset.tab === 'dashboard') initDashboard();
