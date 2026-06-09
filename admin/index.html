@@ -1177,7 +1177,7 @@
     const currDates = mkDates(start, days);
     const prevDates = mkDates(prevStart, days);
 
-    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}devices:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(now)}",date_leq:"${fmt(now)}"}){dimensions{clientDeviceType}count}regions:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(now)}",date_leq:"${fmt(now)}"}){dimensions{clientRegionCode clientCountryName}count}cities:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(now)}",date_leq:"${fmt(now)}"}){dimensions{clientCity clientCountryName}count}}}}`;
+    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}devices:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(now)}",date_leq:"${fmt(now)}"}){dimensions{clientDeviceType}count}regions:httpRequestsAdaptiveGroups(limit:15 orderBy:[count_DESC] filter:{date_geq:"${fmt(now)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientRegionCode}count}cities:httpRequestsAdaptiveGroups(limit:20 orderBy:[count_DESC] filter:{date_geq:"${fmt(now)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil",clientRegionCode:"SP"}){dimensions{clientCity}count}}}}`;
 
     const cfFetch = fetch('https://api.cloudflare.com/client/v4/graphql', {
       method: 'POST',
@@ -1578,6 +1578,15 @@ function setChange(id, pct) {
   el.className = `dash-metric-change ${pct >= 0 ? 'up' : 'down'}`;
 }
 
+const BR_STATES = {
+  'AC':'Acre','AL':'Alagoas','AP':'Amapá','AM':'Amazonas','BA':'Bahia','CE':'Ceará',
+  'DF':'Distrito Federal','ES':'Espírito Santo','GO':'Goiás','MA':'Maranhão',
+  'MT':'Mato Grosso','MS':'Mato Grosso do Sul','MG':'Minas Gerais','PA':'Pará',
+  'PB':'Paraíba','PR':'Paraná','PE':'Pernambuco','PI':'Piauí','RJ':'Rio de Janeiro',
+  'RN':'Rio Grande do Norte','RS':'Rio Grande do Sul','RO':'Rondônia','RR':'Roraima',
+  'SC':'Santa Catarina','SP':'São Paulo','SE':'Sergipe','TO':'Tocantins'
+};
+
 const COUNTRY_FLAGS = {
   'Brazil':'🇧🇷','United States':'🇺🇸','Portugal':'🇵🇹','Argentina':'🇦🇷',
   'Germany':'🇩🇪','France':'🇫🇷','United Kingdom':'🇬🇧','Spain':'🇪🇸',
@@ -1851,18 +1860,19 @@ function renderDashboard(daily, prev, devices, events, regions, cities) {
 }
 
 function renderGeoDetail(regions, cities) {
-  const mkList = (items, nameKey) => {
-    if (!items?.length) return '<p style="color:var(--muted);font-size:.82rem;padding-top:4px">Implante o novo Worker para ver dados.</p>';
+  const noData = '<p style="color:var(--muted);font-size:.82rem;padding-top:6px">Atualize o Worker com o novo código para ver dados de hoje.</p>';
+
+  const mkStateList = items => {
+    if (!items?.length) return noData;
     const max = items[0]?.count || 1;
-    return items.slice(0, 10).map(it => {
-      const name = it.dimensions?.[nameKey] || '—';
-      const country = it.dimensions?.clientCountryName || '';
-      const label = name + (country && country !== name ? ` <span style="color:var(--muted);font-size:.69rem">${country}</span>` : '');
+    return items.slice(0, 15).map(it => {
+      const code = it.dimensions?.clientRegionCode || '—';
+      const name = BR_STATES[code] || code;
       const bp = Math.round((it.count / max) * 100);
       return `<div class="dash-country-item">
-        <span class="dash-country-flag" style="font-size:.7rem">📍</span>
+        <span class="dash-country-flag" style="font-size:.7rem">🏳</span>
         <div style="flex:1;min-width:0">
-          <div class="dash-country-name">${label}</div>
+          <div class="dash-country-name">${name} <span style="color:var(--muted);font-size:.68rem">${code}</span></div>
           <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${bp}%"></div></div>
         </div>
         <span class="dash-country-count">${fmtNum(it.count)}</span>
@@ -1870,14 +1880,30 @@ function renderGeoDetail(regions, cities) {
     }).join('');
   };
 
-  const regionTab = document.getElementById('geo-tab-regions');
-  const cityTab   = document.getElementById('geo-tab-cities');
-  const regPanel  = document.getElementById('geo-panel-regions');
-  const citPanel  = document.getElementById('geo-panel-cities');
+  const mkCityList = items => {
+    if (!items?.length) return noData;
+    const max = items[0]?.count || 1;
+    return items.slice(0, 15).map(it => {
+      const city = it.dimensions?.clientCity || '—';
+      const bp = Math.round((it.count / max) * 100);
+      return `<div class="dash-country-item">
+        <span class="dash-country-flag" style="font-size:.7rem">📍</span>
+        <div style="flex:1;min-width:0">
+          <div class="dash-country-name">${city}</div>
+          <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${bp}%"></div></div>
+        </div>
+        <span class="dash-country-count">${fmtNum(it.count)}</span>
+      </div>`;
+    }).join('');
+  };
 
-  const noData = '<p style="color:var(--muted);font-size:.82rem;padding-top:6px">Atualize o Worker com o novo código para ver dados de hoje.</p>';
-  if (regPanel) regPanel.innerHTML = regions?.length ? mkList(regions, 'clientRegionCode') : noData;
-  if (citPanel) citPanel.innerHTML = cities?.length  ? mkList(cities,  'clientCity')       : noData;
+  const regPanel = document.getElementById('geo-panel-regions');
+  const citPanel = document.getElementById('geo-panel-cities');
+  if (regPanel) regPanel.innerHTML = mkStateList(regions);
+  if (citPanel) citPanel.innerHTML = mkCityList(cities);
+
+  const cityTab = document.getElementById('geo-tab-cities');
+  if (cityTab) cityTab.textContent = 'Cidades — SP';
 }
 
 // Setup / connect
