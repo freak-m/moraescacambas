@@ -1782,7 +1782,11 @@ function renderDashboard(daily, prev, devices, os, events) {
     const dateLabel = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     const dayName   = dayNames[dt.getDay()];
     const showLabel = i % labelEvery === 0 || i === n - 1;
-    bars += `<g class="bar-group"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="2" fill="${isToday ? 'url(#btod)' : 'url(#bnrm)'}"/><text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="9" font-weight="600" font-family="inherit">${v > 0 ? fmtNum(v) : ''}</text>${showLabel ? `<text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="8.5" font-family="inherit">${dateLabel}</text>` : ''}<title>${dayName} ${dateLabel}\n${fmtNum(v)} visitas · ${fmtNum(pv)} page views</title></g>`;
+    const pvBh  = Math.max(Math.round((pv / maxVal) * barArea), 2);
+    const pvBarW = barW * 0.38;
+    const pvX    = x + (barW - pvBarW) / 2;
+    const pvYpos = padTop + (barArea - pvBh);
+    bars += `<g class="bar-group"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="2" fill="${isToday ? 'url(#btod)' : 'url(#bnrm)'}"/><rect x="${pvX.toFixed(1)}" y="${pvYpos.toFixed(1)}" width="${pvBarW.toFixed(1)}" height="${pvBh}" rx="1" fill="rgba(77,159,236,0.75)"/><text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="9" font-weight="600" font-family="inherit">${v > 0 ? fmtNum(v) : ''}</text>${showLabel ? `<text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="8.5" font-family="inherit">${dateLabel}</text>` : ''}<title>${dayName} ${dateLabel}\n${fmtNum(v)} visitas · ${fmtNum(pv)} page views</title></g>`;
   });
   document.getElementById('dash-chart').innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="bnrm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD33A"/><stop offset="100%" stop-color="#b89200"/></linearGradient><linearGradient id="btod" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE840"/><stop offset="100%" stop-color="#F5C400"/></linearGradient></defs>${bars}</svg>`;
 
