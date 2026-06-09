@@ -1198,7 +1198,7 @@
         </div>
 
         <!-- Event tracking cards (Worker KV) -->
-        <div class="dash-metrics" style="grid-template-columns:repeat(2,1fr)">
+        <div class="dash-metrics" style="grid-template-columns:repeat(1,1fr)">
           <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label">Tempo na Página</span>
@@ -1207,21 +1207,13 @@
             <div class="dash-metric-val" id="dm-time" style="color:var(--muted)">—</div>
             <p class="dash-metric-ga-note" id="dm-time-note">Rastreado automaticamente via Worker</p>
           </div>
-          <div class="dash-metric">
-            <div class="dash-metric-top">
-              <span class="dash-metric-label">Cliques nas Fotos</span>
-              <span class="dash-metric-change neutral" id="dmc-photo">—</span>
-            </div>
-            <div class="dash-metric-val" id="dm-photo" style="color:var(--muted)">—</div>
-            <p class="dash-metric-ga-note" id="dm-photo-note">Não disponível</p>
-          </div>
         </div>
         <!-- Hidden elements to keep JS working -->
         <div style="display:none">
-          <span id="dmc-wa"></span>
-          <div id="dm-wa"></div>
-          <p id="dm-wa-note"></p>
-          <div id="dms-wa"></div>
+          <span id="dmc-wa"></span><div id="dm-wa"></div>
+          <p id="dm-wa-note"></p><div id="dms-wa"></div>
+          <span id="dmc-photo"></span><div id="dm-photo"></div>
+          <p id="dm-photo-note"></p>
         </div>
 
         <!-- Daily bar chart -->
@@ -1446,7 +1438,7 @@ async function loadDashboardData() {
   try {
     const period = getDashPeriod();
     const { daily, prev, devices, os, events, waDaily } = await fetchCfAnalytics(period);
-    renderDashboard(daily, prev, devices, os, events, waDaily);
+    renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
     dashShow('dash-data');
   } catch(e) {
     document.getElementById('dash-error-msg').textContent = e.message;
@@ -1738,36 +1730,66 @@ function renderDeviceChart(devices) {
     </div>`;
 }
 
-function renderWAChart(waDaily) {
+function renderWAChart(waDaily, days) {
   const wrap = document.getElementById('dash-wa-chart-wrap');
   const el   = document.getElementById('dash-wa-chart');
   if (!wrap || !el) return;
   if (!waDaily || !waDaily.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = '';
-  const n      = waDaily.length;
-  const maxVal = Math.max(...waDaily.map(d => d.count), 1);
+
+  // Build date→count map
+  const countMap = {};
+  waDaily.forEach(d => { countMap[d.date] = (countMap[d.date] || 0) + d.count; });
+
+  // Generate full date range for the selected period
+  const periodDays = days || 7;
+  const today = new Date(); today.setHours(12, 0, 0, 0);
+  const allDates = [];
+  for (let i = periodDays - 1; i >= 0; i--) {
+    const d = new Date(today); d.setDate(d.getDate() - i);
+    allDates.push(d.toISOString().split('T')[0]);
+  }
+
+  // Divide into exactly 7 buckets
+  const BUCKETS = 7;
+  const buckets = [];
+  for (let b = 0; b < BUCKETS; b++) {
+    const s = Math.round(b * allDates.length / BUCKETS);
+    const e = Math.round((b + 1) * allDates.length / BUCKETS);
+    const slice = allDates.slice(s, e);
+    const count = slice.reduce((sum, dt) => sum + (countMap[dt] || 0), 0);
+    buckets.push({ label: slice[slice.length - 1] || '', count });
+  }
+
+  const maxVal = Math.max(...buckets.map(d => d.count), 1);
   const vbW = 560, vbH = 145, padTop = 20, padBot = 28, barArea = vbH - padTop - padBot;
-  const gap  = n > 20 ? 2 : n > 10 ? 3 : 5;
-  const barW = (vbW - gap * (n - 1)) / n;
-  const labelEvery = n > 20 ? 5 : n > 14 ? 3 : n > 7 ? 2 : 1;
+  const gap = 5, barW = (vbW - gap * (BUCKETS - 1)) / BUCKETS;
+  const baseline = padTop + barArea;
   const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  let bars = '';
-  waDaily.forEach((d, i) => {
+  let bars = '', linePoints = [];
+
+  buckets.forEach((d, i) => {
     const v  = d.count || 0;
-    const bh = Math.max(Math.round((v / maxVal) * barArea), 2);
-    const x  = i * (barW + gap), y = padTop + (barArea - bh);
+    const bh = v > 0 ? Math.max(Math.round((v / maxVal) * barArea), 2) : 0;
+    const x  = i * (barW + gap);
+    const y  = baseline - bh;
     const cx = x + barW / 2;
-    const dt = new Date(d.date + 'T12:00:00');
-    const isToday   = i === n - 1;
+    const isLast = i === BUCKETS - 1;
+    const dt = new Date(d.label + 'T12:00:00');
     const dateLabel = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     const dayName   = dayNames[dt.getDay()];
-    const showLabel = i % labelEvery === 0 || i === n - 1;
-    bars += `<g class="bar-group"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="2" fill="${isToday ? '#25D366' : 'rgba(37,211,102,0.65)'}"/><text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="9" font-weight="600" font-family="inherit">${v > 0 ? v : ''}</text>${showLabel ? `<text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="8.5" font-family="inherit">${dateLabel}</text>` : ''}<title>${dayName} ${dateLabel} · ${v} cliques</title></g>`;
+    linePoints.push(`${cx.toFixed(1)},${y.toFixed(1)}`);
+    if (bh > 0) {
+      bars += `<g class="bar-group"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="2" fill="${isLast ? '#25D366' : 'rgba(37,211,102,0.65)'}"/><text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="9" font-weight="600" font-family="inherit">${v}</text><title>${dayName} ${dateLabel} · ${v} cliques</title></g>`;
+    }
+    bars += `<text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="8.5" font-family="inherit">${dateLabel}</text>`;
   });
-  el.innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible">${bars}</svg>`;
+
+  const line = `<polyline points="${linePoints.join(' ')}" fill="none" stroke="#25D366" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.75"/>`;
+  el.innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible">${bars}${line}</svg>`;
 }
 
-function renderDashboard(daily, prev, devices, os, events, waDaily) {
+function renderDashboard(daily, prev, devices, os, events, waDaily, days) {
   let curUniq = 0, curPV = 0;
   let prvUniq = 0, prvPV = 0;
   const countryMap = {};
@@ -1878,7 +1900,7 @@ function renderDashboard(daily, prev, devices, os, events, waDaily) {
   renderOSList(os);
 
   // WhatsApp chart
-  renderWAChart(waDaily);
+  renderWAChart(waDaily, days);
 
 }
 
