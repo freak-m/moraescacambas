@@ -1416,7 +1416,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // ══════════════════════════════════════════════════
 //  DASHBOARD — Cloudflare Analytics
 // ══════════════════════════════════════════════════
-const CF_WORKER_KEY = 'cf_worker_url';
+const CF_WORKER_KEY     = 'cf_worker_url';
+const CF_WORKER_DEFAULT = 'https://analytics.moraescacambas.com.br/';
 
 function dashShow(id) {
   ['dash-setup','dash-loading','dash-error','dash-data'].forEach(s => {
@@ -1425,9 +1426,11 @@ function dashShow(id) {
 }
 
 function initDashboard() {
+  if (!localStorage.getItem(CF_WORKER_KEY)) {
+    localStorage.setItem(CF_WORKER_KEY, CF_WORKER_DEFAULT);
+  }
   const workerUrl = localStorage.getItem(CF_WORKER_KEY);
-  if (workerUrl) document.getElementById('cf-worker-url').value = workerUrl;
-  if (!workerUrl) { dashShow('dash-setup'); return; }
+  document.getElementById('cf-worker-url').value = workerUrl;
   loadDashboardData();
 }
 
