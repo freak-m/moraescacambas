@@ -2541,8 +2541,15 @@ function updateOgPreview(url) {
   if (!wrap || !img) return;
   if (url && (url.startsWith('http') || url.startsWith('blob:'))) {
     img.src = url;
-    img.onerror = () => { wrap.style.display = 'none'; };
-    img.onload  = () => { img.onerror = null; };
+    img.style.opacity = '1';
+    img.onerror = () => {
+      img.style.opacity = '0.25';
+      img.onerror = null;
+    };
+    img.onload = () => {
+      img.style.opacity = '1';
+      img.onerror = null;
+    };
     wrap.style.display = '';
   } else {
     wrap.style.display = 'none';
@@ -2621,7 +2628,13 @@ async function uploadImage(fileInput) {
 
 // Wire up image file inputs
 document.addEventListener('change', e => {
-  if (e.target.matches('.img-hidden-input')) uploadImage(e.target);
+  if (!e.target.matches('.img-hidden-input')) return;
+  // Show local preview immediately on file select (before upload)
+  const file = e.target.files[0];
+  if (file && e.target.dataset.urlTarget) {
+    updateOgPreview(URL.createObjectURL(file));
+  }
+  uploadImage(e.target);
 });
 
 // ══════════════════════════════════════════════════
