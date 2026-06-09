@@ -1168,7 +1168,7 @@
           }
           devices: httpRequestsAdaptiveGroups(
             limit: 10 orderBy: [count_DESC]
-            filter: {date_geq: "${fmt(start)}", date_leq: "${fmt(now)}"}
+            filter: {date_geq: "${fmt(now)}", date_leq: "${fmt(now)}"}
           ) {
             dimensions { clientDeviceType }
             count
