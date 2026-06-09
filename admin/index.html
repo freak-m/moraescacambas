@@ -1320,8 +1320,8 @@
               <h3 style="margin:0">Locais</h3>
               <div class="geo-tabs">
                 <button class="geo-tab active" data-geo="countries">Países</button>
-                <button class="geo-tab" data-geo="regions" id="geo-tab-regions" disabled>Estados</button>
-                <button class="geo-tab" data-geo="cities" id="geo-tab-cities" disabled>Cidades</button>
+                <button class="geo-tab" data-geo="regions" id="geo-tab-regions">Estados</button>
+                <button class="geo-tab" data-geo="cities" id="geo-tab-cities">Cidades</button>
               </div>
             </div>
             <div style="display:flex;gap:14px;align-items:flex-start">
@@ -1869,8 +1869,9 @@ function renderGeoDetail(regions, cities) {
   const regPanel  = document.getElementById('geo-panel-regions');
   const citPanel  = document.getElementById('geo-panel-cities');
 
-  if (regions?.length) { if (regionTab) regionTab.disabled = false; if (regPanel) regPanel.innerHTML = mkList(regions, 'clientRegionCode'); }
-  if (cities?.length)  { if (cityTab)   cityTab.disabled   = false; if (citPanel) citPanel.innerHTML = mkList(cities, 'clientCity'); }
+  const noData = '<p style="color:var(--muted);font-size:.82rem;padding-top:6px">Atualize o Worker com o novo código para ver dados de hoje.</p>';
+  if (regPanel) regPanel.innerHTML = regions?.length ? mkList(regions, 'clientRegionCode') : noData;
+  if (citPanel) citPanel.innerHTML = cities?.length  ? mkList(cities,  'clientCity')       : noData;
 }
 
 // Setup / connect
