@@ -1175,6 +1175,7 @@
               <input type="date" id="dash-custom-to" class="dash-date-input">
               <button class="preview-btn" id="dash-custom-apply">Aplicar</button>
             </div>
+            <span id="dash-cache-status" style="font-size:.72rem;color:var(--muted);white-space:nowrap"></span>
           </div>
           <div style="display:flex;gap:8px">
             <button class="preview-btn" id="dash-refresh-btn">↻ Atualizar</button>
@@ -1444,13 +1445,80 @@ function getDashPeriod() {
   return { days, from, to };
 }
 
-async function loadDashboardData() {
-  dashShow('dash-loading');
-  try {
-    const period = getDashPeriod();
-    const { daily, prev, devices, os, events, waDaily } = await fetchCfAnalytics(period);
+// ── Analytics cache ──────────────────────────────────
+const CACHE_PFX      = 'cf_cache_';
+const CACHE_MAX_MS   = 2 * 60 * 60 * 1000; // 2 h hard expiry
+const CACHE_CHECK_MS = 5 * 60 * 1000;      // background recheck interval
+
+function _cacheKey(p) {
+  return p.from && p.to ? `${CACHE_PFX}${p.from}_${p.to}` : `${CACHE_PFX}${p.days}d`;
+}
+function cacheGet(p) {
+  try { return JSON.parse(localStorage.getItem(_cacheKey(p)) || 'null'); } catch { return null; }
+}
+function cacheSet(p, data) {
+  try { localStorage.setItem(_cacheKey(p), JSON.stringify({ data, t: Date.now() })); } catch {}
+}
+function cacheSum(data) {
+  const v = (data.daily || []).reduce((s, d) => s + (d.uniq?.uniques  || 0), 0);
+  const pv= (data.daily || []).reduce((s, d) => s + (d.sum?.pageViews || 0), 0);
+  const w = data.events?.wa || 0;
+  return `${v}:${pv}:${w}`;
+}
+function setCacheLabel(t, state) {
+  const el = document.getElementById('dash-cache-status');
+  if (!el) return;
+  if (state === 'checking') { el.textContent = '↻ verificando...'; el.style.color = ''; return; }
+  if (state === 'updated')  {
+    el.textContent = '● dados atualizados';
+    el.style.color = 'var(--green)';
+    setTimeout(() => setCacheLabel(Date.now(), 'ok'), 3000);
+    return;
+  }
+  const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
+  el.style.color = '';
+  el.textContent = mins < 1 ? 'cache · agora mesmo' : `cache · há ${mins} min`;
+}
+
+async function loadDashboardData(force = false) {
+  const period = getDashPeriod();
+  const cached = force ? null : cacheGet(period);
+  const age    = cached ? Date.now() - cached.t : Infinity;
+
+  if (cached && age < CACHE_MAX_MS) {
+    // Render immediately from cache
+    const { daily, prev, devices, os, events, waDaily } = cached.data;
     renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
     dashShow('dash-data');
+    setCacheLabel(cached.t, 'ok');
+
+    // Background recheck after CACHE_CHECK_MS
+    if (age > CACHE_CHECK_MS) {
+      setCacheLabel(cached.t, 'checking');
+      fetchCfAnalytics(period).then(fresh => {
+        if (cacheSum(fresh) !== cacheSum(cached.data)) {
+          cacheSet(period, fresh);
+          const { daily, prev, devices, os, events, waDaily } = fresh;
+          renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
+          setCacheLabel(Date.now(), 'updated');
+        } else {
+          cacheSet(period, cached.data); // reset timestamp, data unchanged
+          setCacheLabel(Date.now(), 'ok');
+        }
+      }).catch(() => setCacheLabel(cached.t, 'ok'));
+    }
+    return;
+  }
+
+  // No valid cache — show loading spinner and fetch
+  dashShow('dash-loading');
+  try {
+    const data = await fetchCfAnalytics(period);
+    cacheSet(period, data);
+    const { daily, prev, devices, os, events, waDaily } = data;
+    renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
+    dashShow('dash-data');
+    setCacheLabel(Date.now(), 'ok');
   } catch(e) {
     document.getElementById('dash-error-msg').textContent = e.message;
     dashShow('dash-error');
@@ -1939,7 +2007,7 @@ function dashReset() {
 document.getElementById('dash-retry-btn').addEventListener('click',   () => loadDashboardData());
 document.getElementById('dash-reset-btn').addEventListener('click',   dashReset);
 document.getElementById('dash-reset-btn2').addEventListener('click',  dashReset);
-document.getElementById('dash-refresh-btn').addEventListener('click', () => loadDashboardData());
+document.getElementById('dash-refresh-btn').addEventListener('click', () => loadDashboardData(true));
 
 // Period selector
 document.getElementById('dash-period-select').addEventListener('change', function() {
