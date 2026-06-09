@@ -1191,7 +1191,7 @@
     const currDates = mkDates(start, days);
     const prevDates = mkDates(prevStart, days);
 
-    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}devices:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}"}){dimensions{clientDeviceType}count}cities:httpRequestsAdaptiveGroups(limit:20 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientCity}count}}}}`;
+    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}devices:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}"}){dimensions{clientDeviceType}count}}}}`;
 
     const cfFetch = fetch('https://api.cloudflare.com/client/v4/graphql', {
       method: 'POST',
@@ -1337,13 +1337,8 @@
                 <div id="geo-globe" style="flex-shrink:0"></div>
                 <h3 style="margin:0">Locais</h3>
               </div>
-              <div class="geo-tabs">
-                <button class="geo-tab active" data-geo="countries">Países</button>
-                <button class="geo-tab" data-geo="cities" id="geo-tab-cities">Cidades</button>
-              </div>
             </div>
             <div id="geo-panel-countries" class="geo-panel"></div>
-            <div id="geo-panel-cities" class="geo-panel" style="display:none"></div>
           </div>
           <div class="field-group" style="margin-bottom:0">
             <h3>Dispositivos</h3>
@@ -1542,8 +1537,8 @@ async function loadDashboardData() {
   dashShow('dash-loading');
   try {
     const period = getDashPeriod();
-    const { daily, prev, devices, cities, events } = await fetchCfAnalytics(period);
-    renderDashboard(daily, prev, devices, events, cities);
+    const { daily, prev, devices, events } = await fetchCfAnalytics(period);
+    renderDashboard(daily, prev, devices, events);
     dashShow('dash-data');
   } catch(e) {
     document.getElementById('dash-error-msg').textContent = e.message;
@@ -1569,7 +1564,6 @@ async function fetchCfAnalytics({ days, from, to } = {}) {
     daily:   zone.current || [],
     prev:    zone.prev    || [],
     devices: zone.devices || [],
-    cities:  zone.cities  || [],
     events:  json.events  ?? null
   };
 }
@@ -1768,7 +1762,7 @@ function renderDeviceChart(devices) {
     </div>`;
 }
 
-function renderDashboard(daily, prev, devices, events, cities) {
+function renderDashboard(daily, prev, devices, events) {
   let curUniq = 0, curPV = 0;
   let prvUniq = 0, prvPV = 0;
   const countryMap = {};
@@ -1869,28 +1863,6 @@ function renderDashboard(daily, prev, devices, events, cities) {
   // Devices donut
   renderDeviceChart(devices);
 
-  // States / Cities
-  renderGeoDetail(cities);
-}
-
-function renderGeoDetail(cities) {
-  const noData = '<p style="color:var(--muted);font-size:.82rem;padding-top:6px">Sem dados de cidades para o período.</p>';
-  const citPanel = document.getElementById('geo-panel-cities');
-  if (!citPanel) return;
-  if (!cities?.length) { citPanel.innerHTML = noData; return; }
-  const max = cities[0]?.count || 1;
-  citPanel.innerHTML = cities.slice(0, 15).map(it => {
-    const city = it.dimensions?.clientCity || '—';
-    const bp = Math.round((it.count / max) * 100);
-    return `<div class="dash-country-item">
-      <span class="dash-country-flag" style="font-size:.7rem">📍</span>
-      <div style="flex:1;min-width:0">
-        <div class="dash-country-name">${city}</div>
-        <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${bp}%"></div></div>
-      </div>
-      <span class="dash-country-count">${fmtNum(it.count)}</span>
-    </div>`;
-  }).join('');
 }
 
 // Setup / connect
