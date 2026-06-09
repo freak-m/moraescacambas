@@ -2536,24 +2536,37 @@ async function publish() {
 //  OG IMAGE PREVIEW
 // ══════════════════════════════════════════════════
 function updateOgPreview(url) {
-  const wrap = document.getElementById('og-img-preview-wrap');
-  const img  = document.getElementById('og-img-preview');
+  const wrap    = document.getElementById('og-img-preview-wrap');
+  const img     = document.getElementById('og-img-preview');
+  const caption = document.querySelector('#og-img-preview-wrap p');
   if (!wrap || !img) return;
-  if (url && (url.startsWith('http') || url.startsWith('blob:'))) {
-    img.src = url;
-    img.style.opacity = '1';
-    img.onerror = () => {
-      img.style.opacity = '0.25';
-      img.onerror = null;
-    };
-    img.onload = () => {
-      img.style.opacity = '1';
-      img.onerror = null;
-    };
-    wrap.style.display = '';
-  } else {
+  if (!url || (!url.startsWith('http') && !url.startsWith('blob:'))) {
     wrap.style.display = 'none';
+    return;
   }
+  wrap.style.display = '';
+  img.style.display  = 'block';
+  img.onerror = null;
+  img.onload  = null;
+  img.onload = () => {
+    img.style.display = 'block';
+    if (caption) caption.textContent = 'Preview da imagem de compartilhamento';
+    img.onerror = null;
+  };
+  img.onerror = () => {
+    img.onerror = null;
+    // Fallback: try GitHub raw content (available right after push, before Pages deploy)
+    if (!url.startsWith('blob:') && !img.dataset.rawTried) {
+      img.dataset.rawTried = '1';
+      const filename = url.split('/').pop();
+      img.src = `https://raw.githubusercontent.com/${REPO}/main/${filename}`;
+    } else {
+      delete img.dataset.rawTried;
+      img.style.display = 'none';
+      if (caption) caption.innerHTML = '⚠ Arquivo não encontrado no repositório.<br><span style="font-size:.7rem">Faça o upload acima para adicionar a imagem.</span>';
+    }
+  };
+  img.src = url;
 }
 
 // ══════════════════════════════════════════════════
