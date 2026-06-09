@@ -1087,65 +1087,62 @@
         </div>
         <div class="field-group">
           <h3>Conectar Analytics</h3>
-          <p class="field-note">Insira as credenciais do Cloudflare para exibir métricas de visitas do site.</p>
+          <p class="field-note">Cole a URL do Worker para exibir métricas de visitas do site. As credenciais ficam seguras no Cloudflare.</p>
           <div class="form-row" style="margin-top:14px">
             <div class="form-field">
-              <label>Zone ID</label>
-              <input type="text" id="cf-zone-id" placeholder="abc1234def5678..." autocomplete="off">
-              <p class="field-note" style="margin-top:5px">Onde achar: <strong>cloudflare.com → seu site → Overview → Zone ID</strong> (lado direito da página)</p>
-            </div>
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label>API Token</label>
-              <div class="login-pw-wrap">
-                <input type="password" id="cf-token-inp" placeholder="••••••••••••••••••" style="margin-bottom:0" autocomplete="new-password">
-                <button type="button" class="login-pw-toggle" id="cf-token-toggle" title="Mostrar/ocultar">
-                  <svg id="cf-icon-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
-                  <svg id="cf-icon-eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                </button>
-              </div>
-              <p class="field-note" style="margin-top:5px">Crie em: <strong>My Profile → API Tokens → Create Token</strong> → selecione <strong>Zone Analytics (Read)</strong></p>
-            </div>
-          </div>
-          <div class="form-row" style="margin-top:8px">
-            <div class="form-field">
-              <label>Worker URL <span style="color:var(--yellow);font-size:.78rem">(necessário para funcionar)</span></label>
+              <label>Worker URL</label>
               <input type="text" id="cf-worker-url" placeholder="https://analytics-proxy.SEU-USER.workers.dev" autocomplete="off">
-              <p class="field-note" style="margin-top:5px">Proxy para contornar bloqueio CORS. Veja as instruções abaixo ↓</p>
+              <p class="field-note" style="margin-top:5px">URL do Worker criado no Cloudflare Workers &amp; Pages</p>
             </div>
           </div>
 
           <details style="margin-top:14px;background:var(--card2);border:1px solid var(--border);border-radius:8px">
             <summary style="cursor:pointer;padding:12px 14px;font-size:.84rem;font-weight:600;color:var(--yellow);user-select:none;list-style:none">
-              ▸ Como criar o Worker Proxy (passo a passo)
+              ▸ Código atualizado do Worker (com credenciais seguras)
             </summary>
             <div style="padding:4px 14px 14px;font-size:.82rem;line-height:1.65">
               <ol style="padding-left:18px;color:var(--muted2);display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
-                <li>Vá em <strong style="color:var(--white)">cloudflare.com → Workers &amp; Pages → Create</strong></li>
-                <li>Clique em <strong style="color:var(--white)">Create Worker</strong>, dê o nome <em>analytics-proxy</em> e clique <strong style="color:var(--white)">Deploy</strong></li>
-                <li>Na próxima tela clique em <strong style="color:var(--white)">Edit code</strong></li>
-                <li>Apague todo o código e cole o código abaixo</li>
-                <li>Clique em <strong style="color:var(--white)">Deploy</strong> novamente</li>
-                <li>Copie a URL do Worker (ex: <em>https://analytics-proxy.usuario.workers.dev</em>) e cole no campo acima</li>
+                <li>No Worker, vá em <strong style="color:var(--white)">Edit code</strong>, apague tudo e cole o código abaixo</li>
+                <li>Clique em <strong style="color:var(--white)">Deploy</strong></li>
+                <li>Vá em <strong style="color:var(--white)">Settings → Variables and Secrets</strong> e adicione <code style="background:#111;padding:1px 5px;border-radius:3px">CF_ZONE_ID</code> e <code style="background:#111;padding:1px 5px;border-radius:3px">CF_API_TOKEN</code></li>
               </ol>
               <div style="position:relative">
                 <pre id="worker-code-pre" style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;padding:12px 12px 12px 14px;overflow-x:auto;font-size:.76rem;color:#bbb;margin:0;white-space:pre">export default {
-  async fetch(request) {
+  async fetch(request, env) {
     if (request.method === 'OPTIONS') {
       return new Response(null, { headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Methods': 'GET',
+        'Access-Control-Allow-Headers': 'Content-Type',
       }});
     }
+    const url = new URL(request.url);
+    const days = parseInt(url.searchParams.get('days') || '7');
+    const now = new Date();
+    const start = new Date(now);
+    start.setDate(start.getDate() - (days - 1));
+    const fmt = d => d.toISOString().split('T')[0];
+    const query = `{
+      viewer {
+        zones(filter: {zoneTag: "${env.CF_ZONE_ID}"}) {
+          daily: httpRequests1dGroups(
+            limit: ${days} orderBy: [date_ASC]
+            filter: {date_geq: "${fmt(start)}", date_leq: "${fmt(now)}"}
+          ) {
+            dimensions { date }
+            sum { pageViews requests countryMap { clientCountryName requests } }
+            uniq { uniques }
+          }
+        }
+      }
+    }`;
     const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
       method: 'POST',
       headers: {
-        'Authorization': request.headers.get('Authorization'),
+        'Authorization': `Bearer ${env.CF_API_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      body: await request.text(),
+      body: JSON.stringify({ query }),
     });
     return new Response(await res.text(), {
       status: res.status,
@@ -1371,20 +1368,16 @@ function dashShow(id) {
 }
 
 function initDashboard() {
-  const zoneId    = localStorage.getItem(CF_ZONE_KEY);
-  const token     = localStorage.getItem(CF_TOKEN_KEY);
   const workerUrl = localStorage.getItem(CF_WORKER_KEY);
-  if (zoneId)    document.getElementById('cf-zone-id').value    = zoneId;
-  if (token)     document.getElementById('cf-token-inp').value  = '••••••••••••••••';
   if (workerUrl) document.getElementById('cf-worker-url').value = workerUrl;
-  if (!zoneId || !token || !workerUrl) { dashShow('dash-setup'); return; }
-  loadDashboardData(zoneId, token);
+  if (!workerUrl) { dashShow('dash-setup'); return; }
+  loadDashboardData();
 }
 
-async function loadDashboardData(zoneId, token) {
+async function loadDashboardData() {
   dashShow('dash-loading');
   try {
-    const data = await fetchCfAnalytics(zoneId, token);
+    const data = await fetchCfAnalytics();
     renderDashboard(data);
     dashShow('dash-data');
   } catch(e) {
@@ -1393,38 +1386,16 @@ async function loadDashboardData(zoneId, token) {
   }
 }
 
-async function fetchCfAnalytics(zoneId, token) {
-  const now   = new Date();
-  const start = new Date(now); start.setDate(start.getDate() - 6);
-  const fmt   = d => d.toISOString().split('T')[0];
-
-  const query = `{
-    viewer {
-      zones(filter: {zoneTag: "${zoneId}"}) {
-        daily: httpRequests1dGroups(
-          limit: 7 orderBy: [date_ASC]
-          filter: {date_geq: "${fmt(start)}", date_leq: "${fmt(now)}"}
-        ) {
-          dimensions { date }
-          sum { pageViews requests countryMap { clientCountryName requests } }
-          uniq { uniques }
-        }
-      }
-    }
-  }`;
-
+async function fetchCfAnalytics() {
   const workerUrl = localStorage.getItem(CF_WORKER_KEY) || '';
-  if (!workerUrl) throw new Error('Worker URL não configurado. Clique em "Reconfigurar" e preencha o campo Worker URL.');
-  const res = await fetch(workerUrl, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query })
-  }).catch(() => { throw new Error('Não foi possível conectar ao Worker. Verifique se a URL está correta e o Worker foi publicado.'); });
-  if (!res.ok) throw new Error(`Erro na API do Cloudflare: ${res.status}`);
+  if (!workerUrl) throw new Error('Worker URL não configurado. Clique em "Reconfigurar".');
+  const res = await fetch(`${workerUrl}?days=7`)
+    .catch(() => { throw new Error('Não foi possível conectar ao Worker. Verifique se a URL está correta e o Worker foi publicado.'); });
+  if (!res.ok) throw new Error(`Erro no Worker: ${res.status}`);
   const json = await res.json();
   if (json.errors?.length) throw new Error(json.errors[0].message);
   const zones = json.data?.viewer?.zones;
-  if (!zones?.length) throw new Error('Zone ID não encontrado. Verifique o Zone ID configurado.');
+  if (!zones?.length) throw new Error('Sem dados. Verifique se CF_ZONE_ID está configurado no Worker.');
   return zones[0].daily || [];
 }
 
@@ -1491,32 +1462,16 @@ function renderDashboard(days) {
     : '<p style="color:var(--muted);font-size:.84rem">Nenhum dado disponível.</p>';
 }
 
-document.getElementById('cf-token-toggle').addEventListener('click', () => {
-  const inp = document.getElementById('cf-token-inp');
-  const isHidden = inp.type === 'password';
-  inp.type = isHidden ? 'text' : 'password';
-  document.getElementById('cf-icon-eye-off').style.display = isHidden ? 'none' : '';
-  document.getElementById('cf-icon-eye-on').style.display  = isHidden ? ''     : 'none';
-});
-
 // Setup / connect
 document.getElementById('cf-connect-btn').addEventListener('click', async () => {
-  const zoneId    = document.getElementById('cf-zone-id').value.trim();
-  const token     = document.getElementById('cf-token-inp').value.trim();
   const workerUrl = document.getElementById('cf-worker-url').value.trim();
   const errEl     = document.getElementById('cf-setup-error');
   errEl.style.display = 'none';
-  if (!zoneId || !token || !workerUrl) {
-    errEl.textContent = 'Preencha todos os campos (Zone ID, API Token e Worker URL).';
-    errEl.style.display = '';
-    return;
-  }
-  localStorage.setItem(CF_ZONE_KEY, zoneId);
-  localStorage.setItem(CF_TOKEN_KEY, token);
+  if (!workerUrl) { errEl.textContent = 'Preencha o campo Worker URL.'; errEl.style.display = ''; return; }
   localStorage.setItem(CF_WORKER_KEY, workerUrl);
-  await loadDashboardData(zoneId, token);
+  await loadDashboardData();
   if (document.getElementById('dash-error').style.display !== 'none') {
-    localStorage.removeItem(CF_ZONE_KEY); localStorage.removeItem(CF_TOKEN_KEY); localStorage.removeItem(CF_WORKER_KEY);
+    localStorage.removeItem(CF_WORKER_KEY);
   }
 });
 
@@ -1528,14 +1483,10 @@ function dashReset() {
   dashShow('dash-setup');
 }
 
-document.getElementById('dash-retry-btn').addEventListener('click', () => {
-  loadDashboardData(localStorage.getItem(CF_ZONE_KEY), localStorage.getItem(CF_TOKEN_KEY));
-});
-document.getElementById('dash-reset-btn').addEventListener('click',  dashReset);
-document.getElementById('dash-reset-btn2').addEventListener('click', dashReset);
-document.getElementById('dash-refresh-btn').addEventListener('click', () => {
-  loadDashboardData(localStorage.getItem(CF_ZONE_KEY), localStorage.getItem(CF_TOKEN_KEY));
-});
+document.getElementById('dash-retry-btn').addEventListener('click',   () => loadDashboardData());
+document.getElementById('dash-reset-btn').addEventListener('click',   dashReset);
+document.getElementById('dash-reset-btn2').addEventListener('click',  dashReset);
+document.getElementById('dash-refresh-btn').addEventListener('click', () => loadDashboardData());
 
 // ── ACCORDION ──
 document.querySelectorAll('.acc-header').forEach(hdr => {
