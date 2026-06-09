@@ -1191,7 +1191,7 @@
     const currDates = mkDates(start, days);
     const prevDates = mkDates(prevStart, days);
 
-    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}os:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}"}){dimensions{clientOSName}count}regions:httpRequestsAdaptiveGroups(limit:30 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientRegionCode}count}cities:httpRequestsAdaptiveGroups(limit:50 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientCity clientRegionCode}count}}}}`;
+    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}devices:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}"}){dimensions{clientDeviceType}count}regions:httpRequestsAdaptiveGroups(limit:30 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientRegionCode}count}cities:httpRequestsAdaptiveGroups(limit:50 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientCity clientRegionCode}count}}}}`;
 
     const cfFetch = fetch('https://api.cloudflare.com/client/v4/graphql', {
       method: 'POST',
@@ -1348,8 +1348,8 @@
             <div id="geo-panel-cities" class="geo-panel" style="display:none"></div>
           </div>
           <div class="field-group" style="margin-bottom:0">
-            <h3>Sistemas Operacionais</h3>
-            <div id="dash-os"></div>
+            <h3>Dispositivos</h3>
+            <div id="dash-devices"></div>
           </div>
         </div>
       </div>
@@ -1544,8 +1544,8 @@ async function loadDashboardData() {
   dashShow('dash-loading');
   try {
     const period = getDashPeriod();
-    const { daily, prev, os, regions, cities, events } = await fetchCfAnalytics(period);
-    renderDashboard(daily, prev, os, events, regions, cities);
+    const { daily, prev, devices, regions, cities, events } = await fetchCfAnalytics(period);
+    renderDashboard(daily, prev, devices, events, regions, cities);
     dashShow('dash-data');
   } catch(e) {
     document.getElementById('dash-error-msg').textContent = e.message;
@@ -1570,7 +1570,7 @@ async function fetchCfAnalytics({ days, from, to } = {}) {
   return {
     daily:   zone.current || [],
     prev:    zone.prev    || [],
-    os:      zone.os      || [],
+    devices: zone.devices || [],
     regions: zone.regions || [],
     cities:  zone.cities  || [],
     events:  json.events  ?? null
@@ -1734,71 +1734,52 @@ function buildFallbackGlobe(size) {
   return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" xmlns="http://www.w3.org/2000/svg"><defs><radialGradient id="fg${uid}" cx="35%" cy="30%" r="70%"><stop offset="0%" stop-color="#091c2e"/><stop offset="100%" stop-color="#030c18"/></radialGradient></defs><circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#fg${uid})"/><circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="#1e4070" stroke-width="1.5"/></svg>`;
 }
 
-const OS_COLORS = {
-  'windows':  '#0078D4',
-  'ios':      '#8E8E93',
-  'android':  '#3DDC84',
-  'mac os x': '#A8A8B3',
-  'linux':    '#E95420',
-  'other':    '#666677'
-};
-const OS_LABELS = {
-  'windows':  'Windows',
-  'ios':      'iOS',
-  'android':  'Android',
-  'mac os x': 'macOS',
-  'linux':    'Linux',
-  'other':    'Outros'
-};
-const OS_ICONS = {
-  'windows':  '🪟',
-  'ios':      '',
-  'android':  '🤖',
-  'mac os x': '🍎',
-  'linux':    '🐧',
-  'other':    '💻'
-};
+const DEVICE_COLORS = { desktop: '#4D9FEC', mobile: '#F5A623', tablet: '#E05EAD', other: '#888888' };
+const DEVICE_LABELS = { desktop: 'Desktop', mobile: 'Mobile', tablet: 'Tablet', other: 'Outros' };
 
-function renderOsChart(osData) {
-  const el = document.getElementById('dash-os');
+function renderDeviceChart(devices) {
+  const el = document.getElementById('dash-devices');
   if (!el) return;
-  if (!osData || !osData.length) {
+  if (!devices || !devices.length) {
     el.innerHTML = '<p style="color:var(--muted);font-size:.84rem">Nenhum dado disponível.</p>';
     return;
   }
-  const allowed = new Set(['windows', 'ios', 'android', 'mac os x', 'linux']);
-  let data = osData
-    .map(d => {
-      const raw = (d.dimensions?.clientOSName || 'other').toLowerCase();
-      const key = allowed.has(raw) ? raw : 'other';
-      return { key, label: OS_LABELS[key] || raw, icon: OS_ICONS[key] || '💻', color: OS_COLORS[key] || '#666677', count: d.count || 0 };
-    })
+  const data = devices
+    .map(d => ({ label: (d.dimensions?.clientDeviceType || 'other').toLowerCase(), count: d.count || 0 }))
     .filter(d => d.count > 0);
+  const total = data.reduce((s, d) => s + d.count, 0);
+  if (!total) { el.innerHTML = '<p style="color:var(--muted);font-size:.84rem">Nenhum dado.</p>'; return; }
 
-  // merge duplicates (e.g. multiple "other" entries)
-  const merged = {};
-  data.forEach(d => {
-    if (merged[d.key]) merged[d.key].count += d.count;
-    else merged[d.key] = { ...d };
-  });
-  data = Object.values(merged).sort((a, b) => b.count - a.count);
+  const legend = data.map(seg =>
+    `<div class="dash-device-item">
+      <div class="dash-device-dot" style="background:${DEVICE_COLORS[seg.label]||'#888'}"></div>
+      <span class="dash-device-name">${DEVICE_LABELS[seg.label]||seg.label}</span>
+      <span class="dash-device-count">${fmtNum(seg.count)}</span>
+    </div>`
+  ).join('');
 
-  const max = data[0]?.count || 1;
-
-  el.innerHTML = data.map(seg => {
-    const bp = Math.round((seg.count / max) * 100);
-    return `<div class="dash-country-item">
-      <span class="dash-country-flag">${seg.icon}</span>
-      <div style="flex:1;min-width:0">
-        <div class="dash-country-name">${seg.label}</div>
-        <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${bp}%;background:${seg.color}"></div></div>
-      </div>
-      <span class="dash-country-count">${fmtNum(seg.count)}</span>
-    </div>`;
+  const R = 42, ri = 26, cx = 50, cy = 50;
+  let angle = -Math.PI / 2;
+  const paths = data.map(seg => {
+    const ratio = seg.count / total;
+    if (ratio < 0.005) return '';
+    const end = angle + ratio * 2 * Math.PI;
+    const c1 = [Math.cos(angle), Math.sin(angle)];
+    const c2 = [Math.cos(end),   Math.sin(end)];
+    const large = ratio > 0.5 ? 1 : 0;
+    const path = `<path d="M${(cx+R*c1[0]).toFixed(2)},${(cy+R*c1[1]).toFixed(2)} A${R},${R} 0 ${large},1 ${(cx+R*c2[0]).toFixed(2)},${(cy+R*c2[1]).toFixed(2)} L${(cx+ri*c2[0]).toFixed(2)},${(cy+ri*c2[1]).toFixed(2)} A${ri},${ri} 0 ${large},0 ${(cx+ri*c1[0]).toFixed(2)},${(cy+ri*c1[1]).toFixed(2)} Z" fill="${DEVICE_COLORS[seg.label]||'#888'}"/>`;
+    angle = end;
+    return path;
   }).join('');
+
+  el.innerHTML = `
+    <div class="dash-device-legend-top">${legend}</div>
+    <div class="dash-device-donut">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">${paths}</svg>
+    </div>`;
 }
 
-function renderDashboard(daily, prev, os, events, regions, cities) {
+function renderDashboard(daily, prev, devices, events, regions, cities) {
   let curUniq = 0, curPV = 0;
   let prvUniq = 0, prvPV = 0;
   const countryMap = {};
@@ -1897,7 +1878,7 @@ function renderDashboard(daily, prev, os, events, regions, cities) {
   }
 
   // Devices donut
-  renderOsChart(os);
+  renderDeviceChart(devices);
 
   // States / Cities
   renderGeoDetail(regions, cities);
