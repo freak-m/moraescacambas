@@ -1097,7 +1097,13 @@
           <div class="form-row">
             <div class="form-field">
               <label>API Token</label>
-              <input type="password" id="cf-token-inp" placeholder="••••••••••••••••••">
+              <div class="login-pw-wrap">
+                <input type="password" id="cf-token-inp" placeholder="••••••••••••••••••" style="margin-bottom:0">
+                <button type="button" class="login-pw-toggle" id="cf-token-toggle" title="Mostrar/ocultar">
+                  <svg id="cf-icon-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  <svg id="cf-icon-eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
               <p class="field-note" style="margin-top:5px">Crie em: <strong>My Profile → API Tokens → Create Token</strong> → selecione <strong>Zone Analytics (Read)</strong></p>
             </div>
           </div>
@@ -1483,6 +1489,14 @@ function renderDashboard(days) {
       }).join('')
     : '<p style="color:var(--muted);font-size:.84rem">Nenhum dado disponível.</p>';
 }
+
+document.getElementById('cf-token-toggle').addEventListener('click', () => {
+  const inp = document.getElementById('cf-token-inp');
+  const isHidden = inp.type === 'password';
+  inp.type = isHidden ? 'text' : 'password';
+  document.getElementById('cf-icon-eye-off').style.display = isHidden ? 'none' : '';
+  document.getElementById('cf-icon-eye-on').style.display  = isHidden ? ''     : 'none';
+});
 
 // Setup / connect
 document.getElementById('cf-connect-btn').addEventListener('click', async () => {
