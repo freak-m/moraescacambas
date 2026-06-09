@@ -1488,13 +1488,18 @@ function sparklineSVG(values, dates) {
   if (!values || values.length < 2) return '';
   const max = Math.max(...values, 1);
   const n = values.length;
-  const vbW = 400, lineH = 36, dateH = dates ? 14 : 0, vbH = lineH + dateH;
-  const padX = 4;
-  const xOf = i => padX + (i / (n - 1)) * (vbW - padX * 2);
-  const yOf = v => (lineH - 2) - Math.max((v / max) * (lineH - 6), 0);
+  const vbW = 400, lineH = 38, dateH = dates ? 14 : 0, vbH = lineH + dateH;
+  const padX = 2;
+  const barW = (vbW - padX * 2) / n;
+  const xOf  = i => padX + i * barW + barW / 2;
+  const yOf  = v => (lineH - 2) - Math.max((v / max) * (lineH - 6), 0);
+  let bars = '', labels = '';
+  values.forEach((v, i) => {
+    const x = padX + i * barW, y = yOf(v), bh = lineH - 2 - y;
+    if (bh > 0) bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(barW - 1).toFixed(1)}" height="${bh.toFixed(1)}" fill="rgba(245,196,0,0.2)" rx="1"/>`;
+  });
   const pts = values.map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(' ');
   const labelEvery = n > 20 ? 5 : n > 14 ? 3 : n > 7 ? 2 : 1;
-  let labels = '';
   if (dates && dates.length === n) {
     dates.forEach((ds, i) => {
       if (i % labelEvery !== 0 && i !== n - 1) return;
@@ -1504,7 +1509,7 @@ function sparklineSVG(values, dates) {
       labels += `<text x="${x.toFixed(1)}" y="${vbH - 1}" text-anchor="middle" fill="#555" font-size="9" font-family="inherit">${lbl}</text>`;
     });
   }
-  return `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%"><polyline points="${pts}" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${labels}</svg>`;
+  return `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%">${bars}<polyline points="${pts}" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${labels}</svg>`;
 }
 
 function setChange(id, pct) {
@@ -1762,7 +1767,10 @@ function renderDashboard(daily, prev, devices, os, events) {
   const pvPath = pvPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
   const pvLine = `<path d="${pvPath}" fill="none" stroke="rgba(77,159,236,0.65)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
   const pvDots = pvPoints.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2" fill="#4D9FEC" opacity="0.8"/>`).join('');
-  document.getElementById('dash-chart').innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="bnrm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD33A"/><stop offset="100%" stop-color="#b89200"/></linearGradient><linearGradient id="btod" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE840"/><stop offset="100%" stop-color="#F5C400"/></linearGradient></defs>${bars}${pvLine}${pvDots}<g transform="translate(${vbW - 158},2)"><rect x="0" y="0" width="10" height="10" rx="2" fill="url(#bnrm)"/><text x="14" y="9" fill="#666" font-size="9" font-family="inherit">Visitas</text><line x1="68" y1="5" x2="80" y2="5" stroke="rgba(77,159,236,0.65)" stroke-width="1.5"/><circle cx="74" cy="5" r="2" fill="#4D9FEC" opacity="0.8"/><text x="84" y="9" fill="#666" font-size="9" font-family="inherit">Page Views</text></g></svg>`;
+  const visitPoints = chartData.map((d, i) => { const v = d.uniq?.uniques || 0; const bh = Math.max(Math.round((v / maxVal) * barArea), 2); const x = i * (barW + gap); const cx = x + barW / 2; const y = padTop + (barArea - bh); return [cx, y]; });
+  const visitPath = visitPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  const visitLine = `<path d="${visitPath}" fill="none" stroke="rgba(255,211,58,0.8)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  document.getElementById('dash-chart').innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="bnrm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD33A"/><stop offset="100%" stop-color="#b89200"/></linearGradient><linearGradient id="btod" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE840"/><stop offset="100%" stop-color="#F5C400"/></linearGradient></defs>${bars}${visitLine}${pvLine}${pvDots}<g transform="translate(${vbW - 158},2)"><rect x="0" y="0" width="10" height="10" rx="2" fill="url(#bnrm)"/><text x="14" y="9" fill="#666" font-size="9" font-family="inherit">Visitas</text><line x1="68" y1="5" x2="80" y2="5" stroke="rgba(77,159,236,0.65)" stroke-width="1.5"/><circle cx="74" cy="5" r="2" fill="#4D9FEC" opacity="0.8"/><text x="84" y="9" fill="#666" font-size="9" font-family="inherit">Page Views</text></g></svg>`;
 
   // Countries (globe + bar list)
   const sorted = Object.entries(countryMap).sort((a,b) => b[1]-a[1]).slice(0,7);
