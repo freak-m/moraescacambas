@@ -161,6 +161,21 @@
       color: var(--muted2);
       background: rgba(255,255,255,.04);
     }
+    .tab-btn.tab-primary {
+      font-size: .95rem;
+      color: var(--white);
+      padding: 13px 14px;
+    }
+    .tab-btn.tab-primary.active { color: var(--yellow); }
+    .nav-group-label {
+      font-size: .68rem; font-weight: 700; letter-spacing: .1em;
+      color: var(--muted); text-transform: uppercase;
+      padding: 14px 14px 4px;
+    }
+    .tab-btn.tab-sub {
+      font-size: .84rem; font-weight: 500;
+      padding: 9px 14px 9px 20px;
+    }
 
     /* ── SIDEBAR FOOTER ── */
     .sidebar-footer {
@@ -657,11 +672,12 @@
         <span>Painel<br><strong>Moraes Caçambas</strong></span>
       </div>
       <nav class="sidebar-nav">
-        <button class="tab-btn" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
-        <button class="tab-btn" data-tab="sections"><span class="nav-icon">📝</span> Seções</button>
-        <button class="tab-btn" data-tab="contact"><span class="nav-icon">🏠</span> Rodapé</button>
-        <button class="tab-btn active" data-tab="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
-        <button class="tab-btn" data-tab="integrations"><span class="nav-icon">🔗</span> Integrações</button>
+        <button class="tab-btn tab-primary active" data-tab="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
+        <div class="nav-group-label">Conteúdo do site</div>
+        <button class="tab-btn tab-sub" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
+        <button class="tab-btn tab-sub" data-tab="sections"><span class="nav-icon">📝</span> Seções</button>
+        <button class="tab-btn tab-sub" data-tab="contact"><span class="nav-icon">🏠</span> Rodapé</button>
+        <button class="tab-btn tab-sub" data-tab="integrations"><span class="nav-icon">🔗</span> Integrações</button>
       </nav>
       <div class="sidebar-footer">
         <button class="preview-toggle-sidebar" id="preview-toggle-btn">👁 Preview</button>
