@@ -567,20 +567,21 @@
     .dash-metric-ga .dash-metric-val { color: var(--muted); font-size: 1.4rem; }
     .dash-metric-ga-badge { font-size: .62rem; font-weight: 700; background: rgba(66,133,244,.12); color: #7aabf8; border: 1px solid rgba(66,133,244,.22); border-radius: 4px; padding: 1px 6px; white-space: nowrap; flex-shrink: 0; }
     .dash-metric-ga-note { font-size: .67rem; color: var(--muted); margin-top: 2px; line-height: 1.4; }
-    .dash-chart-wrap { display: flex; align-items: flex-end; gap: 6px; height: 130px; padding: 0 2px; }
-    .dash-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; position: relative; cursor: default; }
-    .dash-bar { width: 100%; background: linear-gradient(to bottom, #FFD33A, #c8a200); border-radius: 4px 4px 0 0; min-height: 3px; transition: opacity .15s, box-shadow .15s; }
-    .dash-bar.today { background: linear-gradient(to bottom, #FFE84D, #F5C400); box-shadow: 0 0 10px rgba(245,196,0,.28); }
-    .dash-bar-col:hover .dash-bar { opacity: .8; box-shadow: 0 0 12px rgba(245,196,0,.4); }
-    .dash-bar-day { font-size: .6rem; color: var(--muted); }
-    .dash-bar-num { font-size: .65rem; color: #ccc; font-weight: 600; }
-    .dash-bar-tip { position: absolute; bottom: calc(100% + 26px); left: 50%; transform: translateX(-50%); background: #181830; border: 1px solid rgba(245,196,0,.3); border-radius: 6px; padding: 5px 9px; font-size: .72rem; color: #fff; white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .15s; z-index: 20; box-shadow: 0 4px 14px rgba(0,0,0,.5); }
-    .dash-bar-tip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(245,196,0,.3); }
-    .dash-bar-col:hover .dash-bar-tip { opacity: 1; }
+    .dash-chart-wrap { width: 100%; }
+    .dash-chart-wrap svg .bar-group rect { transition: opacity .15s; }
+    .dash-chart-wrap svg .bar-group:hover rect { opacity: .78; }
     .dash-sep { height: 1px; background: var(--border); margin: 4px 0 16px; }
-    .dash-planet-wrap { display: flex; justify-content: center; margin-bottom: 10px; }
     .dash-country-globe-wrap { display: flex; gap: 16px; align-items: flex-start; }
-    .dash-country-globe-icon { flex-shrink: 0; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; background: rgba(245,196,0,.06); border: 1px solid rgba(245,196,0,.14); border-radius: 50%; }
+    .dash-country-globe-icon { flex-shrink: 0; }
+    .geo-tabs { display: flex; gap: 3px; }
+    .geo-tab { background: transparent; border: 1px solid var(--border2); border-radius: 5px; color: var(--muted); padding: 3px 11px; font-size: .72rem; cursor: pointer; transition: all .14s; font-family: inherit; }
+    .geo-tab.active { background: var(--yellow); color: #000; border-color: var(--yellow); font-weight: 700; }
+    .geo-tab:not(.active):hover { border-color: var(--muted2); color: var(--muted2); }
+    .geo-tab:disabled { opacity: .35; cursor: not-allowed; }
+    .dash-metric-label-wrap { display: flex; align-items: center; gap: 5px; }
+    .dash-info-btn { position: relative; width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,.07); border: 1px solid var(--border2); color: var(--muted); font-size: .58rem; display: inline-flex; align-items: center; justify-content: center; cursor: default; flex-shrink: 0; font-style: italic; font-weight: 700; }
+    .dash-info-btn:hover .dash-info-tip { opacity: 1; pointer-events: auto; }
+    .dash-info-tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #181828; border: 1px solid var(--border2); border-radius: 7px; padding: 8px 11px; font-size: .74rem; color: var(--muted2); width: 210px; line-height: 1.55; z-index: 40; opacity: 0; pointer-events: none; transition: opacity .15s; box-shadow: 0 6px 20px rgba(0,0,0,.6); white-space: normal; text-align: left; font-style: normal; font-weight: 400; }
     .dash-country-list { flex: 1; display: flex; flex-direction: column; gap: 9px; }
     .dash-country-item { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: center; }
     .dash-country-flag { font-size: .85rem; text-align: center; }
@@ -1245,7 +1246,10 @@
         <div class="dash-metrics">
           <div class="dash-metric">
             <div class="dash-metric-top">
-              <span class="dash-metric-label">Total Visitas</span>
+              <span class="dash-metric-label-wrap">
+                <span class="dash-metric-label">Total Visitas</span>
+                <span class="dash-info-btn">i<span class="dash-info-tip">Visitantes únicos que acessaram o site no período. Calculado por IP + user-agent — um mesmo visitante conta uma vez por dia mesmo que volte várias vezes.</span></span>
+              </span>
               <span class="dash-metric-change neutral" id="dmc-visits">—</span>
             </div>
             <div class="dash-metric-val" id="dm-uniques">—</div>
@@ -1253,7 +1257,10 @@
           </div>
           <div class="dash-metric">
             <div class="dash-metric-top">
-              <span class="dash-metric-label">Page Views</span>
+              <span class="dash-metric-label-wrap">
+                <span class="dash-metric-label">Page Views</span>
+                <span class="dash-info-btn">i<span class="dash-info-tip">Total de páginas carregadas. Um visitante pode gerar vários page views ao navegar no site — diferente de visitas únicas.</span></span>
+              </span>
               <span class="dash-metric-change neutral" id="dmc-pageviews">—</span>
             </div>
             <div class="dash-metric-val" id="dm-pageviews">—</div>
@@ -1261,7 +1268,10 @@
           </div>
           <div class="dash-metric">
             <div class="dash-metric-top">
-              <span class="dash-metric-label">Requisições</span>
+              <span class="dash-metric-label-wrap">
+                <span class="dash-metric-label">Requisições</span>
+                <span class="dash-info-btn">i<span class="dash-info-tip">Total de requisições HTTP ao servidor — inclui imagens, CSS, JS e fontes. Muito maior que visitas porque cada página gera dezenas de requisições de assets.</span></span>
+              </span>
               <span class="dash-metric-change neutral" id="dmc-requests">—</span>
             </div>
             <div class="dash-metric-val" id="dm-requests">—</div>
@@ -1306,26 +1316,26 @@
         <!-- Countries + Devices two-column -->
         <div class="dash-two-col">
           <div class="field-group" style="margin-bottom:0">
-            <h3>Top Países</h3>
-            <div id="dash-countries"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+              <h3 style="margin:0">Locais</h3>
+              <div class="geo-tabs">
+                <button class="geo-tab active" data-geo="countries">Países</button>
+                <button class="geo-tab" data-geo="regions" id="geo-tab-regions" disabled>Estados</button>
+                <button class="geo-tab" data-geo="cities" id="geo-tab-cities" disabled>Cidades</button>
+              </div>
+            </div>
+            <div style="display:flex;gap:14px;align-items:flex-start">
+              <div id="geo-globe" style="flex-shrink:0"></div>
+              <div style="flex:1;min-width:0">
+                <div id="geo-panel-countries" class="geo-panel"></div>
+                <div id="geo-panel-regions" class="geo-panel" style="display:none"></div>
+                <div id="geo-panel-cities" class="geo-panel" style="display:none"></div>
+              </div>
+            </div>
           </div>
           <div class="field-group" style="margin-bottom:0">
             <h3>Dispositivos</h3>
             <div id="dash-devices"></div>
-          </div>
-        </div>
-
-        <!-- States + Cities (hidden until Worker returns data) -->
-        <div id="dash-geodetail-wrap" style="display:none;margin-top:12px">
-          <div class="dash-two-col" style="margin-bottom:0">
-            <div class="field-group" style="margin-bottom:0">
-              <h3>Estados / Regiões <span style="font-size:.72rem;color:var(--muted);font-weight:400">(hoje)</span></h3>
-              <div id="dash-regions"></div>
-            </div>
-            <div class="field-group" style="margin-bottom:0">
-              <h3>Cidades <span style="font-size:.72rem;color:var(--muted);font-weight:400">(hoje)</span></h3>
-              <div id="dash-cities"></div>
-            </div>
           </div>
         </div>
       </div>
@@ -1713,42 +1723,50 @@ function renderDashboard(daily, prev, devices, events, regions, cities) {
   // Bar chart
   const maxVal = Math.max(...daily.map(d => d.uniq?.uniques || 0), 1);
   const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  document.getElementById('dash-chart').innerHTML = daily.map((d, i) => {
-    const v  = d.uniq?.uniques || 0;
-    const bp = Math.round((v / maxVal) * 100);
+  // SVG bar chart
+  const n = daily.length, vbW = 560, vbH = 130, padTop = 18, padBot = 22, barArea = vbH - padTop - padBot;
+  const gap = 5, barW = (vbW - gap * (n - 1)) / n;
+  let bars = '';
+  daily.forEach((d, i) => {
+    const v = d.uniq?.uniques || 0;
+    const bh = Math.max(Math.round((v / maxVal) * barArea), 4);
+    const x = i * (barW + gap), y = padTop + (barArea - bh);
+    const cx = x + barW / 2;
     const dt = new Date(d.dimensions.date + 'T12:00:00');
+    const isToday = i === n - 1;
     const dateStr = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-    return `<div class="dash-bar-col">
-      <div class="dash-bar-tip">${fmtNum(v)} visitas · ${dateStr}</div>
-      <span class="dash-bar-num">${v > 0 ? fmtNum(v) : ''}</span>
-      <div class="dash-bar${i === daily.length-1?' today':''}" style="height:${Math.max(bp,3)}%"></div>
-      <span class="dash-bar-day">${dayNames[dt.getDay()]}</span>
-    </div>`;
-  }).join('');
+    bars += `<g class="bar-group">
+      <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="3" fill="${isToday ? 'url(#btod)' : 'url(#bnrm)'}"/>
+      <text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="11" font-weight="600" font-family="inherit">${v > 0 ? fmtNum(v) : ''}</text>
+      <text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="10" font-family="inherit">${dayNames[dt.getDay()]}</text>
+      <title>${fmtNum(v)} visitas · ${dateStr}</title>
+    </g>`;
+  });
+  document.getElementById('dash-chart').innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="bnrm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD33A"/><stop offset="100%" stop-color="#b89200"/></linearGradient><linearGradient id="btod" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE840"/><stop offset="100%" stop-color="#F5C400"/></linearGradient></defs>${bars}</svg>`;
 
   // Countries (globe + bar list)
   const sorted = Object.entries(countryMap).sort((a,b) => b[1]-a[1]).slice(0,7);
   const maxC = sorted[0]?.[1] || 1;
-  const globeSVG = buildGlobeSVG(152);
-  document.getElementById('dash-countries').innerHTML = sorted.length
-    ? `<div style="display:flex;gap:14px;align-items:flex-start">
-        ${globeSVG}
-        <div class="dash-country-list" style="flex:1;min-width:0">
-          ${sorted.map(([name, val]) => {
-            const bp = Math.round((val / maxC) * 100);
-            const flag = COUNTRY_FLAGS[name] || '🌐';
-            return `<div class="dash-country-item">
-              <span class="dash-country-flag">${flag}</span>
-              <div style="flex:1;min-width:0">
-                <div class="dash-country-name">${name}</div>
-                <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${bp}%"></div></div>
-              </div>
-              <span class="dash-country-count">${fmtNum(val)}</span>
-            </div>`;
-          }).join('')}
-        </div>
-      </div>`
-    : '<p style="color:var(--muted);font-size:.84rem">Nenhum dado disponível.</p>';
+  // Globe on left of geo card
+  const geoGlobe = document.getElementById('geo-globe');
+  if (geoGlobe) geoGlobe.innerHTML = buildGlobeSVG(148);
+
+  // Countries panel
+  const countriesPanel = document.getElementById('geo-panel-countries');
+  if (countriesPanel) countriesPanel.innerHTML = sorted.length
+    ? sorted.map(([name, val]) => {
+        const bp = Math.round((val / maxC) * 100);
+        const flag = COUNTRY_FLAGS[name] || '🌐';
+        return `<div class="dash-country-item">
+          <span class="dash-country-flag">${flag}</span>
+          <div style="flex:1;min-width:0">
+            <div class="dash-country-name">${name}</div>
+            <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${bp}%"></div></div>
+          </div>
+          <span class="dash-country-count">${fmtNum(val)}</span>
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--muted);font-size:.84rem">Nenhum dado.</p>';
 
   // KV event cards
   if (events !== null) {
@@ -1775,18 +1793,13 @@ function renderDashboard(daily, prev, devices, events, regions, cities) {
 }
 
 function renderGeoDetail(regions, cities) {
-  const wrap = document.getElementById('dash-geodetail-wrap');
-  if (!wrap) return;
-  if (!regions?.length && !cities?.length) { wrap.style.display = 'none'; return; }
-  wrap.style.display = '';
-
   const mkList = (items, nameKey) => {
-    if (!items?.length) return '<p style="color:var(--muted);font-size:.82rem">Nenhum dado.</p>';
+    if (!items?.length) return '<p style="color:var(--muted);font-size:.82rem;padding-top:4px">Implante o novo Worker para ver dados.</p>';
     const max = items[0]?.count || 1;
     return items.slice(0, 10).map(it => {
       const name = it.dimensions?.[nameKey] || '—';
       const country = it.dimensions?.clientCountryName || '';
-      const label = name + (country && country !== name ? ` <span style="color:var(--muted);font-size:.7rem">${country}</span>` : '');
+      const label = name + (country && country !== name ? ` <span style="color:var(--muted);font-size:.69rem">${country}</span>` : '');
       const bp = Math.round((it.count / max) * 100);
       return `<div class="dash-country-item">
         <span class="dash-country-flag" style="font-size:.7rem">📍</span>
@@ -1799,8 +1812,13 @@ function renderGeoDetail(regions, cities) {
     }).join('');
   };
 
-  document.getElementById('dash-regions').innerHTML = mkList(regions, 'clientRegionCode');
-  document.getElementById('dash-cities').innerHTML  = mkList(cities,  'clientCity');
+  const regionTab = document.getElementById('geo-tab-regions');
+  const cityTab   = document.getElementById('geo-tab-cities');
+  const regPanel  = document.getElementById('geo-panel-regions');
+  const citPanel  = document.getElementById('geo-panel-cities');
+
+  if (regions?.length) { if (regionTab) regionTab.disabled = false; if (regPanel) regPanel.innerHTML = mkList(regions, 'clientRegionCode'); }
+  if (cities?.length)  { if (cityTab)   cityTab.disabled   = false; if (citPanel) citPanel.innerHTML = mkList(cities, 'clientCity'); }
 }
 
 // Setup / connect
@@ -1828,6 +1846,17 @@ document.getElementById('dash-retry-btn').addEventListener('click',   () => load
 document.getElementById('dash-reset-btn').addEventListener('click',   dashReset);
 document.getElementById('dash-reset-btn2').addEventListener('click',  dashReset);
 document.getElementById('dash-refresh-btn').addEventListener('click', () => loadDashboardData());
+
+// Geo tabs
+document.addEventListener('click', e => {
+  const tab = e.target.closest('.geo-tab');
+  if (!tab || tab.disabled) return;
+  document.querySelectorAll('.geo-tab').forEach(b => b.classList.remove('active'));
+  tab.classList.add('active');
+  document.querySelectorAll('.geo-panel').forEach(p => p.style.display = 'none');
+  const panel = document.getElementById('geo-panel-' + tab.dataset.geo);
+  if (panel) panel.style.display = '';
+});
 
 // ── ACCORDION ──
 document.querySelectorAll('.acc-header').forEach(hdr => {
