@@ -991,6 +991,39 @@
   });
 </script>
 
+<!-- Event tracking via Worker KV -->
+<script>
+function initTracking(workerUrl) {
+  if (!workerUrl) return;
+  const pageStart = Date.now();
+  function track(event, value) {
+    const body = JSON.stringify(value !== undefined ? { event, value } : { event });
+    try {
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(workerUrl, new Blob([body], { type: 'application/json' }));
+      } else {
+        fetch(workerUrl, { method: 'POST', body, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
+      }
+    } catch(e) {}
+  }
+  // WhatsApp clicks
+  document.addEventListener('click', e => {
+    if (e.target.closest('.wa-link, .wa-float')) track('wa');
+  }, { capture: true });
+  // Photo / image clicks
+  document.addEventListener('click', e => {
+    if (e.target.matches('img') && e.target.closest('#services, #benefits, .dump-float, .bvisual-rotator')) track('photo');
+  });
+  // Time on page
+  function sendTime() {
+    const s = Math.round((Date.now() - pageStart) / 1000);
+    if (s >= 4) track('time', s);
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') sendTime(); });
+  window.addEventListener('pagehide', sendTime);
+}
+</script>
+
 <!-- Content loader from CMS -->
 <script>
 (async function() {
@@ -1059,6 +1092,7 @@
         s.textContent = `!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${ig.meta_pixel}');fbq('track','PageView');`;
         document.head.appendChild(s);
       }
+      if (ig.worker_url) initTracking(ig.worker_url);
     }
     if (c.hero?.subtitle) set('hero-subtitle', c.hero.subtitle, true);
     if (c.services) {

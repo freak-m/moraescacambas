@@ -1120,77 +1120,89 @@
 
           <details style="margin-top:14px;background:var(--card2);border:1px solid var(--border);border-radius:8px">
             <summary style="cursor:pointer;padding:12px 14px;font-size:.84rem;font-weight:600;color:var(--yellow);user-select:none;list-style:none">
-              ▸ Código atualizado do Worker (com credenciais seguras)
+              ▸ Código do Worker (Analytics + Rastreamento de Cliques)
             </summary>
             <div style="padding:4px 14px 14px;font-size:.82rem;line-height:1.65">
               <ol style="padding-left:18px;color:var(--muted2);display:flex;flex-direction:column;gap:5px;margin-bottom:12px">
-                <li>No Worker, vá em <strong style="color:var(--white)">Edit code</strong>, apague tudo e cole o código abaixo</li>
-                <li>Clique em <strong style="color:var(--white)">Deploy</strong></li>
-                <li>Vá em <strong style="color:var(--white)">Settings → Variables and Secrets</strong> e adicione <code style="background:#111;padding:1px 5px;border-radius:3px">CF_ZONE_ID</code> e <code style="background:#111;padding:1px 5px;border-radius:3px">CF_API_TOKEN</code></li>
+                <li>No Worker, vá em <strong style="color:var(--white)">Edit code</strong>, apague tudo e cole o código abaixo. Clique em <strong style="color:var(--white)">Deploy</strong></li>
+                <li>Vá em <strong style="color:var(--white)">Settings → Variables and Secrets</strong> e confirme que <code style="background:#111;padding:1px 5px;border-radius:3px">CF_ZONE_ID</code> e <code style="background:#111;padding:1px 5px;border-radius:3px">CF_API_TOKEN</code> existem</li>
+                <li>Vá em <strong style="color:var(--white)">Settings → Bindings → Add → KV Namespace</strong></li>
+                <li>Nome da variável: <code style="background:#111;padding:1px 5px;border-radius:3px">ANALYTICS_KV</code> · Crie um novo namespace chamado <code style="background:#111;padding:1px 5px;border-radius:3px">analytics</code> · Salve e faça <strong style="color:var(--white)">Deploy</strong></li>
               </ol>
               <div style="position:relative">
                 <pre id="worker-code-pre" style="background:#0a0a0a;border:1px solid #2a2a2a;border-radius:6px;padding:12px 12px 12px 14px;overflow-x:auto;font-size:.76rem;color:#bbb;margin:0;white-space:pre">export default {
   async fetch(request, env) {
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Content-Type',
-      }});
+    const cors = {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET,POST',
+      'Access-Control-Allow-Headers': 'Content-Type',
+    };
+    if (request.method === 'OPTIONS') return new Response(null, { headers: cors });
+
+    // ── POST: gravar evento no KV ────────────────
+    if (request.method === 'POST') {
+      if (!env.ANALYTICS_KV) return new Response('{"ok":false}', { status: 500, headers: { ...cors, 'Content-Type': 'application/json' } });
+      try {
+        const { event, value } = await request.json();
+        const today = new Date().toISOString().split('T')[0];
+        const TTL = 5184000; // 60 dias
+        if (event === 'wa' || event === 'photo') {
+          const n = parseInt(await env.ANALYTICS_KV.get(`${event}:${today}`) || '0');
+          await env.ANALYTICS_KV.put(`${event}:${today}`, String(n + 1), { expirationTtl: TTL });
+        } else if (event === 'time') {
+          const s = Math.min(Math.max(parseInt(value) || 0, 4), 1800);
+          if (s >= 4) {
+            const [t, c] = await Promise.all([env.ANALYTICS_KV.get(`time_total:${today}`), env.ANALYTICS_KV.get(`time_count:${today}`)]);
+            await Promise.all([
+              env.ANALYTICS_KV.put(`time_total:${today}`, String(parseInt(t || 0) + s), { expirationTtl: TTL }),
+              env.ANALYTICS_KV.put(`time_count:${today}`, String(parseInt(c || 0) + 1), { expirationTtl: TTL }),
+            ]);
+          }
+        }
+        return new Response('{"ok":true}', { headers: { ...cors, 'Content-Type': 'application/json' } });
+      } catch(e) { return new Response('{"ok":false}', { status: 400, headers: { ...cors, 'Content-Type': 'application/json' } }); }
     }
+
+    // ── GET: métricas CF + eventos KV ───────────
     const url = new URL(request.url);
     const days = parseInt(url.searchParams.get('days') || '7');
     const now = new Date();
-    const start = new Date(now);
-    start.setDate(start.getDate() - (days - 1));
-    const prevEnd = new Date(start);
-    prevEnd.setDate(prevEnd.getDate() - 1);
-    const prevStart = new Date(prevEnd);
-    prevStart.setDate(prevStart.getDate() - (days - 1));
+    const start = new Date(now); start.setDate(start.getDate() - (days - 1));
+    const prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate() - 1);
+    const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - (days - 1));
     const fmt = d => d.toISOString().split('T')[0];
-    const query = `{
-      viewer {
-        zones(filter: {zoneTag: "${env.CF_ZONE_ID}"}) {
-          current: httpRequests1dGroups(
-            limit: ${days} orderBy: [date_ASC]
-            filter: {date_geq: "${fmt(start)}", date_leq: "${fmt(now)}"}
-          ) {
-            dimensions { date }
-            sum { pageViews requests countryMap { clientCountryName requests } }
-            uniq { uniques }
-          }
-          prev: httpRequests1dGroups(
-            limit: ${days}
-            filter: {date_geq: "${fmt(prevStart)}", date_leq: "${fmt(prevEnd)}"}
-          ) {
-            sum { pageViews requests }
-            uniq { uniques }
-          }
-          devices: httpRequestsAdaptiveGroups(
-            limit: 10 orderBy: [count_DESC]
-            filter: {date_geq: "${fmt(now)}", date_leq: "${fmt(now)}"}
-          ) {
-            dimensions { clientDeviceType }
-            count
-          }
-        }
-      }
-    }`;
-    const res = await fetch('https://api.cloudflare.com/client/v4/graphql', {
+    const mkDates = (from, n) => Array.from({ length: n }, (_, i) => { const d = new Date(from); d.setDate(d.getDate() + i); return fmt(d); });
+    const currDates = mkDates(start, days);
+    const prevDates = mkDates(prevStart, days);
+
+    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}devices:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(now)}",date_leq:"${fmt(now)}"}){dimensions{clientDeviceType}count}}}}`;
+
+    const cfFetch = fetch('https://api.cloudflare.com/client/v4/graphql', {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${env.CF_API_TOKEN}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ query }),
+      headers: { 'Authorization': `Bearer ${env.CF_API_TOKEN}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query: gql }),
     });
-    return new Response(await res.text(), {
-      status: res.status,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
+
+    let events = null;
+    if (env.ANALYTICS_KV) {
+      const keys = [
+        ...currDates.flatMap(d => [`wa:${d}`, `photo:${d}`, `time_total:${d}`, `time_count:${d}`]),
+        ...prevDates.flatMap(d => [`wa:${d}`, `photo:${d}`]),
+      ];
+      const [cfRes, ...vals] = await Promise.all([cfFetch, ...keys.map(k => env.ANALYTICS_KV.get(k))]);
+      let wa = 0, photo = 0, tt = 0, tc = 0, pwa = 0, pphoto = 0;
+      for (let i = 0; i < days; i++) { wa += parseInt(vals[i*4]||0); photo += parseInt(vals[i*4+1]||0); tt += parseInt(vals[i*4+2]||0); tc += parseInt(vals[i*4+3]||0); }
+      for (let i = 0; i < days; i++) { pwa += parseInt(vals[days*4+i*2]||0); pphoto += parseInt(vals[days*4+i*2+1]||0); }
+      events = { wa, photo, time_avg: tc ? Math.round(tt / tc) : 0, prev_wa: pwa, prev_photo: pphoto };
+      const json = await cfRes.json();
+      json.events = events;
+      return new Response(JSON.stringify(json), { status: cfRes.status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
+    }
+
+    const cfRes = await cfFetch;
+    const json = await cfRes.json();
+    json.events = null;
+    return new Response(JSON.stringify(json), { status: cfRes.status, headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' } });
   },
 };</pre>
                 <button onclick="navigator.clipboard.writeText(document.getElementById('worker-code-pre').textContent).then(()=>{this.textContent='✓ Copiado!';setTimeout(()=>{this.textContent='Copiar código'},2200)})" style="position:absolute;top:8px;right:8px;background:var(--card);border:1px solid var(--border2);border-radius:5px;color:var(--muted2);padding:3px 10px;font-size:.74rem;cursor:pointer" type="button">Copiar código</button>
@@ -1256,31 +1268,31 @@
           </div>
         </div>
 
-        <!-- GA4 placeholder cards -->
+        <!-- Event tracking cards (Worker KV) -->
         <div class="dash-metrics">
-          <div class="dash-metric dash-metric-ga">
+          <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label">Cliques WhatsApp</span>
-              <span class="dash-metric-ga-badge">GA4</span>
+              <span class="dash-metric-change neutral" id="dmc-wa">—</span>
             </div>
-            <div class="dash-metric-val">—</div>
-            <p class="dash-metric-ga-note">Configure eventos no Google Analytics para ver este dado</p>
+            <div class="dash-metric-val" id="dm-wa" style="color:var(--muted)">—</div>
+            <p class="dash-metric-ga-note" id="dm-wa-note">Ative o KV no Worker para rastrear</p>
           </div>
-          <div class="dash-metric dash-metric-ga">
+          <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label">Tempo na Página</span>
-              <span class="dash-metric-ga-badge">GA4</span>
+              <span class="dash-metric-change neutral" id="dmc-time">—</span>
             </div>
-            <div class="dash-metric-val">—</div>
-            <p class="dash-metric-ga-note">Disponível em GA4 → Relatórios → Engajamento</p>
+            <div class="dash-metric-val" id="dm-time" style="color:var(--muted)">—</div>
+            <p class="dash-metric-ga-note" id="dm-time-note">Rastreado automaticamente via Worker</p>
           </div>
-          <div class="dash-metric dash-metric-ga">
+          <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label">Cliques nas Fotos</span>
-              <span class="dash-metric-ga-badge">GA4</span>
+              <span class="dash-metric-change neutral" id="dmc-photo">—</span>
             </div>
-            <div class="dash-metric-val">—</div>
-            <p class="dash-metric-ga-note">Configure eventos personalizados no Google Analytics</p>
+            <div class="dash-metric-val" id="dm-photo" style="color:var(--muted)">—</div>
+            <p class="dash-metric-ga-note" id="dm-photo-note">Ative o KV no Worker para rastrear</p>
           </div>
         </div>
 
@@ -1351,6 +1363,18 @@
               <input type="text" id="int-meta-verify" placeholder="código de verificação">
               <p class="field-note" style="margin-top:4px">Meta Business → Configurações → Segurança da Marca → Domínios</p>
             </div>
+          </div>
+        </div>
+        <!-- Worker URL (auto-filled from Dashboard) -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:12px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <strong style="font-size:.9rem;color:var(--white)">Analytics Worker</strong>
+            <span style="font-size:.72rem;color:var(--muted);margin-left:auto">Preenchido automaticamente ao conectar o Dashboard</span>
+          </div>
+          <div class="form-field">
+            <label>Worker URL <span>(usado pelo site para rastrear cliques)</span></label>
+            <input type="text" id="int-worker-url" placeholder="Conecte o Worker no Dashboard para preencher automaticamente" readonly style="opacity:.65;cursor:default">
           </div>
         </div>
       </div><!-- /integrations-section -->
@@ -1466,8 +1490,8 @@ function initDashboard() {
 async function loadDashboardData() {
   dashShow('dash-loading');
   try {
-    const { daily, prev, devices } = await fetchCfAnalytics();
-    renderDashboard(daily, prev, devices);
+    const { daily, prev, devices, events } = await fetchCfAnalytics();
+    renderDashboard(daily, prev, devices, events);
     dashShow('dash-data');
   } catch(e) {
     document.getElementById('dash-error-msg').textContent = e.message;
@@ -1489,7 +1513,8 @@ async function fetchCfAnalytics() {
   return {
     daily:   zone.current || [],
     prev:    zone.prev    || [],
-    devices: zone.devices || []
+    devices: zone.devices || [],
+    events:  json.events  ?? null
   };
 }
 
@@ -1497,6 +1522,12 @@ function fmtNum(n) {
   if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
   if (n >= 1000) return (n/1000).toFixed(1) + 'k';
   return String(n);
+}
+
+function fmtTime(secs) {
+  if (!secs) return '—';
+  const m = Math.floor(secs / 60), s = secs % 60;
+  return m > 0 ? `${m}m ${String(s).padStart(2,'0')}s` : `${s}s`;
 }
 
 function sparklineSVG(values) {
@@ -1576,7 +1607,7 @@ function renderDeviceChart(devices) {
     </div>`;
 }
 
-function renderDashboard(daily, prev, devices) {
+function renderDashboard(daily, prev, devices, events) {
   let curUniq = 0, curPV = 0, curReq = 0;
   let prvUniq = 0, prvPV = 0, prvReq = 0;
   const countryMap = {};
@@ -1646,6 +1677,23 @@ function renderDashboard(daily, prev, devices) {
       </div>`
     : '<p style="color:var(--muted);font-size:.84rem">Nenhum dado disponível.</p>';
 
+  // KV event cards
+  if (events !== null) {
+    const show = (valId, noteId, chgId, txt, pct) => {
+      const el = document.getElementById(valId);
+      if (el) { el.textContent = txt; el.style.color = ''; }
+      const note = document.getElementById(noteId);
+      if (note) note.style.display = 'none';
+      if (chgId && pct !== undefined) setChange(chgId, pct);
+    };
+    const cPct = (c, p) => p ? (c - p) / p * 100 : null;
+    show('dm-wa',    'dm-wa-note',    'dmc-wa',    fmtNum(events.wa),          cPct(events.wa,    events.prev_wa));
+    show('dm-photo', 'dm-photo-note', 'dmc-photo', fmtNum(events.photo),       cPct(events.photo, events.prev_photo));
+    show('dm-time',  'dm-time-note',  'dmc-time',  fmtTime(events.time_avg),   undefined);
+    const timeChg = document.getElementById('dmc-time');
+    if (timeChg) { timeChg.textContent = 'média'; timeChg.className = 'dash-metric-change neutral'; }
+  }
+
   // Devices donut
   renderDeviceChart(devices);
 }
@@ -1660,6 +1708,8 @@ document.getElementById('cf-connect-btn').addEventListener('click', async () => 
   await loadDashboardData();
   if (document.getElementById('dash-error').style.display !== 'none') {
     localStorage.removeItem(CF_WORKER_KEY);
+  } else {
+    document.getElementById('int-worker-url').value = workerUrl;
   }
 });
 
@@ -1998,6 +2048,7 @@ function populateForm(c) {
   document.getElementById('int-google-analytics').value = ig.google_analytics || '';
   document.getElementById('int-meta-pixel').value       = ig.meta_pixel       || '';
   document.getElementById('int-meta-verify').value      = ig.meta_verify      || '';
+  document.getElementById('int-worker-url').value       = ig.worker_url || localStorage.getItem(CF_WORKER_KEY) || '';
 }
 
 // ══════════════════════════════════════════════════
@@ -2077,7 +2128,8 @@ function collectForm() {
       google_verify:    val('int-google-verify'),
       google_analytics: val('int-google-analytics'),
       meta_pixel:       val('int-meta-pixel'),
-      meta_verify:      val('int-meta-verify')
+      meta_verify:      val('int-meta-verify'),
+      worker_url:       val('int-worker-url') || localStorage.getItem(CF_WORKER_KEY) || ''
     }
   };
 }

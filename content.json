@@ -126,6 +126,7 @@
     "google_verify": "",
     "google_analytics": "",
     "meta_pixel": "",
-    "meta_verify": ""
+    "meta_verify": "",
+    "worker_url": ""
   }
 }
