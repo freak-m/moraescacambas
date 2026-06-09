@@ -1776,17 +1776,23 @@ function renderDashboard(daily, prev, devices, events, regions, cities) {
   // Bar chart
   const maxVal = Math.max(...daily.map(d => d.uniq?.uniques || 0), 1);
   const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  // SVG bar chart
-  const n = daily.length, vbW = 560, vbH = 130, padTop = 18, padBot = 22, barArea = vbH - padTop - padBot;
+  // SVG bar chart — sorted Dom→Sáb
+  const todayDate = daily[daily.length - 1]?.dimensions?.date;
+  const sorted7 = [...daily].sort((a, b) => {
+    const da = new Date(a.dimensions.date + 'T12:00:00').getDay();
+    const db = new Date(b.dimensions.date + 'T12:00:00').getDay();
+    return da - db;
+  });
+  const n = sorted7.length, vbW = 560, vbH = 130, padTop = 18, padBot = 22, barArea = vbH - padTop - padBot;
   const gap = 5, barW = (vbW - gap * (n - 1)) / n;
   let bars = '';
-  daily.forEach((d, i) => {
+  sorted7.forEach((d, i) => {
     const v = d.uniq?.uniques || 0;
     const bh = Math.max(Math.round((v / maxVal) * barArea), 4);
     const x = i * (barW + gap), y = padTop + (barArea - bh);
     const cx = x + barW / 2;
     const dt = new Date(d.dimensions.date + 'T12:00:00');
-    const isToday = i === n - 1;
+    const isToday = d.dimensions.date === todayDate;
     const dateStr = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
     bars += `<g class="bar-group">
       <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="3" fill="${isToday ? 'url(#btod)' : 'url(#bnrm)'}"/>
