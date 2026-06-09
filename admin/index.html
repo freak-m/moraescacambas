@@ -1103,16 +1103,12 @@
 
       <!-- Setup -->
       <div id="dash-setup">
-        <div class="ct-section-header" style="margin-bottom:20px">
-          <span class="ct-badge-preview">CLOUDFLARE</span>
-          <span class="ct-section-desc">Configure uma vez — fica salvo neste dispositivo</span>
-        </div>
         <div class="field-group">
           <h3>Conectar Analytics</h3>
           <p class="field-note">Cole a URL do Worker para exibir métricas de visitas do site. As credenciais ficam seguras no Cloudflare.</p>
           <div class="form-row" style="margin-top:14px">
             <div class="form-field">
-              <label>Worker URL</label>
+              <label>Analytics URL</label>
               <input type="text" id="cf-worker-url" placeholder="https://analytics-proxy.SEU-USER.workers.dev" autocomplete="off">
               <p class="field-note" style="margin-top:5px">URL do Worker criado no Cloudflare Workers &amp; Pages</p>
             </div>
@@ -1373,7 +1369,7 @@
             <span style="font-size:.72rem;color:var(--muted);margin-left:auto">Preenchido automaticamente ao conectar o Dashboard</span>
           </div>
           <div class="form-field">
-            <label>Worker URL <span>(usado pelo site para rastrear cliques)</span></label>
+            <label>Analytics URL <span>(usado pelo site para rastrear cliques)</span></label>
             <input type="text" id="int-worker-url" placeholder="Conecte o Worker no Dashboard para preencher automaticamente" readonly style="opacity:.65;cursor:default">
           </div>
         </div>
@@ -1470,8 +1466,6 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 // ══════════════════════════════════════════════════
 //  DASHBOARD — Cloudflare Analytics
 // ══════════════════════════════════════════════════
-const CF_ZONE_KEY   = 'cf_zone_id';
-const CF_TOKEN_KEY  = 'cf_api_token';
 const CF_WORKER_KEY = 'cf_worker_url';
 
 function dashShow(id) {
@@ -1501,7 +1495,7 @@ async function loadDashboardData() {
 
 async function fetchCfAnalytics() {
   const workerUrl = localStorage.getItem(CF_WORKER_KEY) || '';
-  if (!workerUrl) throw new Error('Worker URL não configurado. Clique em "Reconfigurar".');
+  if (!workerUrl) throw new Error('Analytics URL não configurado. Clique em "Reconfigurar".');
   const res = await fetch(`${workerUrl}?days=7`)
     .catch(() => { throw new Error('Não foi possível conectar ao Worker. Verifique se a URL está correta e o Worker foi publicado.'); });
   if (!res.ok) throw new Error(`Erro no Worker: ${res.status}`);
@@ -1703,7 +1697,7 @@ document.getElementById('cf-connect-btn').addEventListener('click', async () => 
   const workerUrl = document.getElementById('cf-worker-url').value.trim();
   const errEl     = document.getElementById('cf-setup-error');
   errEl.style.display = 'none';
-  if (!workerUrl) { errEl.textContent = 'Preencha o campo Worker URL.'; errEl.style.display = ''; return; }
+  if (!workerUrl) { errEl.textContent = 'Preencha o campo Analytics URL.'; errEl.style.display = ''; return; }
   localStorage.setItem(CF_WORKER_KEY, workerUrl);
   await loadDashboardData();
   if (document.getElementById('dash-error').style.display !== 'none') {
@@ -1714,8 +1708,6 @@ document.getElementById('cf-connect-btn').addEventListener('click', async () => 
 });
 
 function dashReset() {
-  localStorage.removeItem(CF_ZONE_KEY);
-  localStorage.removeItem(CF_TOKEN_KEY);
   localStorage.removeItem(CF_WORKER_KEY);
   document.getElementById('cf-worker-url').value = '';
   dashShow('dash-setup');
