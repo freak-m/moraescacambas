@@ -1206,6 +1206,7 @@
             </div>
             <div class="dash-metric-val" id="dm-wa" style="color:var(--muted)">—</div>
             <p class="dash-metric-ga-note" id="dm-wa-note">Não disponível</p>
+            <div class="dash-metric-spark" id="dms-wa"></div>
           </div>
           <div class="dash-metric">
             <div class="dash-metric-top">
@@ -1491,7 +1492,7 @@ function fmtTime(secs) {
   return m > 0 ? `${m}m ${String(s).padStart(2,'0')}s` : `${s}s`;
 }
 
-function sparklineSVG(values, dates) {
+function sparklineSVG(values, dates, color) {
   if (!values || values.length < 2) return '';
   const max = Math.max(...values, 1);
   const n = values.length;
@@ -1504,7 +1505,8 @@ function sparklineSVG(values, dates) {
   let bars = '', dateLabels = '';
   values.forEach((v, i) => {
     const x = padX + i * barW, y = yOf(v), bh = lineH - 4 - y;
-    if (bh > 0) bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(barW - 1).toFixed(1)}" height="${bh.toFixed(1)}" fill="rgba(245,196,0,0.2)" rx="1"/>`;
+    const barColor = color ? color.replace(')', ',0.22)').replace('rgb','rgba') : 'rgba(245,196,0,0.2)';
+    if (bh > 0) bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(barW - 1).toFixed(1)}" height="${bh.toFixed(1)}" fill="${barColor}" rx="1"/>`;
     if (v > 0 && (i % showValEvery === 0 || i === n - 1)) {
       bars += `<text x="${xOf(i).toFixed(1)}" y="${(y - 2).toFixed(1)}" text-anchor="middle" fill="#aaa" font-size="8" font-weight="600" font-family="inherit">${fmtNum(v)}</text>`;
     }
@@ -1520,7 +1522,8 @@ function sparklineSVG(values, dates) {
       dateLabels += `<text x="${x.toFixed(1)}" y="${vbH - 1}" text-anchor="middle" fill="#555" font-size="9" font-family="inherit">${lbl}</text>`;
     });
   }
-  return `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%">${bars}<polyline points="${pts}" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dateLabels}</svg>`;
+  const lineColor = color || '#F5C400';
+  return `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%">${bars}<polyline points="${pts}" fill="none" stroke="${lineColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dateLabels}</svg>`;
 }
 
 function setChange(id, pct) {
@@ -1862,6 +1865,10 @@ function renderDashboard(daily, prev, devices, os, events, waDaily) {
     };
     const cPct = (c, p) => p ? (c - p) / p * 100 : null;
     show('dm-wa',    'dm-wa-note',    'dmc-wa',    fmtNum(events.wa),          cPct(events.wa,    events.prev_wa));
+    if (waDaily && waDaily.length > 1) {
+      const waSpark = document.getElementById('dms-wa');
+      if (waSpark) waSpark.innerHTML = sparklineSVG(waDaily.map(d => d.count), waDaily.map(d => d.date), '#25D366');
+    }
     show('dm-photo', 'dm-photo-note', 'dmc-photo', fmtNum(events.photo),       cPct(events.photo, events.prev_photo));
     show('dm-time',  'dm-time-note',  'dmc-time',  fmtTime(events.time_avg),   undefined);
     const timeChg = document.getElementById('dmc-time');
