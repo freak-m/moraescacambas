@@ -1186,11 +1186,12 @@
     }
     const prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate() - 1);
     const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - (days - 1));
+    const adaptiveStart = new Date(now); adaptiveStart.setDate(adaptiveStart.getDate() - (Math.min(days, 7) - 1));
     const mkDates = (from, n) => Array.from({ length: n }, (_, i) => { const d = new Date(from); d.setDate(d.getDate() + i); return fmt(d); });
     const currDates = mkDates(start, days);
     const prevDates = mkDates(prevStart, days);
 
-    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}os:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{clientOSName}count}regions:httpRequestsAdaptiveGroups(limit:15 orderBy:[count_DESC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientRegionCode}count}cities:httpRequestsAdaptiveGroups(limit:20 orderBy:[count_DESC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil",clientRegionCode:"SP"}){dimensions{clientCity}count}}}}`;
+    const gql = `{viewer{zones(filter:{zoneTag:"${env.CF_ZONE_ID}"}){current:httpRequests1dGroups(limit:${days} orderBy:[date_ASC] filter:{date_geq:"${fmt(start)}",date_leq:"${fmt(now)}"}){dimensions{date}sum{pageViews requests countryMap{clientCountryName requests}}uniq{uniques}}prev:httpRequests1dGroups(limit:${days} filter:{date_geq:"${fmt(prevStart)}",date_leq:"${fmt(prevEnd)}"}){sum{pageViews requests}uniq{uniques}}os:httpRequestsAdaptiveGroups(limit:10 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}"}){dimensions{clientOSName}count}regions:httpRequestsAdaptiveGroups(limit:30 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientRegionCode}count}cities:httpRequestsAdaptiveGroups(limit:50 orderBy:[count_DESC] filter:{date_geq:"${fmt(adaptiveStart)}",date_leq:"${fmt(now)}",clientCountryName:"Brazil"}){dimensions{clientCity clientRegionCode}count}}}}`;
 
     const cfFetch = fetch('https://api.cloudflare.com/client/v4/graphql', {
       method: 'POST',
@@ -1925,8 +1926,10 @@ function renderGeoDetail(regions, cities) {
 
   const mkCityList = items => {
     if (!items?.length) return noData;
-    const max = items[0]?.count || 1;
-    return items.slice(0, 15).map(it => {
+    const spOnly = items.filter(it => (it.dimensions?.clientRegionCode || '').toUpperCase() === 'SP');
+    const list = spOnly.length ? spOnly : items;
+    const max = list[0]?.count || 1;
+    return list.slice(0, 15).map(it => {
       const city = it.dimensions?.clientCity || '—';
       const bp = Math.round((it.count / max) * 100);
       return `<div class="dash-country-item">
