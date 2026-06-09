@@ -758,12 +758,23 @@
       <!-- og:image -->
       <div class="field-group">
         <h3>Imagem de Compartilhamento</h3>
-        <p class="field-note">Foto exibida ao compartilhar o link no WhatsApp e Facebook (og:image). Use uma URL de imagem pública.</p>
+        <p class="field-note">Foto exibida ao compartilhar o link no WhatsApp e Facebook (og:image). Recomendado: 1200×630px.</p>
         <div class="form-row">
           <div class="form-field">
-            <label>URL da imagem <span>(recomendado: 1200×630px)</span></label>
-            <input type="text" id="seo-og-image" placeholder="https://moraescacambas.com.br/imagem.jpg">
+            <label>URL da imagem</label>
+            <input type="text" id="seo-og-image" placeholder="https://moraescacambas.com.br/imagem.webp" oninput="updateOgPreview(this.value)">
           </div>
+        </div>
+        <div class="img-upload-row" style="margin-top:10px">
+          <div class="img-current">Ou faça upload direto para o repositório</div>
+          <button class="btn-upload" onclick="document.getElementById('og-img-file').click()">Enviar imagem</button>
+          <input type="file" class="img-hidden-input" id="og-img-file" accept="image/*" data-target="og-img-name" data-url-target="seo-og-image">
+        </div>
+        <div class="upload-progress" id="og-img-progress"></div>
+        <span id="og-img-name" style="display:none"></span>
+        <div id="og-img-preview-wrap" style="margin-top:12px;display:none">
+          <img id="og-img-preview" src="" alt="Preview" style="max-width:320px;width:100%;border-radius:8px;border:1px solid var(--border);display:block">
+          <p style="font-size:.75rem;color:var(--muted);margin-top:4px">Preview da imagem de compartilhamento</p>
         </div>
       </div>
 
@@ -2206,6 +2217,7 @@ function populateForm(c) {
   document.getElementById('seo-desc').value     = c.seo?.description || '';
   document.getElementById('seo-keywords').value = c.seo?.keywords    || '';
   document.getElementById('seo-og-image').value = c.seo?.og_image    || '';
+  updateOgPreview(c.seo?.og_image || '');
   const sl = c.seo?.schema_local || {};
   document.getElementById('schema-name').value    = sl.name    || '';
   document.getElementById('schema-phone').value   = sl.phone   || '';
@@ -2453,6 +2465,21 @@ async function publish() {
 }
 
 // ══════════════════════════════════════════════════
+//  OG IMAGE PREVIEW
+// ══════════════════════════════════════════════════
+function updateOgPreview(url) {
+  const wrap = document.getElementById('og-img-preview-wrap');
+  const img  = document.getElementById('og-img-preview');
+  if (!wrap || !img) return;
+  if (url && url.startsWith('http')) {
+    img.src = url;
+    wrap.style.display = '';
+  } else {
+    wrap.style.display = 'none';
+  }
+}
+
+// ══════════════════════════════════════════════════
 //  IMAGE UPLOAD
 // ══════════════════════════════════════════════════
 async function uploadImage(fileInput) {
@@ -2507,6 +2534,12 @@ async function uploadImage(fileInput) {
 
     if (nameEl) nameEl.textContent = filename;
     if (progressEl) { progressEl.textContent = '✓ Upload concluído: ' + filename; progressEl.className = 'upload-progress success'; }
+    const urlTargetId = fileInput.dataset.urlTarget;
+    if (urlTargetId) {
+      const fullUrl = `https://moraescacambas.com.br/${filename}`;
+      const urlEl = document.getElementById(urlTargetId);
+      if (urlEl) { urlEl.value = fullUrl; updateOgPreview(fullUrl); }
+    }
   } catch(e) {
     if (progressEl) { progressEl.textContent = 'Erro: ' + e.message; progressEl.className = 'upload-progress error'; }
   }
