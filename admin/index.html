@@ -657,10 +657,11 @@
         <span>Painel<br><strong>Moraes Caçambas</strong></span>
       </div>
       <nav class="sidebar-nav">
-        <button class="tab-btn active" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
+        <button class="tab-btn" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
         <button class="tab-btn" data-tab="sections"><span class="nav-icon">📝</span> Seções</button>
         <button class="tab-btn" data-tab="contact"><span class="nav-icon">🏠</span> Rodapé</button>
         <button class="tab-btn active" data-tab="dashboard"><span class="nav-icon">📊</span> Dashboard</button>
+        <button class="tab-btn" data-tab="integrations"><span class="nav-icon">🔗</span> Integrações</button>
       </nav>
       <div class="sidebar-footer">
         <button class="preview-toggle-sidebar" id="preview-toggle-btn">👁 Preview</button>
@@ -1191,8 +1192,11 @@
         </div>
       </div>
 
-      <!-- ── INTEGRATIONS ── -->
-      <div class="field-group" style="margin-top:32px" id="integrations-section">
+    </div><!-- /tab-dashboard -->
+
+    <!-- ── INTEGRATIONS TAB ── -->
+    <div class="tab-pane" id="tab-integrations">
+      <div class="field-group" id="integrations-section">
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
           <h3>Anúncios &amp; Verificação</h3>
           <span style="font-size:.74rem;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--muted)">Salvo com Publicar</span>
@@ -1239,13 +1243,12 @@
           </div>
         </div>
       </div><!-- /integrations-section -->
-
-    </div><!-- /tab-dashboard -->
+    </div><!-- /tab-integrations -->
 
   </div><!-- /tab-content -->
     </div><!-- /adm-editor -->
 
-    <div class="adm-preview" id="adm-preview">
+    <div class="adm-preview hidden" id="adm-preview">
       <div class="preview-bar">
         <span class="preview-dot"></span>
         <span class="preview-label">Preview ao vivo</span>
@@ -1306,7 +1309,8 @@ function showToast(msg, isError) {
 
 // ── TABS ──
 const ACC_SECTION = { hero: 'hero', service: 'services', how: 'how', benefits: 'benefits', stats: 'stats', contact: 'contact' };
-const TAB_SECTION = { contact: 'site-footer', seo: null, sections: null };
+const TAB_SECTION   = { contact: 'site-footer', seo: null, sections: null };
+const NO_PREVIEW_TABS = new Set(['dashboard', 'integrations']);
 
 document.querySelectorAll('.tab-btn').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -1314,6 +1318,12 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
     btn.classList.add('active');
     document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    const preview = document.getElementById('adm-preview');
+    if (NO_PREVIEW_TABS.has(btn.dataset.tab)) {
+      preview.classList.add('hidden');
+    } else {
+      preview.classList.remove('hidden');
+    }
     focusPreviewSection(TAB_SECTION[btn.dataset.tab] ?? null);
     if (btn.dataset.tab === 'dashboard') initDashboard();
   });
