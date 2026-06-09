@@ -1488,15 +1488,19 @@ function sparklineSVG(values, dates) {
   if (!values || values.length < 2) return '';
   const max = Math.max(...values, 1);
   const n = values.length;
-  const vbW = 400, lineH = 38, dateH = dates ? 14 : 0, vbH = lineH + dateH;
+  const vbW = 400, lineH = 48, dateH = dates ? 14 : 0, vbH = lineH + dateH;
   const padX = 2;
   const barW = (vbW - padX * 2) / n;
   const xOf  = i => padX + i * barW + barW / 2;
-  const yOf  = v => (lineH - 2) - Math.max((v / max) * (lineH - 6), 0);
-  let bars = '', labels = '';
+  const yOf  = v => (lineH - 4) - Math.max((v / max) * (lineH - 18), 0);
+  const showValEvery = n > 20 ? 4 : n > 14 ? 2 : 1;
+  let bars = '', dateLabels = '';
   values.forEach((v, i) => {
-    const x = padX + i * barW, y = yOf(v), bh = lineH - 2 - y;
+    const x = padX + i * barW, y = yOf(v), bh = lineH - 4 - y;
     if (bh > 0) bars += `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${(barW - 1).toFixed(1)}" height="${bh.toFixed(1)}" fill="rgba(245,196,0,0.2)" rx="1"/>`;
+    if (v > 0 && (i % showValEvery === 0 || i === n - 1)) {
+      bars += `<text x="${xOf(i).toFixed(1)}" y="${(y - 2).toFixed(1)}" text-anchor="middle" fill="#aaa" font-size="8" font-weight="600" font-family="inherit">${fmtNum(v)}</text>`;
+    }
   });
   const pts = values.map((v, i) => `${xOf(i).toFixed(1)},${yOf(v).toFixed(1)}`).join(' ');
   const labelEvery = n > 20 ? 5 : n > 14 ? 3 : n > 7 ? 2 : 1;
@@ -1506,10 +1510,10 @@ function sparklineSVG(values, dates) {
       const x = Math.max(14, Math.min(vbW - 14, xOf(i)));
       const dt = new Date(ds + 'T12:00:00');
       const lbl = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-      labels += `<text x="${x.toFixed(1)}" y="${vbH - 1}" text-anchor="middle" fill="#555" font-size="9" font-family="inherit">${lbl}</text>`;
+      dateLabels += `<text x="${x.toFixed(1)}" y="${vbH - 1}" text-anchor="middle" fill="#555" font-size="9" font-family="inherit">${lbl}</text>`;
     });
   }
-  return `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%">${bars}<polyline points="${pts}" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${labels}</svg>`;
+  return `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="display:block;width:100%">${bars}<polyline points="${pts}" fill="none" stroke="#F5C400" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>${dateLabels}</svg>`;
 }
 
 function setChange(id, pct) {
@@ -1523,10 +1527,28 @@ function setChange(id, pct) {
 
 
 const COUNTRY_FLAGS = {
-  'Brazil':'🇧🇷','United States':'🇺🇸','Portugal':'🇵🇹','Argentina':'🇦🇷',
-  'Germany':'🇩🇪','France':'🇫🇷','United Kingdom':'🇬🇧','Spain':'🇪🇸',
-  'Netherlands':'🇳🇱','Canada':'🇨🇦','Australia':'🇦🇺','Japan':'🇯🇵',
-  'India':'🇮🇳','Mexico':'🇲🇽','Chile':'🇨🇱','Colombia':'🇨🇴'
+  'BR':'🇧🇷','US':'🇺🇸','PT':'🇵🇹','AR':'🇦🇷','DE':'🇩🇪','FR':'🇫🇷',
+  'GB':'🇬🇧','ES':'🇪🇸','NL':'🇳🇱','CA':'🇨🇦','AU':'🇦🇺','JP':'🇯🇵',
+  'IN':'🇮🇳','MX':'🇲🇽','CL':'🇨🇱','CO':'🇨🇴','IT':'🇮🇹','CH':'🇨🇭',
+  'BE':'🇧🇪','SE':'🇸🇪','NO':'🇳🇴','DK':'🇩🇰','FI':'🇫🇮','PL':'🇵🇱',
+  'AT':'🇦🇹','IE':'🇮🇪','RU':'🇷🇺','CN':'🇨🇳','KR':'🇰🇷','SG':'🇸🇬',
+  'ZA':'🇿🇦','BO':'🇧🇴','PY':'🇵🇾','UY':'🇺🇾','PE':'🇵🇪','VE':'🇻🇪',
+  'EC':'🇪🇨','CR':'🇨🇷','PA':'🇵🇦','DO':'🇩🇴','GT':'🇬🇹','HN':'🇭🇳',
+  'NZ':'🇳🇿','TR':'🇹🇷','IL':'🇮🇱','AE':'🇦🇪','SA':'🇸🇦','NG':'🇳🇬'
+};
+const COUNTRY_NAMES = {
+  'BR':'Brasil','US':'Estados Unidos','PT':'Portugal','AR':'Argentina',
+  'DE':'Alemanha','FR':'França','GB':'Reino Unido','ES':'Espanha',
+  'NL':'Holanda','CA':'Canadá','AU':'Austrália','JP':'Japão',
+  'IN':'Índia','MX':'México','CL':'Chile','CO':'Colômbia','IT':'Itália',
+  'CH':'Suíça','BE':'Bélgica','SE':'Suécia','NO':'Noruega','DK':'Dinamarca',
+  'FI':'Finlândia','PL':'Polônia','AT':'Áustria','IE':'Irlanda',
+  'RU':'Rússia','CN':'China','KR':'Coreia do Sul','SG':'Singapura',
+  'ZA':'África do Sul','BO':'Bolívia','PY':'Paraguai','UY':'Uruguai',
+  'PE':'Peru','VE':'Venezuela','EC':'Equador','CR':'Costa Rica',
+  'PA':'Panamá','DO':'Rep. Dominicana','GT':'Guatemala','HN':'Honduras',
+  'NZ':'Nova Zelândia','TR':'Turquia','IL':'Israel','AE':'Emirados Árabes',
+  'SA':'Arábia Saudita','NG':'Nigéria'
 };
 
 // Land dot positions [lat, lon] for orthographic projection centered on Atlantic (lon0=-30)
@@ -1748,7 +1770,7 @@ function renderDashboard(daily, prev, devices, os, events) {
   const barW = (vbW - gap * (n - 1)) / n;
   const labelEvery = n > 20 ? 5 : n > 14 ? 3 : n > 7 ? 2 : 1;
   const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  let bars = '', pvPoints = [];
+  let bars = '';
   chartData.forEach((d, i) => {
     const v  = d.uniq?.uniques  || 0;
     const pv = d.sum?.pageViews || 0;
@@ -1760,17 +1782,9 @@ function renderDashboard(daily, prev, devices, os, events) {
     const dateLabel = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
     const dayName   = dayNames[dt.getDay()];
     const showLabel = i % labelEvery === 0 || i === n - 1;
-    const pvY = padTop + barArea - Math.round((pv / maxVal) * barArea);
-    pvPoints.push([cx, pvY]);
     bars += `<g class="bar-group"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="2" fill="${isToday ? 'url(#btod)' : 'url(#bnrm)'}"/><text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="9" font-weight="600" font-family="inherit">${v > 0 ? fmtNum(v) : ''}</text>${showLabel ? `<text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="8.5" font-family="inherit">${dateLabel}</text>` : ''}<title>${dayName} ${dateLabel}\n${fmtNum(v)} visitas · ${fmtNum(pv)} page views</title></g>`;
   });
-  const pvPath = pvPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
-  const pvLine = `<path d="${pvPath}" fill="none" stroke="rgba(77,159,236,0.65)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-  const pvDots = pvPoints.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2" fill="#4D9FEC" opacity="0.8"/>`).join('');
-  const visitPoints = chartData.map((d, i) => { const v = d.uniq?.uniques || 0; const bh = Math.max(Math.round((v / maxVal) * barArea), 2); const x = i * (barW + gap); const cx = x + barW / 2; const y = padTop + (barArea - bh); return [cx, y]; });
-  const visitPath = visitPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
-  const visitLine = `<path d="${visitPath}" fill="none" stroke="rgba(255,211,58,0.8)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-  document.getElementById('dash-chart').innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="bnrm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD33A"/><stop offset="100%" stop-color="#b89200"/></linearGradient><linearGradient id="btod" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE840"/><stop offset="100%" stop-color="#F5C400"/></linearGradient></defs>${bars}${visitLine}${pvLine}${pvDots}<g transform="translate(${vbW - 158},2)"><rect x="0" y="0" width="10" height="10" rx="2" fill="url(#bnrm)"/><text x="14" y="9" fill="#666" font-size="9" font-family="inherit">Visitas</text><line x1="68" y1="5" x2="80" y2="5" stroke="rgba(77,159,236,0.65)" stroke-width="1.5"/><circle cx="74" cy="5" r="2" fill="#4D9FEC" opacity="0.8"/><text x="84" y="9" fill="#666" font-size="9" font-family="inherit">Page Views</text></g></svg>`;
+  document.getElementById('dash-chart').innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="bnrm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD33A"/><stop offset="100%" stop-color="#b89200"/></linearGradient><linearGradient id="btod" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE840"/><stop offset="100%" stop-color="#F5C400"/></linearGradient></defs>${bars}</svg>`;
 
   // Countries (globe + bar list)
   const sorted = Object.entries(countryMap).sort((a,b) => b[1]-a[1]).slice(0,7);
@@ -1784,10 +1798,11 @@ function renderDashboard(daily, prev, devices, os, events) {
     ? sorted.map(([name, val]) => {
         const bp = Math.round((val / maxC) * 100);
         const flag = COUNTRY_FLAGS[name] || '🌐';
+        const displayName = COUNTRY_NAMES[name] || name;
         return `<div class="dash-country-item">
           <span class="dash-country-flag">${flag}</span>
           <div style="flex:1;min-width:0">
-            <div class="dash-country-name">${name}</div>
+            <div class="dash-country-name">${displayName}</div>
             <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${bp}%"></div></div>
           </div>
           <span class="dash-country-count">${fmtNum(val)}</span>
