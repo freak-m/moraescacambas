@@ -1231,6 +1231,12 @@
           <div class="dash-chart-wrap" id="dash-chart"></div>
         </div>
 
+        <!-- WhatsApp clicks chart -->
+        <div class="field-group" id="dash-wa-chart-wrap" style="display:none">
+          <h3>Cliques WhatsApp por dia</h3>
+          <div class="dash-chart-wrap" id="dash-wa-chart"></div>
+        </div>
+
         <!-- Countries + Devices two-column -->
         <div class="dash-two-col">
           <div class="field-group" style="margin-bottom:0">
@@ -1440,8 +1446,8 @@ async function loadDashboardData() {
   dashShow('dash-loading');
   try {
     const period = getDashPeriod();
-    const { daily, prev, devices, os, events } = await fetchCfAnalytics(period);
-    renderDashboard(daily, prev, devices, os, events);
+    const { daily, prev, devices, os, events, waDaily } = await fetchCfAnalytics(period);
+    renderDashboard(daily, prev, devices, os, events, waDaily);
     dashShow('dash-data');
   } catch(e) {
     document.getElementById('dash-error-msg').textContent = e.message;
@@ -1468,7 +1474,8 @@ async function fetchCfAnalytics({ days, from, to } = {}) {
     prev:    zone.prev    || [],
     devices: zone.devices || [],
     os:      zone.os      || [],
-    events:  json.events  ?? null
+    events:  json.events  ?? null,
+    waDaily: json.events?.waDaily || []
   };
 }
 
@@ -1730,7 +1737,36 @@ function renderDeviceChart(devices) {
     </div>`;
 }
 
-function renderDashboard(daily, prev, devices, os, events) {
+function renderWAChart(waDaily) {
+  const wrap = document.getElementById('dash-wa-chart-wrap');
+  const el   = document.getElementById('dash-wa-chart');
+  if (!wrap || !el) return;
+  if (!waDaily || !waDaily.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const n      = waDaily.length;
+  const maxVal = Math.max(...waDaily.map(d => d.count), 1);
+  const vbW = 560, vbH = 145, padTop = 20, padBot = 28, barArea = vbH - padTop - padBot;
+  const gap  = n > 20 ? 2 : n > 10 ? 3 : 5;
+  const barW = (vbW - gap * (n - 1)) / n;
+  const labelEvery = n > 20 ? 5 : n > 14 ? 3 : n > 7 ? 2 : 1;
+  const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  let bars = '';
+  waDaily.forEach((d, i) => {
+    const v  = d.count || 0;
+    const bh = Math.max(Math.round((v / maxVal) * barArea), 2);
+    const x  = i * (barW + gap), y = padTop + (barArea - bh);
+    const cx = x + barW / 2;
+    const dt = new Date(d.date + 'T12:00:00');
+    const isToday   = i === n - 1;
+    const dateLabel = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    const dayName   = dayNames[dt.getDay()];
+    const showLabel = i % labelEvery === 0 || i === n - 1;
+    bars += `<g class="bar-group"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="2" fill="${isToday ? '#25D366' : 'rgba(37,211,102,0.65)'}"/><text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="9" font-weight="600" font-family="inherit">${v > 0 ? v : ''}</text>${showLabel ? `<text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="8.5" font-family="inherit">${dateLabel}</text>` : ''}<title>${dayName} ${dateLabel} · ${v} cliques</title></g>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible">${bars}</svg>`;
+}
+
+function renderDashboard(daily, prev, devices, os, events, waDaily) {
   let curUniq = 0, curPV = 0;
   let prvUniq = 0, prvPV = 0;
   const countryMap = {};
@@ -1834,6 +1870,9 @@ function renderDashboard(daily, prev, devices, os, events) {
   // Devices donut
   renderDeviceChart(devices);
   renderOSList(os);
+
+  // WhatsApp chart
+  renderWAChart(waDaily);
 
 }
 
