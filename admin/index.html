@@ -1091,7 +1091,7 @@
           <div class="form-row" style="margin-top:14px">
             <div class="form-field">
               <label>Zone ID</label>
-              <input type="text" id="cf-zone-id" placeholder="abc1234def5678...">
+              <input type="text" id="cf-zone-id" placeholder="abc1234def5678..." autocomplete="off">
               <p class="field-note" style="margin-top:5px">Onde achar: <strong>cloudflare.com → seu site → Overview → Zone ID</strong> (lado direito da página)</p>
             </div>
           </div>
@@ -1099,7 +1099,7 @@
             <div class="form-field">
               <label>API Token</label>
               <div class="login-pw-wrap">
-                <input type="password" id="cf-token-inp" placeholder="••••••••••••••••••" style="margin-bottom:0">
+                <input type="password" id="cf-token-inp" placeholder="••••••••••••••••••" style="margin-bottom:0" autocomplete="new-password">
                 <button type="button" class="login-pw-toggle" id="cf-token-toggle" title="Mostrar/ocultar">
                   <svg id="cf-icon-eye-off" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
                   <svg id="cf-icon-eye-on" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -1111,7 +1111,7 @@
           <div class="form-row" style="margin-top:8px">
             <div class="form-field">
               <label>Worker URL <span style="color:var(--yellow);font-size:.78rem">(necessário para funcionar)</span></label>
-              <input type="text" id="cf-worker-url" placeholder="https://analytics-proxy.SEU-USER.workers.dev">
+              <input type="text" id="cf-worker-url" placeholder="https://analytics-proxy.SEU-USER.workers.dev" autocomplete="off">
               <p class="field-note" style="margin-top:5px">Proxy para contornar bloqueio CORS. Veja as instruções abaixo ↓</p>
             </div>
           </div>
