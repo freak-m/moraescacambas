@@ -999,7 +999,11 @@ function initTracking(workerUrl) {
   function track(event, value) {
     const body = JSON.stringify(value !== undefined ? { event, value } : { event });
     try {
-      fetch(workerUrl, { method: 'POST', body, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
+      if (navigator.sendBeacon) {
+        navigator.sendBeacon(workerUrl, new Blob([body], { type: 'text/plain' }));
+      } else {
+        fetch(workerUrl, { method: 'POST', body, headers: { 'Content-Type': 'application/json' }, keepalive: true }).catch(() => {});
+      }
     } catch(e) {}
   }
   // WhatsApp clicks

@@ -1198,16 +1198,7 @@
         </div>
 
         <!-- Event tracking cards (Worker KV) -->
-        <div class="dash-metrics">
-          <div class="dash-metric">
-            <div class="dash-metric-top">
-              <span class="dash-metric-label">Cliques WhatsApp</span>
-              <span class="dash-metric-change neutral" id="dmc-wa">—</span>
-            </div>
-            <div class="dash-metric-val" id="dm-wa" style="color:var(--muted)">—</div>
-            <p class="dash-metric-ga-note" id="dm-wa-note">Não disponível</p>
-            <div class="dash-metric-spark" id="dms-wa"></div>
-          </div>
+        <div class="dash-metrics" style="grid-template-columns:repeat(2,1fr)">
           <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label">Tempo na Página</span>
@@ -1224,6 +1215,13 @@
             <div class="dash-metric-val" id="dm-photo" style="color:var(--muted)">—</div>
             <p class="dash-metric-ga-note" id="dm-photo-note">Não disponível</p>
           </div>
+        </div>
+        <!-- Hidden elements to keep JS working -->
+        <div style="display:none">
+          <span id="dmc-wa"></span>
+          <div id="dm-wa"></div>
+          <p id="dm-wa-note"></p>
+          <div id="dms-wa"></div>
         </div>
 
         <!-- Daily bar chart -->
