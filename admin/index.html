@@ -1269,7 +1269,7 @@
         </div>
 
         <!-- CF metric cards -->
-        <div class="dash-metrics">
+        <div class="dash-metrics" style="grid-template-columns:repeat(2,1fr)">
           <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label-wrap">
@@ -1291,17 +1291,6 @@
             </div>
             <div class="dash-metric-val" id="dm-pageviews">—</div>
             <div class="dash-metric-spark" id="dms-pageviews"></div>
-          </div>
-          <div class="dash-metric">
-            <div class="dash-metric-top">
-              <span class="dash-metric-label-wrap">
-                <span class="dash-metric-label">Páginas / Visita</span>
-                <span class="dash-info-btn">i<span class="dash-info-tip">Média de páginas carregadas por visitante único. Quanto maior, mais engajado é o visitante. Calculado dividindo Page Views por Total Visitas.</span></span>
-              </span>
-              <span class="dash-metric-change neutral" id="dmc-ppv">—</span>
-            </div>
-            <div class="dash-metric-val" id="dm-ppv">—</div>
-            <div class="dash-metric-spark" id="dms-ppv"></div>
           </div>
         </div>
 
@@ -1827,20 +1816,14 @@ function renderDashboard(daily, prev, os, events, regions, cities) {
 
   const changePct = (curr, p) => p ? (curr - p) / p * 100 : null;
 
-  const curPPV = curUniq > 0 ? curPV / curUniq : 0;
-  const prvPPV = prvUniq > 0 ? prvPV / prvUniq : 0;
-
   document.getElementById('dm-uniques').textContent   = fmtNum(curUniq);
   document.getElementById('dm-pageviews').textContent = fmtNum(curPV);
-  document.getElementById('dm-ppv').textContent       = curPPV > 0 ? curPPV.toFixed(1) : '—';
 
   setChange('dmc-visits',    changePct(curUniq, prvUniq));
   setChange('dmc-pageviews', changePct(curPV,   prvPV));
-  setChange('dmc-ppv',       changePct(curPPV,  prvPPV));
 
   document.getElementById('dms-visits').innerHTML    = sparklineSVG(daily.map(d => d.uniq?.uniques  || 0));
   document.getElementById('dms-pageviews').innerHTML = sparklineSVG(daily.map(d => d.sum?.pageViews || 0));
-  document.getElementById('dms-ppv').innerHTML       = sparklineSVG(daily.map(d => d.uniq?.uniques > 0 ? d.sum?.pageViews / d.uniq.uniques : 0));
 
   // Bar chart
   const maxVal = Math.max(...daily.map(d => d.uniq?.uniques || 0), 1);
