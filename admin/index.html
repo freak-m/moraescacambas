@@ -585,7 +585,7 @@
     .dash-metric-label-wrap { display: flex; align-items: center; gap: 5px; }
     .dash-info-btn { position: relative; width: 14px; height: 14px; border-radius: 50%; background: rgba(255,255,255,.07); border: 1px solid var(--border2); color: var(--muted); font-size: .58rem; display: inline-flex; align-items: center; justify-content: center; cursor: default; flex-shrink: 0; font-style: italic; font-weight: 700; }
     .dash-info-btn:hover .dash-info-tip { opacity: 1; pointer-events: auto; }
-    .dash-info-tip { position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #181828; border: 1px solid var(--border2); border-radius: 7px; padding: 8px 11px; font-size: .74rem; color: var(--muted2); width: 210px; line-height: 1.55; z-index: 40; opacity: 0; pointer-events: none; transition: opacity .15s; box-shadow: 0 6px 20px rgba(0,0,0,.6); white-space: normal; text-align: left; font-style: normal; font-weight: 400; }
+    .dash-info-tip { position: absolute; top: calc(100% + 6px); left: 50%; transform: translateX(-50%); background: #181828; border: 1px solid var(--border2); border-radius: 7px; padding: 8px 11px; font-size: .74rem; color: var(--muted2); width: 210px; line-height: 1.55; z-index: 40; opacity: 0; pointer-events: none; transition: opacity .15s; box-shadow: 0 6px 20px rgba(0,0,0,.6); white-space: normal; text-align: left; font-style: normal; font-weight: 400; }
     .dash-country-list { flex: 1; display: flex; flex-direction: column; gap: 9px; }
     .dash-country-item { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: center; }
     .dash-country-flag { font-size: .85rem; text-align: center; }
@@ -1208,7 +1208,7 @@
               <span class="dash-metric-change neutral" id="dmc-wa">—</span>
             </div>
             <div class="dash-metric-val" id="dm-wa" style="color:var(--muted)">—</div>
-            <p class="dash-metric-ga-note" id="dm-wa-note">Ative o KV no Worker para rastrear</p>
+            <p class="dash-metric-ga-note" id="dm-wa-note">Não disponível</p>
           </div>
           <div class="dash-metric">
             <div class="dash-metric-top">
@@ -1224,7 +1224,7 @@
               <span class="dash-metric-change neutral" id="dmc-photo">—</span>
             </div>
             <div class="dash-metric-val" id="dm-photo" style="color:var(--muted)">—</div>
-            <p class="dash-metric-ga-note" id="dm-photo-note">Ative o KV no Worker para rastrear</p>
+            <p class="dash-metric-ga-note" id="dm-photo-note">Não disponível</p>
           </div>
         </div>
 
@@ -1723,35 +1723,37 @@ function renderDashboard(daily, prev, devices, os, events) {
   document.getElementById('dms-visits').innerHTML    = sparklineSVG(daily.map(d => d.uniq?.uniques  || 0));
   document.getElementById('dms-pageviews').innerHTML = sparklineSVG(daily.map(d => d.sum?.pageViews || 0));
 
-  // Bar chart
-  const maxVal = Math.max(...daily.map(d => d.uniq?.uniques || 0), 1);
+  // Bar chart — chronological, dates at bottom, page views overlay line
+  const chartData = [...daily].sort((a, b) => a.dimensions.date.localeCompare(b.dimensions.date));
+  const n = chartData.length;
+  const maxVisits = Math.max(...chartData.map(d => d.uniq?.uniques || 0), 1);
+  const maxPV     = Math.max(...chartData.map(d => d.sum?.pageViews || 0), 1);
+  const maxVal    = Math.max(maxVisits, maxPV);
+  const vbW = 560, vbH = 145, padTop = 20, padBot = 28, barArea = vbH - padTop - padBot;
+  const gap  = n > 20 ? 2 : n > 10 ? 3 : 5;
+  const barW = (vbW - gap * (n - 1)) / n;
+  const labelEvery = n > 20 ? 5 : n > 14 ? 3 : n > 7 ? 2 : 1;
   const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
-  // SVG bar chart — sorted Dom→Sáb
-  const todayDate = daily[daily.length - 1]?.dimensions?.date;
-  const sorted7 = [...daily].sort((a, b) => {
-    const da = new Date(a.dimensions.date + 'T12:00:00').getDay();
-    const db = new Date(b.dimensions.date + 'T12:00:00').getDay();
-    return da - db;
-  });
-  const n = sorted7.length, vbW = 560, vbH = 130, padTop = 18, padBot = 22, barArea = vbH - padTop - padBot;
-  const gap = 5, barW = (vbW - gap * (n - 1)) / n;
-  let bars = '';
-  sorted7.forEach((d, i) => {
-    const v = d.uniq?.uniques || 0;
-    const bh = Math.max(Math.round((v / maxVal) * barArea), 4);
-    const x = i * (barW + gap), y = padTop + (barArea - bh);
+  let bars = '', pvPoints = [];
+  chartData.forEach((d, i) => {
+    const v  = d.uniq?.uniques  || 0;
+    const pv = d.sum?.pageViews || 0;
+    const bh = Math.max(Math.round((v / maxVal) * barArea), 2);
+    const x  = i * (barW + gap), y = padTop + (barArea - bh);
     const cx = x + barW / 2;
     const dt = new Date(d.dimensions.date + 'T12:00:00');
-    const isToday = d.dimensions.date === todayDate;
-    const dateStr = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
-    bars += `<g class="bar-group">
-      <rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="3" fill="${isToday ? 'url(#btod)' : 'url(#bnrm)'}"/>
-      <text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="11" font-weight="600" font-family="inherit">${v > 0 ? fmtNum(v) : ''}</text>
-      <text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="10" font-family="inherit">${dayNames[dt.getDay()]}</text>
-      <title>${fmtNum(v)} visitas · ${dateStr}</title>
-    </g>`;
+    const isToday   = i === chartData.length - 1;
+    const dateLabel = dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+    const dayName   = dayNames[dt.getDay()];
+    const showLabel = i % labelEvery === 0 || i === n - 1;
+    const pvY = padTop + barArea - Math.round((pv / maxVal) * barArea);
+    pvPoints.push([cx, pvY]);
+    bars += `<g class="bar-group"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${barW.toFixed(1)}" height="${bh}" rx="2" fill="${isToday ? 'url(#btod)' : 'url(#bnrm)'}"/><text x="${cx.toFixed(1)}" y="${(y - 4).toFixed(1)}" text-anchor="middle" fill="#bbb" font-size="9" font-weight="600" font-family="inherit">${v > 0 ? fmtNum(v) : ''}</text>${showLabel ? `<text x="${cx.toFixed(1)}" y="${(vbH - 3).toFixed(1)}" text-anchor="middle" fill="#666" font-size="8.5" font-family="inherit">${dateLabel}</text>` : ''}<title>${dayName} ${dateLabel}\n${fmtNum(v)} visitas · ${fmtNum(pv)} page views</title></g>`;
   });
-  document.getElementById('dash-chart').innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="bnrm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD33A"/><stop offset="100%" stop-color="#b89200"/></linearGradient><linearGradient id="btod" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE840"/><stop offset="100%" stop-color="#F5C400"/></linearGradient></defs>${bars}</svg>`;
+  const pvPath = pvPoints.map((p, i) => `${i === 0 ? 'M' : 'L'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
+  const pvLine = `<path d="${pvPath}" fill="none" stroke="rgba(77,159,236,0.65)" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+  const pvDots = pvPoints.map(p => `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="2" fill="#4D9FEC" opacity="0.8"/>`).join('');
+  document.getElementById('dash-chart').innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible"><defs><linearGradient id="bnrm" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFD33A"/><stop offset="100%" stop-color="#b89200"/></linearGradient><linearGradient id="btod" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#FFE840"/><stop offset="100%" stop-color="#F5C400"/></linearGradient></defs>${bars}${pvLine}${pvDots}<g transform="translate(${vbW - 158},2)"><rect x="0" y="0" width="10" height="10" rx="2" fill="url(#bnrm)"/><text x="14" y="9" fill="#666" font-size="9" font-family="inherit">Visitas</text><line x1="68" y1="5" x2="80" y2="5" stroke="rgba(77,159,236,0.65)" stroke-width="1.5"/><circle cx="74" cy="5" r="2" fill="#4D9FEC" opacity="0.8"/><text x="84" y="9" fill="#666" font-size="9" font-family="inherit">Page Views</text></g></svg>`;
 
   // Countries (globe + bar list)
   const sorted = Object.entries(countryMap).sort((a,b) => b[1]-a[1]).slice(0,7);
