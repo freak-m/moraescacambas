@@ -2539,8 +2539,10 @@ function updateOgPreview(url) {
   const wrap = document.getElementById('og-img-preview-wrap');
   const img  = document.getElementById('og-img-preview');
   if (!wrap || !img) return;
-  if (url && url.startsWith('http')) {
+  if (url && (url.startsWith('http') || url.startsWith('blob:'))) {
     img.src = url;
+    img.onerror = () => { wrap.style.display = 'none'; };
+    img.onload  = () => { img.onerror = null; };
     wrap.style.display = '';
   } else {
     wrap.style.display = 'none';
@@ -2606,7 +2608,9 @@ async function uploadImage(fileInput) {
     if (urlTargetId) {
       const fullUrl = `https://moraescacambas.com.br/${filename}`;
       const urlEl = document.getElementById(urlTargetId);
-      if (urlEl) { urlEl.value = fullUrl; updateOgPreview(fullUrl); }
+      if (urlEl) urlEl.value = fullUrl;
+      // Use local object URL for instant preview (site may not have deployed yet)
+      updateOgPreview(URL.createObjectURL(file));
     }
   } catch(e) {
     if (progressEl) { progressEl.textContent = 'Erro: ' + e.message; progressEl.className = 'upload-progress error'; }
