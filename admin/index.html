@@ -600,6 +600,12 @@
     .dash-device-count { font-size: .8rem; font-weight: 700; color: var(--white); margin-left: 3px; }
     .dash-device-donut { display: flex; justify-content: center; }
     .dash-device-donut svg { width: 150px; height: 150px; }
+    .dash-os-list { margin-top: 16px; border-top: 1px solid var(--border); padding-top: 12px; }
+    .dash-os-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+    .dash-os-label { font-size: .78rem; color: var(--muted2); width: 80px; flex-shrink: 0; }
+    .dash-os-bar-wrap { flex: 1; height: 6px; background: rgba(255,255,255,.07); border-radius: 3px; overflow: hidden; }
+    .dash-os-bar { height: 100%; border-radius: 3px; transition: width .4s; }
+    .dash-os-count { font-size: .78rem; font-weight: 700; color: var(--white); width: 40px; text-align: right; flex-shrink: 0; }
     .dash-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
     .dash-error-box { background: rgba(224,85,85,.08); border: 1px solid rgba(224,85,85,.3); border-radius: 8px; padding: 16px; color: #e05555; font-size: .84rem; margin-bottom: 14px; }
     @media(max-width:900px) { .dash-two-col { grid-template-columns: 1fr; } }
@@ -1242,6 +1248,7 @@
           <div class="field-group" style="margin-bottom:0">
             <h3>Dispositivos</h3>
             <div id="dash-devices"></div>
+            <div id="dash-os"></div>
           </div>
         </div>
       </div>
@@ -1436,8 +1443,8 @@ async function loadDashboardData() {
   dashShow('dash-loading');
   try {
     const period = getDashPeriod();
-    const { daily, prev, devices, events } = await fetchCfAnalytics(period);
-    renderDashboard(daily, prev, devices, events);
+    const { daily, prev, devices, os, events } = await fetchCfAnalytics(period);
+    renderDashboard(daily, prev, devices, os, events);
     dashShow('dash-data');
   } catch(e) {
     document.getElementById('dash-error-msg').textContent = e.message;
@@ -1463,6 +1470,7 @@ async function fetchCfAnalytics({ days, from, to } = {}) {
     daily:   zone.current || [],
     prev:    zone.prev    || [],
     devices: zone.devices || [],
+    os:      zone.os      || [],
     events:  json.events  ?? null
   };
 }
@@ -1619,6 +1627,32 @@ function buildFallbackGlobe(size) {
 const DEVICE_COLORS = { desktop: '#4D9FEC', mobile: '#F5A623', tablet: '#E05EAD', other: '#888888' };
 const DEVICE_LABELS = { desktop: 'Desktop', mobile: 'Mobile', tablet: 'Tablet', other: 'Outros' };
 
+const OS_COLORS = { 'windows': '#0078D4', 'mac os x': '#A3AAAE', 'macos': '#A3AAAE', 'ios': '#999999', 'android': '#3DDC84', 'linux': '#FCC624', 'chrome os': '#4285F4' };
+const OS_LABELS = { 'windows': 'Windows', 'mac os x': 'macOS', 'macos': 'macOS', 'ios': 'iOS', 'android': 'Android', 'linux': 'Linux', 'chrome os': 'Chrome OS' };
+
+function renderOSList(os) {
+  const el = document.getElementById('dash-os');
+  if (!el) return;
+  if (!os || !os.length) { el.innerHTML = ''; return; }
+  const data = os
+    .map(d => ({ label: (d.dimensions?.userAgentOS || 'other').toLowerCase(), count: d.count || 0 }))
+    .filter(d => d.count > 0)
+    .slice(0, 8);
+  if (!data.length) { el.innerHTML = ''; return; }
+  const total = data.reduce((s, d) => s + d.count, 0);
+  const rows = data.map(row => {
+    const pct = Math.round(row.count / total * 100);
+    const color = OS_COLORS[row.label] || '#888';
+    const label = OS_LABELS[row.label] || row.label;
+    return `<div class="dash-os-row">
+      <span class="dash-os-label">${label}</span>
+      <div class="dash-os-bar-wrap"><div class="dash-os-bar" style="width:${pct}%;background:${color}"></div></div>
+      <span class="dash-os-count">${fmtNum(row.count)}</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `<div class="dash-os-list"><div style="font-size:.75rem;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">Sistema Operacional</div>${rows}</div>`;
+}
+
 function renderDeviceChart(devices) {
   const el = document.getElementById('dash-devices');
   if (!el) return;
@@ -1661,7 +1695,7 @@ function renderDeviceChart(devices) {
     </div>`;
 }
 
-function renderDashboard(daily, prev, devices, events) {
+function renderDashboard(daily, prev, devices, os, events) {
   let curUniq = 0, curPV = 0;
   let prvUniq = 0, prvPV = 0;
   const countryMap = {};
@@ -1761,6 +1795,7 @@ function renderDashboard(daily, prev, devices, events) {
 
   // Devices donut
   renderDeviceChart(devices);
+  renderOSList(os);
 
 }
 
