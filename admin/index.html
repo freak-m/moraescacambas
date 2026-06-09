@@ -235,6 +235,10 @@
       padding: 5px 11px; transition: all .2s; white-space: nowrap;
     }
     .preview-btn:hover { background: rgba(255,255,255,.1); color: var(--white); }
+    .dash-period-sel { background: rgba(255,255,255,.06); border: 1px solid var(--border2); color: var(--white); border-radius: 6px; font-size: .78rem; font-weight: 600; padding: 5px 28px 5px 10px; cursor: pointer; outline: none; appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 9px center; }
+    .dash-period-sel:hover { background-color: rgba(255,255,255,.1); }
+    .dash-period-sel option { background: #1a1a2e; color: var(--white); }
+    .dash-date-input { background: rgba(255,255,255,.06); border: 1px solid var(--border2); color: var(--white); border-radius: 6px; font-size: .78rem; padding: 5px 8px; outline: none; color-scheme: dark; }
     #preview-iframe {
       flex: 1; border: none; width: 100%; height: 100%;
       background: #fff;
@@ -1167,12 +1171,21 @@
 
     // ── GET: métricas CF + eventos KV ───────────
     const url = new URL(request.url);
-    const days = parseInt(url.searchParams.get('days') || '7');
-    const now = new Date();
-    const start = new Date(now); start.setDate(start.getDate() - (days - 1));
+    const fmt = d => d.toISOString().split('T')[0];
+    let days, now, start;
+    const fromParam = url.searchParams.get('from');
+    const toParam   = url.searchParams.get('to');
+    if (fromParam && toParam) {
+      start = new Date(fromParam + 'T12:00:00Z');
+      now   = new Date(toParam   + 'T12:00:00Z');
+      days  = Math.max(1, Math.round((now - start) / 86400000) + 1);
+    } else {
+      days  = Math.min(parseInt(url.searchParams.get('days') || '7'), 90);
+      now   = new Date();
+      start = new Date(now); start.setDate(start.getDate() - (days - 1));
+    }
     const prevEnd = new Date(start); prevEnd.setDate(prevEnd.getDate() - 1);
     const prevStart = new Date(prevEnd); prevStart.setDate(prevStart.getDate() - (days - 1));
-    const fmt = d => d.toISOString().split('T')[0];
     const mkDates = (from, n) => Array.from({ length: n }, (_, i) => { const d = new Date(from); d.setDate(d.getDate() + i); return fmt(d); });
     const currDates = mkDates(start, days);
     const prevDates = mkDates(prevStart, days);
@@ -1235,7 +1248,20 @@
       <!-- Data -->
       <div id="dash-data" style="display:none">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
-          <span style="font-size:.78rem;color:var(--muted)" id="dash-period-label">Últimos 7 dias</span>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <select id="dash-period-select" class="dash-period-sel">
+              <option value="7">Últimos 7 dias</option>
+              <option value="15">Últimos 15 dias</option>
+              <option value="30">Últimos 30 dias</option>
+              <option value="custom">Personalizado</option>
+            </select>
+            <div id="dash-custom-range" style="display:none;align-items:center;gap:6px">
+              <input type="date" id="dash-custom-from" class="dash-date-input">
+              <span style="color:var(--muted);font-size:.78rem">até</span>
+              <input type="date" id="dash-custom-to" class="dash-date-input">
+              <button class="preview-btn" id="dash-custom-apply">Aplicar</button>
+            </div>
+          </div>
           <div style="display:flex;gap:8px">
             <button class="preview-btn" id="dash-refresh-btn">↻ Atualizar</button>
             <button class="preview-btn" id="dash-reset-btn2">⚙ Reconfigurar</button>
@@ -1510,10 +1536,25 @@ function initDashboard() {
   loadDashboardData();
 }
 
+function getDashPeriod() {
+  const sel = document.getElementById('dash-period-select');
+  if (!sel || sel.value !== 'custom') {
+    const days = parseInt(sel?.value || '7');
+    return { days, from: null, to: null };
+  }
+  const from = document.getElementById('dash-custom-from')?.value;
+  const to   = document.getElementById('dash-custom-to')?.value;
+  if (!from || !to) return { days: 7, from: null, to: null };
+  const ms   = new Date(to) - new Date(from);
+  const days = Math.max(1, Math.round(ms / 86400000) + 1);
+  return { days, from, to };
+}
+
 async function loadDashboardData() {
   dashShow('dash-loading');
   try {
-    const { daily, prev, os, regions, cities, events } = await fetchCfAnalytics();
+    const period = getDashPeriod();
+    const { daily, prev, os, regions, cities, events } = await fetchCfAnalytics(period);
     renderDashboard(daily, prev, os, events, regions, cities);
     dashShow('dash-data');
   } catch(e) {
@@ -1522,10 +1563,13 @@ async function loadDashboardData() {
   }
 }
 
-async function fetchCfAnalytics() {
+async function fetchCfAnalytics({ days, from, to } = {}) {
+  days = days || 7;
   const workerUrl = localStorage.getItem(CF_WORKER_KEY) || '';
   if (!workerUrl) throw new Error('Analytics URL não configurado. Clique em "Reconfigurar".');
-  const res = await fetch(`${workerUrl}?days=7`)
+  const params = new URLSearchParams({ days: String(days) });
+  if (from && to) { params.set('from', from); params.set('to', to); }
+  const res = await fetch(`${workerUrl}?${params}`)
     .catch(() => { throw new Error('Não foi possível conectar ao Worker. Verifique se a URL está correta e o Worker foi publicado.'); });
   if (!res.ok) throw new Error(`Erro no Worker: ${res.status}`);
   const json = await res.json();
@@ -1784,7 +1828,7 @@ function renderDashboard(daily, prev, os, events, regions, cities) {
   const changePct = (curr, p) => p ? (curr - p) / p * 100 : null;
 
   const curPPV = curUniq > 0 ? curPV / curUniq : 0;
-  const prvPPV = prvUniq > 0 ? (prev || []).reduce((s,d) => s + (d.sum?.pageViews || 0), 0) / prvUniq : 0;
+  const prvPPV = prvUniq > 0 ? prvPV / prvUniq : 0;
 
   document.getElementById('dm-uniques').textContent   = fmtNum(curUniq);
   document.getElementById('dm-pageviews').textContent = fmtNum(curPV);
@@ -1947,6 +1991,32 @@ document.getElementById('dash-retry-btn').addEventListener('click',   () => load
 document.getElementById('dash-reset-btn').addEventListener('click',   dashReset);
 document.getElementById('dash-reset-btn2').addEventListener('click',  dashReset);
 document.getElementById('dash-refresh-btn').addEventListener('click', () => loadDashboardData());
+
+// Period selector
+document.getElementById('dash-period-select').addEventListener('change', function() {
+  const customRow = document.getElementById('dash-custom-range');
+  if (this.value === 'custom') {
+    const today = new Date().toISOString().split('T')[0];
+    const week  = new Date(Date.now() - 6*86400000).toISOString().split('T')[0];
+    document.getElementById('dash-custom-from').value = week;
+    document.getElementById('dash-custom-to').value   = today;
+    customRow.style.display = 'flex';
+  } else {
+    customRow.style.display = 'none';
+    loadDashboardData();
+  }
+});
+
+document.getElementById('dash-custom-apply').addEventListener('click', () => {
+  const from = document.getElementById('dash-custom-from').value;
+  const to   = document.getElementById('dash-custom-to').value;
+  if (!from || !to) return;
+  if (new Date(from) > new Date(to)) {
+    alert('A data inicial deve ser anterior à data final.');
+    return;
+  }
+  loadDashboardData();
+});
 
 // Geo tabs
 document.addEventListener('click', e => {
