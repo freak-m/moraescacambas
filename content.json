@@ -3,7 +3,7 @@
     "title": "Moraes Caçambas – Aluguel de Caçamba em Campinas e Região | Entrega Rápida",
     "description": "Aluguel de caçambas para entulho de obra em Campinas e Região Metropolitana. Caçamba 5m³ com entrega em até 24h, preço justo e empresa licenciada. Ligue ou chame no WhatsApp (19) 99327-7969.",
     "keywords": "aluguel de caçamba campinas, caçamba entulho campinas, caçamba obra campinas, locação caçamba campinas, caçamba 5m³, retirada entulho campinas, caçamba construção campinas, moraes caçambas, entulho obra campinas, caçamba região metropolitana campinas",
-    "og_image": "https://moraescacambas.com.br/moraescacambaslogo.webp",
+    "og_image": "https://moraescacambas.com.br/share.webp",
     "schema_local": {
       "name": "Moraes Caçambas",
       "phone": "+55 19 99327-7969",
@@ -124,7 +124,7 @@
   },
   "integrations": {
     "google_verify": "",
-    "google_analytics": "",
+    "google_analytics": "913af7dc93d2c2abb936808efd830b84",
     "meta_pixel": "",
     "meta_verify": "",
     "worker_url": "https://analytics.moraescacambas.com.br/"
