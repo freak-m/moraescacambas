@@ -1405,21 +1405,10 @@
           <h3>Anúncios &amp; Verificação</h3>
           <span style="font-size:.74rem;background:var(--card2);border:1px solid var(--border);border-radius:4px;padding:2px 7px;color:var(--muted)">Salvo com Publicar</span>
         </div>
-        <p class="field-note" style="margin-bottom:20px">Cole aqui os códigos fornecidos pelo Google e pela Meta para conectar o site às plataformas de anúncio.</p>
+        <p class="field-note" style="margin-bottom:20px">Cole aqui os códigos fornecidos pela Meta para conectar o site às plataformas de anúncio.</p>
 
-        <!-- Google -->
-        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-            <img src="https://developers.google.com/static/analytics/images/terms/lockup_ic_Google_Analytics_vert_388px_clr.png" alt="Google Analytics" style="height:32px;object-fit:contain">
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label>Google Analytics — ID de Medição</label>
-              <input type="text" id="int-google-analytics" placeholder="G-XXXXXXXXXX">
-              <p class="field-note" style="margin-top:4px">Google Analytics → Admin → Fluxos de dados → ID de medição</p>
-            </div>
-          </div>
-        </div>
+        <!-- Google Analytics — hidden field (keeps GA ID in content.json for website tracking) -->
+        <input type="hidden" id="int-google-analytics">
 
         <!-- Meta -->
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px">
