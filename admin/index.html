@@ -1163,6 +1163,13 @@
 
       <!-- Data -->
       <div id="dash-data" style="display:none">
+        <!-- Updating banner: shown while background refresh is in progress -->
+        <div id="dash-updating-banner" style="display:none;margin-bottom:12px">
+          <div style="background:rgba(245,196,0,.06);border:1px solid rgba(245,196,0,.22);border-radius:8px;padding:10px 14px;color:#d4a800;font-size:.82rem;display:flex;align-items:center;gap:10px">
+            <span class="spinner" style="width:14px;height:14px;border-color:rgba(212,168,0,.3);border-top-color:#d4a800"></span>
+            <span>Atualizando dados…</span>
+          </div>
+        </div>
         <!-- API error banner: shown when data couldn't refresh but stale cache is available -->
         <div id="dash-api-error" style="display:none;margin-bottom:12px">
           <div style="background:rgba(224,85,85,.08);border:1px solid rgba(224,85,85,.3);border-radius:8px;padding:10px 14px;color:#f87171;font-size:.82rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
@@ -1597,6 +1604,14 @@ function hideCfApiError() {
   const b = document.getElementById('dash-api-error');
   if (b) b.style.display = 'none';
 }
+function showDashUpdating() {
+  const el = document.getElementById('dash-updating-banner');
+  if (el) el.style.display = '';
+}
+function hideDashUpdating() {
+  const el = document.getElementById('dash-updating-banner');
+  if (el) el.style.display = 'none';
+}
 
 function initDashboard() {
   if (!localStorage.getItem(CF_WORKER_KEY)) {
@@ -1657,39 +1672,46 @@ function setCacheLabel(t, state) {
 }
 
 async function loadDashboardData(force = false) {
-  const period = getDashPeriod();
-  const cached = force ? null : cacheGet(period);
-  const age    = cached ? Date.now() - cached.t : Infinity;
+  const period  = getDashPeriod();
+  const cached  = cacheGet(period);
+  const age     = cached ? Date.now() - cached.t : Infinity;
+  const needsRefresh = force || !cached || age >= CACHE_CHECK_MS;
 
-  if (cached && age < CACHE_MAX_MS) {
+  // Always show cached data immediately if available
+  if (cached) {
     const { daily, prev, devices, os, events, waDaily } = cached.data;
     renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
     dashShow('dash-data');
     setCacheLabel(cached.t, 'ok');
     hideCfApiError();
 
-    if (age > CACHE_CHECK_MS) {
-      setCacheLabel(cached.t, 'checking');
-      fetchCfAnalytics(period).then(fresh => {
-        if (cacheSum(fresh) !== cacheSum(cached.data)) {
-          cacheSet(period, fresh);
-          const { daily, prev, devices, os, events, waDaily } = fresh;
-          renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
-          setCacheLabel(Date.now(), 'updated');
-        } else {
-          cacheSet(period, cached.data);
-          setCacheLabel(Date.now(), 'ok');
-        }
-        hideCfApiError();
-      }).catch(e => {
-        setCacheLabel(cached.t, 'ok');
-        showCfApiError(e.message);
-      });
+    if (!needsRefresh) {
+      hideDashUpdating();
+      return;
     }
+
+    // Show updating banner and refresh in background
+    showDashUpdating();
+    fetchCfAnalytics(period).then(fresh => {
+      cacheSet(period, fresh);
+      if (cacheSum(fresh) !== cacheSum(cached.data)) {
+        const { daily, prev, devices, os, events, waDaily } = fresh;
+        renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
+        setCacheLabel(Date.now(), 'updated');
+      } else {
+        setCacheLabel(Date.now(), 'ok');
+      }
+      hideDashUpdating();
+      hideCfApiError();
+    }).catch(e => {
+      hideDashUpdating();
+      showCfApiError(e.message);
+      setCacheLabel(cached.t, 'ok');
+    });
     return;
   }
 
-  // No valid cache — fetch fresh
+  // No cache at all — fetch synchronously with loading spinner
   dashShow('dash-loading');
   try {
     const data = await fetchCfAnalytics(period);
@@ -1698,20 +1720,11 @@ async function loadDashboardData(force = false) {
     renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
     dashShow('dash-data');
     setCacheLabel(Date.now(), 'ok');
+    hideDashUpdating();
     hideCfApiError();
   } catch(e) {
-    // Fall back to any stale cache rather than blank error screen
-    const stale = cacheGet(period);
-    if (stale) {
-      const { daily, prev, devices, os, events, waDaily } = stale.data;
-      renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
-      dashShow('dash-data');
-      setCacheLabel(stale.t, 'ok');
-      showCfApiError(e.message);
-    } else {
-      document.getElementById('dash-error-msg').textContent = e.message;
-      dashShow('dash-error');
-    }
+    document.getElementById('dash-error-msg').textContent = e.message;
+    dashShow('dash-error');
   }
 }
 
