@@ -715,7 +715,7 @@
       </a>
       <nav class="sidebar-nav">
         <button class="tab-btn tab-primary active" data-tab="dashboard"><span class="nav-icon">📊</span> Analytics Cloudflare</button>
-        <button class="tab-btn tab-primary" data-tab="ga" id="tab-ga-btn" style="display:none"><span class="nav-icon">📈</span> Google Analytics</button>
+        <button class="tab-btn tab-primary" data-tab="ga" id="tab-ga-btn"><span class="nav-icon">📈</span> Google Analytics</button>
         <div class="nav-group-label">Conteúdo do site</div>
         <button class="tab-btn tab-sub" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
         <button class="tab-btn tab-sub" data-tab="sections"><span class="nav-icon">📝</span> Seções</button>
@@ -1446,19 +1446,10 @@
         </div>
         <p class="field-note" style="margin-bottom:20px">Cole aqui os códigos fornecidos pelo Google e pela Meta para conectar o site às plataformas de anúncio.</p>
 
-        <!-- Google -->
-        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px">
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-            <img src="https://developers.google.com/static/analytics/images/terms/lockup_ic_Google_Analytics_vert_388px_clr.png" alt="Google Analytics" style="height:32px;object-fit:contain">
-          </div>
-          <div class="form-row">
-            <div class="form-field">
-              <label>Google Analytics — ID de Medição</label>
-              <input type="text" id="int-google-analytics" placeholder="G-XXXXXXXXXX">
-              <p class="field-note" style="margin-top:4px">Google Analytics → Admin → Fluxos de dados → ID de medição</p>
-            </div>
-          </div>
-        </div>
+        <!-- GA credentials managed via Google Analytics tab -->
+        <input type="hidden" id="int-google-analytics">
+        <input type="hidden" id="int-ga-client-id">
+        <input type="hidden" id="int-ga-property-id">
 
         <!-- Meta -->
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px">
@@ -2579,7 +2570,10 @@ function populateForm(c) {
   // Integrations
   const ig = c.integrations || {};
   document.getElementById('int-google-analytics').value = ig.google_analytics || '';
-  updateGaTabVisibility();
+  document.getElementById('int-ga-client-id').value     = ig.ga_client_id     || '';
+  document.getElementById('int-ga-property-id').value   = ig.ga_property_id   || '';
+  if (ig.ga_client_id)   localStorage.setItem(GA_CLIENT_ID_KEY, ig.ga_client_id);
+  if (ig.ga_property_id) localStorage.setItem(GA_PROP_ID_KEY,   ig.ga_property_id);
   document.getElementById('int-meta-pixel').value       = ig.meta_pixel       || '';
   document.getElementById('int-meta-verify').value      = ig.meta_verify      || '';
   document.getElementById('int-worker-url').value       = ig.worker_url || localStorage.getItem(CF_WORKER_KEY) || '';
@@ -2660,6 +2654,8 @@ function collectForm() {
     },
     integrations: {
       google_analytics: val('int-google-analytics'),
+      ga_client_id:     val('int-ga-client-id'),
+      ga_property_id:   val('int-ga-property-id'),
       meta_pixel:       val('int-meta-pixel'),
       meta_verify:      val('int-meta-verify'),
       worker_url:       localStorage.getItem(CF_WORKER_KEY) || val('int-worker-url') || ''
@@ -3215,14 +3211,6 @@ function gaShow(id) {
   });
 }
 
-function updateGaTabVisibility() {
-  const gaId = (document.getElementById('int-google-analytics')?.value || '').trim();
-  const btn  = document.getElementById('tab-ga-btn');
-  if (btn) btn.style.display = gaId ? '' : 'none';
-}
-
-document.getElementById('int-google-analytics')
-  ?.addEventListener('input', updateGaTabVisibility);
 
 function gaTokenValid() {
   const t   = sessionStorage.getItem(GA_TOKEN_KEY);
