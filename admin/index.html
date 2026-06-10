@@ -3231,8 +3231,13 @@ function gaTokenValid() {
 
 function initGaTab() {
   clearGaRealtime();
-  const clientId = localStorage.getItem(GA_CLIENT_ID_KEY);
-  const propId   = localStorage.getItem(GA_PROP_ID_KEY);
+  // localStorage first; fall back to hidden inputs populated by populateForm (works in incognito)
+  const clientId = localStorage.getItem(GA_CLIENT_ID_KEY)
+                || (document.getElementById('int-ga-client-id')?.value  || '').trim();
+  const propId   = localStorage.getItem(GA_PROP_ID_KEY)
+                || (document.getElementById('int-ga-property-id')?.value || '').trim();
+  if (clientId) localStorage.setItem(GA_CLIENT_ID_KEY, clientId);
+  if (propId)   localStorage.setItem(GA_PROP_ID_KEY,   propId);
 
   if (!clientId || !propId) {
     document.getElementById('ga-setup-fields').style.display = '';
