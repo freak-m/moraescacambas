@@ -1307,11 +1307,12 @@
           </div>
 
           <div id="ga-reconnect" style="display:none">
-            <p class="field-note" style="margin-bottom:12px">Credenciais salvas. Clique para autorizar e ver os dados — isso é necessário uma vez por sessão.</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <p class="field-note" style="margin-bottom:12px">Configuração salva no site. Clique para autorizar com <strong>sua própria conta Google</strong> — necessário uma vez por sessão do navegador.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
               <button class="btn-primary" id="ga-reconnect-btn" type="button">Conectar com Google</button>
               <button class="preview-btn" id="ga-change-setup-btn" type="button">⚙ Alterar configurações</button>
             </div>
+            <p class="field-note" style="font-size:.75rem;opacity:.7">Cada pessoa usa sua própria conta Google. Para que seu cliente veja os dados, adicione o e-mail dele como Visualizador na propriedade GA4 (GA → Admin → Gerenciamento de acesso).</p>
           </div>
         </div>
       </div>
@@ -3232,12 +3233,18 @@ function gaTokenValid() {
 function initGaTab() {
   clearGaRealtime();
   // localStorage first; fall back to hidden inputs populated by populateForm (works in incognito)
-  const clientId = localStorage.getItem(GA_CLIENT_ID_KEY)
-                || (document.getElementById('int-ga-client-id')?.value  || '').trim();
-  const propId   = localStorage.getItem(GA_PROP_ID_KEY)
-                || (document.getElementById('int-ga-property-id')?.value || '').trim();
+  const fromStorage = localStorage.getItem(GA_CLIENT_ID_KEY);
+  const inContent   = (document.getElementById('int-ga-client-id')?.value  || '').trim();
+  const clientId    = fromStorage || inContent;
+  const propId      = localStorage.getItem(GA_PROP_ID_KEY)
+                   || (document.getElementById('int-ga-property-id')?.value || '').trim();
   if (clientId) localStorage.setItem(GA_CLIENT_ID_KEY, clientId);
   if (propId)   localStorage.setItem(GA_PROP_ID_KEY,   propId);
+
+  // If credentials are in localStorage but not yet in content.json, push silently
+  if (clientId && propId && !inContent) {
+    saveGaConfig(clientId, propId).catch(() => {});
+  }
 
   if (!clientId || !propId) {
     document.getElementById('ga-setup-fields').style.display = '';
