@@ -1070,11 +1070,6 @@ function initTracking(workerUrl) {
     // Integrations — inject tracking / verification tags
     if (c.integrations) {
       const ig = c.integrations;
-      if (ig.google_verify) {
-        const m = document.createElement('meta');
-        m.name = 'google-site-verification'; m.content = ig.google_verify;
-        document.head.appendChild(m);
-      }
       if (ig.google_analytics) {
         const s1 = document.createElement('script');
         s1.async = true; s1.src = `https://www.googletagmanager.com/gtag/js?id=${ig.google_analytics}`;

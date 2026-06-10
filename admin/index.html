@@ -1273,20 +1273,9 @@
         <!-- Google -->
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
-            <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.5 1.2 8.9 3.2l6.6-6.6C35.4 2.5 30 0 24 0 14.6 0 6.6 5.4 2.6 13.3l7.7 6C12.1 13.3 17.6 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v8.5h12.7c-.6 3-2.3 5.5-4.9 7.2l7.6 5.9c4.4-4.1 7.1-10.1 7.1-17.1z"/><path fill="#FBBC05" d="M10.3 28.7c-.5-1.5-.8-3-.8-4.7s.3-3.2.8-4.7l-7.7-6C.9 16.3 0 20 0 24s.9 7.7 2.6 10.7l7.7-6z"/><path fill="#34A853" d="M24 48c6 0 11.1-2 14.8-5.4l-7.6-5.9c-2 1.4-4.6 2.2-7.2 2.2-6.4 0-11.9-3.8-14.2-9.4l-7.7 6C6.6 42.6 14.6 48 24 48z"/></svg>
-            <strong style="font-size:.9rem;color:var(--white)">Google</strong>
-            <span style="display:flex;align-items:center;gap:5px;margin-left:6px;padding:2px 8px;background:#1a1a2e;border:1px solid #2a2a4a;border-radius:5px">
-              <!-- Google Analytics flame icon -->
-              <svg width="14" height="14" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="192" height="192" rx="96" fill="#E37400"/><path d="M96 32C60.7 32 32 60.7 32 96s28.7 64 64 64 64-28.7 64-64S131.3 32 96 32zm0 112c-26.5 0-48-21.5-48-48s21.5-48 48-48 48 21.5 48 48-21.5 48-48 48z" fill="white" opacity=".3"/><rect x="80" y="88" width="16" height="48" rx="4" fill="white"/><rect x="104" y="72" width="16" height="64" rx="4" fill="white"/><rect x="56" y="104" width="16" height="32" rx="4" fill="white"/></svg>
-              <span style="font-size:.72rem;color:#aaa;font-weight:500">Analytics</span>
-            </span>
+            <img src="https://developers.google.com/static/analytics/images/terms/lockup_ic_Google_Analytics_vert_388px_clr.png" alt="Google Analytics" style="height:32px;object-fit:contain">
           </div>
-          <div class="form-row cols-2">
-            <div class="form-field">
-              <label>Search Console — Verificação</label>
-              <input type="text" id="int-google-verify" placeholder="abc123XYZ...">
-              <p class="field-note" style="margin-top:4px">Cole só o valor do campo <code style="background:#111;padding:1px 5px;border-radius:3px;font-size:.78rem">content="…"</code> da meta tag fornecida pelo Search Console</p>
-            </div>
+          <div class="form-row">
             <div class="form-field">
               <label>Google Analytics — ID de Medição</label>
               <input type="text" id="int-google-analytics" placeholder="G-XXXXXXXXXX">
@@ -1318,7 +1307,7 @@
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-top:12px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5C400"><path d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            <strong style="font-size:.9rem;color:var(--white)">Analytics Worker</strong>
+            <strong style="font-size:.9rem;color:var(--white)">Cloudflare Analytics</strong>
             <span style="font-size:.72rem;color:var(--muted);margin-left:auto">Preenchido automaticamente ao conectar o Dashboard</span>
           </div>
           <div class="form-field">
@@ -2382,7 +2371,6 @@ function populateForm(c) {
 
   // Integrations
   const ig = c.integrations || {};
-  document.getElementById('int-google-verify').value    = ig.google_verify    || '';
   document.getElementById('int-google-analytics').value = ig.google_analytics || '';
   document.getElementById('int-meta-pixel').value       = ig.meta_pixel       || '';
   document.getElementById('int-meta-verify').value      = ig.meta_verify      || '';
@@ -2463,7 +2451,6 @@ function collectForm() {
       hours:    val('ft-hours')
     },
     integrations: {
-      google_verify:    val('int-google-verify'),
       google_analytics: val('int-google-analytics'),
       meta_pixel:       val('int-meta-pixel'),
       meta_verify:      val('int-meta-verify'),
