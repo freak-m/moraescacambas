@@ -1248,13 +1248,8 @@
                 <div id="geo-globe" style="flex-shrink:0"></div>
                 <h3 style="margin:0">Locais</h3>
               </div>
-              <div class="geo-tabs">
-                <button class="geo-tab active" data-geo="countries">Países</button>
-                <button class="geo-tab" data-geo="states" id="geo-tab-states">Estados</button>
-              </div>
             </div>
             <div id="geo-panel-countries" class="geo-panel"></div>
-            <div id="geo-panel-states"    class="geo-panel" style="display:none"></div>
           </div>
           <div class="field-group" style="margin-bottom:0">
             <h3>Dispositivos</h3>
@@ -1495,8 +1490,8 @@ async function loadDashboardData(force = false) {
 
   if (cached && age < CACHE_MAX_MS) {
     // Render immediately from cache
-    const { daily, prev, devices, os, states, events, waDaily } = cached.data;
-    renderDashboard(daily, prev, devices, os, states, events, waDaily, period.days);
+    const { daily, prev, devices, os, events, waDaily } = cached.data;
+    renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
     dashShow('dash-data');
     setCacheLabel(cached.t, 'ok');
 
@@ -1523,8 +1518,8 @@ async function loadDashboardData(force = false) {
   try {
     const data = await fetchCfAnalytics(period);
     cacheSet(period, data);
-    const { daily, prev, devices, os, states, events, waDaily } = data;
-    renderDashboard(daily, prev, devices, os, states, events, waDaily, period.days);
+    const { daily, prev, devices, os, events, waDaily } = data;
+    renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
     dashShow('dash-data');
     setCacheLabel(Date.now(), 'ok');
   } catch(e) {
@@ -1552,7 +1547,6 @@ async function fetchCfAnalytics({ days, from, to } = {}) {
     prev:    zone.prev    || [],
     devices: zone.devices || [],
     os:      zone.os      || [],
-    states:  zone.states  || [],
     events:  json.events  ?? null,
     waDaily: json.events?.waDaily || []
   };
@@ -1885,7 +1879,7 @@ function renderWAChart(waDaily, days) {
   el.innerHTML = `<svg viewBox="0 0 ${vbW} ${vbH}" xmlns="http://www.w3.org/2000/svg" style="width:100%;display:block;overflow:visible">${bars}${line}</svg>`;
 }
 
-function renderDashboard(daily, prev, devices, os, states, events, waDaily, days) {
+function renderDashboard(daily, prev, devices, os, events, waDaily, days) {
   let curUniq = 0, curPV = 0;
   let prvUniq = 0, prvPV = 0;
   const countryMap = {};
@@ -1970,32 +1964,6 @@ function renderDashboard(daily, prev, devices, os, states, events, waDaily, days
       }).join('')
     : '<p style="color:var(--muted);font-size:.84rem">Nenhum dado.</p>';
 
-  // States panel (BR)
-  const statesPanel = document.getElementById('geo-panel-states');
-  const statesTab   = document.getElementById('geo-tab-states');
-  if (statesPanel) {
-    const validStates = (states || []).filter(s => s.dimensions?.clientRegionCode);
-    const maxS = validStates[0]?.count || 1;
-    if (validStates.length) {
-      statesPanel.innerHTML = validStates.slice(0, 10).map(s => {
-        const code = s.dimensions.clientRegionCode;
-        const name = BR_STATE_NAMES[code] || code;
-        const bp   = Math.round((s.count / maxS) * 100);
-        return `<div class="dash-country-item">
-          <span class="dash-country-flag" style="font-size:.8rem;min-width:22px;text-align:center;font-weight:700;color:var(--muted2)">${code}</span>
-          <div style="flex:1;min-width:0">
-            <div class="dash-country-name">${name}</div>
-            <div class="dash-country-bar-bg"><div class="dash-country-bar" style="width:${bp}%"></div></div>
-          </div>
-          <span class="dash-country-count">${fmtNum(s.count)}</span>
-        </div>`;
-      }).join('');
-      if (statesTab) statesTab.disabled = false;
-    } else {
-      statesPanel.innerHTML = '<p style="color:var(--muted);font-size:.84rem">Dados de estados não disponíveis para este período.</p>';
-      if (statesTab) statesTab.disabled = false;
-    }
-  }
 
   // KV event cards
   if (events !== null) {
