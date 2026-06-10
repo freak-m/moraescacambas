@@ -1407,8 +1407,10 @@
         </div>
         <p class="field-note" style="margin-bottom:20px">Cole aqui os códigos fornecidos pela Meta para conectar o site às plataformas de anúncio.</p>
 
-        <!-- Google Analytics — hidden field (keeps GA ID in content.json for website tracking) -->
+        <!-- Google Analytics — hidden fields (persist values to content.json) -->
         <input type="hidden" id="int-google-analytics">
+        <input type="hidden" id="int-ga-client-id">
+        <input type="hidden" id="int-ga-property-id">
 
         <!-- Meta -->
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px">
@@ -2499,6 +2501,11 @@ function populateForm(c) {
   // Integrations
   const ig = c.integrations || {};
   document.getElementById('int-google-analytics').value = ig.google_analytics || '';
+  document.getElementById('int-ga-client-id').value     = ig.ga_client_id     || '';
+  document.getElementById('int-ga-property-id').value   = ig.ga_property_id   || '';
+  // Sync GA credentials to localStorage so the GA tab can read them instantly
+  if (ig.ga_client_id)   localStorage.setItem(GA_CLIENT_ID_KEY, ig.ga_client_id);
+  if (ig.ga_property_id) localStorage.setItem(GA_PROP_ID_KEY,   ig.ga_property_id);
   updateGaTabVisibility();
   document.getElementById('int-meta-pixel').value       = ig.meta_pixel       || '';
   document.getElementById('int-meta-verify').value      = ig.meta_verify      || '';
@@ -2580,6 +2587,8 @@ function collectForm() {
     },
     integrations: {
       google_analytics: val('int-google-analytics'),
+      ga_client_id:     val('int-ga-client-id'),
+      ga_property_id:   val('int-ga-property-id'),
       meta_pixel:       val('int-meta-pixel'),
       meta_verify:      val('int-meta-verify'),
       worker_url:       localStorage.getItem(CF_WORKER_KEY) || val('int-worker-url') || ''
@@ -3222,6 +3231,11 @@ document.getElementById('ga-save-setup-btn')?.addEventListener('click', () => {
   errEl.style.display = 'none';
   localStorage.setItem(GA_CLIENT_ID_KEY, clientId);
   localStorage.setItem(GA_PROP_ID_KEY,   propId);
+  // Also persist to hidden inputs so Publicar saves them to content.json
+  const hClient = document.getElementById('int-ga-client-id');
+  const hProp   = document.getElementById('int-ga-property-id');
+  if (hClient) hClient.value = clientId;
+  if (hProp)   hProp.value   = propId;
   doGaOAuth(clientId, loadGaData);
 });
 
