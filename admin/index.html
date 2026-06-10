@@ -715,7 +715,7 @@
       </a>
       <nav class="sidebar-nav">
         <button class="tab-btn tab-primary active" data-tab="dashboard"><span class="nav-icon">📊</span> Analytics Cloudflare</button>
-        <button class="tab-btn tab-primary" data-tab="ga" id="tab-ga-btn"><span class="nav-icon">📈</span> Google Analytics</button>
+        <button class="tab-btn tab-primary" data-tab="ga" id="tab-ga-btn" style="display:none"><span class="nav-icon">📈</span> Google Analytics</button>
         <div class="nav-group-label">Conteúdo do site</div>
         <button class="tab-btn tab-sub" data-tab="seo"><span class="nav-icon">🔍</span> SEO</button>
         <button class="tab-btn tab-sub" data-tab="sections"><span class="nav-icon">📝</span> Seções</button>
@@ -1163,21 +1163,6 @@
 
       <!-- Data -->
       <div id="dash-data" style="display:none">
-        <!-- Updating banner: shown while background refresh is in progress -->
-        <div id="dash-updating-banner" style="display:none;margin-bottom:12px">
-          <div style="background:rgba(245,196,0,.06);border:1px solid rgba(245,196,0,.22);border-radius:8px;padding:10px 14px;color:#d4a800;font-size:.82rem;display:flex;align-items:center;gap:10px">
-            <span class="spinner" style="width:14px;height:14px;border-color:rgba(212,168,0,.3);border-top-color:#d4a800"></span>
-            <span>Atualizando dados…</span>
-          </div>
-        </div>
-        <!-- API error banner: shown when data couldn't refresh but stale cache is available -->
-        <div id="dash-api-error" style="display:none;margin-bottom:12px">
-          <div style="background:rgba(224,85,85,.08);border:1px solid rgba(224,85,85,.3);border-radius:8px;padding:10px 14px;color:#f87171;font-size:.82rem;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-            <span>⚠ Limite da API atingido — não foi possível atualizar.</span>
-            <span id="dash-api-error-msg" style="opacity:.8"></span>
-            <span style="margin-left:auto;font-size:.72rem;opacity:.7">Exibindo últimos dados disponíveis</span>
-          </div>
-        </div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
             <select id="dash-period-select" class="dash-period-sel">
@@ -1307,12 +1292,11 @@
           </div>
 
           <div id="ga-reconnect" style="display:none">
-            <p class="field-note" style="margin-bottom:12px">Configuração salva no site. Clique para autorizar com <strong>sua própria conta Google</strong> — necessário uma vez por sessão do navegador.</p>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
-              <button class="btn-primary" id="ga-reconnect-btn" type="button">Conectar com Google</button>
+            <p class="field-note" style="margin-bottom:12px">Sessão expirada ou desconectada. Reconecte com sua conta Google.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn-primary" id="ga-reconnect-btn" type="button">Reconectar com Google</button>
               <button class="preview-btn" id="ga-change-setup-btn" type="button">⚙ Alterar configurações</button>
             </div>
-            <p class="field-note" style="font-size:.75rem;opacity:.7">Cada pessoa usa sua própria conta Google. Para que seu cliente veja os dados, adicione o e-mail dele como Visualizador na propriedade GA4 (GA → Admin → Gerenciamento de acesso).</p>
           </div>
         </div>
       </div>
@@ -1344,6 +1328,7 @@
               <option value="30">Últimos 30 dias</option>
               <option value="90">Últimos 90 dias</option>
             </select>
+            <span id="ga-worker-period" style="display:none;font-size:.82rem;color:var(--muted2)">Últimos 30 dias</span>
             <span id="ga-cache-status" style="font-size:.72rem;color:var(--muted)"></span>
           </div>
           <div style="display:flex;gap:8px">
@@ -1352,8 +1337,8 @@
           </div>
         </div>
 
-        <!-- Real-time banner -->
-        <div style="background:linear-gradient(135deg,#0f2027,#1a3a2a);border:1px solid #2a4a3a;border-radius:10px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <!-- Real-time banner (hidden in Worker mode) -->
+        <div id="ga-realtime-banner" style="background:linear-gradient(135deg,#0f2027,#1a3a2a);border:1px solid #2a4a3a;border-radius:10px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <span style="width:10px;height:10px;background:#34A853;border-radius:50%;display:inline-block;box-shadow:0 0 8px #34A853;animation:pulse 2s infinite;flex-shrink:0"></span>
           <span style="font-size:.85rem;color:var(--muted2)">Usuários agora no site:</span>
           <span id="ga-realtime" style="font-size:1.6rem;font-weight:800;color:#34A853">—</span>
@@ -1363,39 +1348,19 @@
         <!-- Overview metric cards -->
         <div class="dash-metrics" style="grid-template-columns:repeat(4,1fr)">
           <div class="dash-metric">
-            <div class="dash-metric-top">
-              <span class="dash-metric-label-wrap">
-                <span class="dash-metric-label">Sessões</span>
-                <span class="dash-info-btn">i<span class="dash-info-tip">Número de sessões iniciadas no período. Uma sessão encerra após 30 minutos de inatividade.</span></span>
-              </span>
-            </div>
+            <div class="dash-metric-top"><span class="dash-metric-label">Sessões</span></div>
             <div class="dash-metric-val" id="ga-sessions">—</div>
           </div>
           <div class="dash-metric">
-            <div class="dash-metric-top">
-              <span class="dash-metric-label-wrap">
-                <span class="dash-metric-label">Usuários</span>
-                <span class="dash-info-btn">i<span class="dash-info-tip">Usuários únicos identificados no período. Calculado por cookies e ID do dispositivo.</span></span>
-              </span>
-            </div>
+            <div class="dash-metric-top"><span class="dash-metric-label">Usuários</span></div>
             <div class="dash-metric-val" id="ga-users">—</div>
           </div>
           <div class="dash-metric">
-            <div class="dash-metric-top">
-              <span class="dash-metric-label-wrap">
-                <span class="dash-metric-label">Page Views</span>
-                <span class="dash-info-btn">i<span class="dash-info-tip">Total de páginas carregadas. Um único usuário pode gerar múltiplos page views ao navegar.</span></span>
-              </span>
-            </div>
+            <div class="dash-metric-top"><span class="dash-metric-label">Page Views</span></div>
             <div class="dash-metric-val" id="ga-pageviews">—</div>
           </div>
           <div class="dash-metric">
-            <div class="dash-metric-top">
-              <span class="dash-metric-label-wrap">
-                <span class="dash-metric-label">Duração Média</span>
-                <span class="dash-info-btn">i<span class="dash-info-tip">Tempo médio que os usuários passam por sessão no site.</span></span>
-              </span>
-            </div>
+            <div class="dash-metric-top"><span class="dash-metric-label">Duração Média</span></div>
             <div class="dash-metric-val" id="ga-duration">—</div>
           </div>
         </div>
@@ -1409,27 +1374,24 @@
         <!-- Sources + Devices two-column -->
         <div class="dash-two-col">
           <div class="field-group" style="margin-bottom:0">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
-              <h3 style="margin:0">Fontes de tráfego</h3>
-              <span class="dash-info-btn">i<span class="dash-info-tip">De onde os visitantes chegaram: busca orgânica (Google), direto (URL digitada), redes sociais, referência (outro site), etc.</span></span>
-            </div>
+            <h3>Fontes de tráfego</h3>
             <div id="ga-sources"></div>
           </div>
           <div class="field-group" style="margin-bottom:0">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
-              <h3 style="margin:0">Dispositivos &amp; SO</h3>
-              <span class="dash-info-btn">i<span class="dash-info-tip">Tipo de dispositivo (mobile, desktop, tablet) e sistema operacional dos visitantes.</span></span>
-            </div>
+            <h3>Dispositivos</h3>
             <div id="ga-devices"></div>
           </div>
         </div>
 
+        <!-- Top pages -->
+        <div class="field-group" id="ga-pages-wrap">
+          <h3>Páginas mais acessadas</h3>
+          <div id="ga-pages"></div>
+        </div>
+
         <!-- Cities in Brazil -->
         <div class="field-group" id="ga-cities-wrap">
-          <div style="display:flex;align-items:center;gap:6px;margin-bottom:12px">
-            <h3 style="margin:0">Cidades no Brasil</h3>
-            <span class="dash-info-btn">i<span class="dash-info-tip">Cidades e estados brasileiros de onde vieram os visitantes, filtrado por país Brasil.</span></span>
-          </div>
+          <h3>Cidades no Brasil</h3>
           <div id="ga-cities"></div>
         </div>
 
@@ -1446,10 +1408,19 @@
         </div>
         <p class="field-note" style="margin-bottom:20px">Cole aqui os códigos fornecidos pelo Google e pela Meta para conectar o site às plataformas de anúncio.</p>
 
-        <!-- GA credentials managed via Google Analytics tab -->
-        <input type="hidden" id="int-google-analytics">
-        <input type="hidden" id="int-ga-client-id">
-        <input type="hidden" id="int-ga-property-id">
+        <!-- Google -->
+        <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:12px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+            <img src="https://developers.google.com/static/analytics/images/terms/lockup_ic_Google_Analytics_vert_388px_clr.png" alt="Google Analytics" style="height:32px;object-fit:contain">
+          </div>
+          <div class="form-row">
+            <div class="form-field">
+              <label>Google Analytics — ID de Medição</label>
+              <input type="text" id="int-google-analytics" placeholder="G-XXXXXXXXXX">
+              <p class="field-note" style="margin-top:4px">Google Analytics → Admin → Fluxos de dados → ID de medição</p>
+            </div>
+          </div>
+        </div>
 
         <!-- Meta -->
         <div style="background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:18px">
@@ -1586,24 +1557,6 @@ function dashShow(id) {
     document.getElementById(s).style.display = s === id ? '' : 'none';
   });
 }
-function showCfApiError(msg) {
-  const b = document.getElementById('dash-api-error');
-  const m = document.getElementById('dash-api-error-msg');
-  if (m) m.textContent = msg ? `(${msg})` : '';
-  if (b) b.style.display = '';
-}
-function hideCfApiError() {
-  const b = document.getElementById('dash-api-error');
-  if (b) b.style.display = 'none';
-}
-function showDashUpdating() {
-  const el = document.getElementById('dash-updating-banner');
-  if (el) el.style.display = '';
-}
-function hideDashUpdating() {
-  const el = document.getElementById('dash-updating-banner');
-  if (el) el.style.display = 'none';
-}
 
 function initDashboard() {
   if (!localStorage.getItem(CF_WORKER_KEY)) {
@@ -1664,46 +1617,36 @@ function setCacheLabel(t, state) {
 }
 
 async function loadDashboardData(force = false) {
-  const period  = getDashPeriod();
-  const cached  = cacheGet(period);
-  const age     = cached ? Date.now() - cached.t : Infinity;
-  const needsRefresh = force || !cached || age >= CACHE_CHECK_MS;
+  const period = getDashPeriod();
+  const cached = force ? null : cacheGet(period);
+  const age    = cached ? Date.now() - cached.t : Infinity;
 
-  // Always show cached data immediately if available
-  if (cached) {
+  if (cached && age < CACHE_MAX_MS) {
+    // Render immediately from cache
     const { daily, prev, devices, os, events, waDaily } = cached.data;
     renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
     dashShow('dash-data');
     setCacheLabel(cached.t, 'ok');
-    hideCfApiError();
 
-    if (!needsRefresh) {
-      hideDashUpdating();
-      return;
+    // Background recheck after CACHE_CHECK_MS
+    if (age > CACHE_CHECK_MS) {
+      setCacheLabel(cached.t, 'checking');
+      fetchCfAnalytics(period).then(fresh => {
+        if (cacheSum(fresh) !== cacheSum(cached.data)) {
+          cacheSet(period, fresh);
+          const { daily, prev, devices, os, states, events, waDaily } = fresh;
+          renderDashboard(daily, prev, devices, os, states, events, waDaily, period.days);
+          setCacheLabel(Date.now(), 'updated');
+        } else {
+          cacheSet(period, cached.data); // reset timestamp, data unchanged
+          setCacheLabel(Date.now(), 'ok');
+        }
+      }).catch(() => setCacheLabel(cached.t, 'ok'));
     }
-
-    // Show updating banner and refresh in background
-    showDashUpdating();
-    fetchCfAnalytics(period).then(fresh => {
-      cacheSet(period, fresh);
-      if (cacheSum(fresh) !== cacheSum(cached.data)) {
-        const { daily, prev, devices, os, events, waDaily } = fresh;
-        renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
-        setCacheLabel(Date.now(), 'updated');
-      } else {
-        setCacheLabel(Date.now(), 'ok');
-      }
-      hideDashUpdating();
-      hideCfApiError();
-    }).catch(e => {
-      hideDashUpdating();
-      showCfApiError(e.message);
-      setCacheLabel(cached.t, 'ok');
-    });
     return;
   }
 
-  // No cache at all — fetch synchronously with loading spinner
+  // No valid cache — show loading spinner and fetch
   dashShow('dash-loading');
   try {
     const data = await fetchCfAnalytics(period);
@@ -1712,8 +1655,6 @@ async function loadDashboardData(force = false) {
     renderDashboard(daily, prev, devices, os, events, waDaily, period.days);
     dashShow('dash-data');
     setCacheLabel(Date.now(), 'ok');
-    hideDashUpdating();
-    hideCfApiError();
   } catch(e) {
     document.getElementById('dash-error-msg').textContent = e.message;
     dashShow('dash-error');
@@ -2570,10 +2511,7 @@ function populateForm(c) {
   // Integrations
   const ig = c.integrations || {};
   document.getElementById('int-google-analytics').value = ig.google_analytics || '';
-  document.getElementById('int-ga-client-id').value     = ig.ga_client_id     || '';
-  document.getElementById('int-ga-property-id').value   = ig.ga_property_id   || '';
-  if (ig.ga_client_id)   localStorage.setItem(GA_CLIENT_ID_KEY, ig.ga_client_id);
-  if (ig.ga_property_id) localStorage.setItem(GA_PROP_ID_KEY,   ig.ga_property_id);
+  updateGaTabVisibility();
   document.getElementById('int-meta-pixel').value       = ig.meta_pixel       || '';
   document.getElementById('int-meta-verify').value      = ig.meta_verify      || '';
   document.getElementById('int-worker-url').value       = ig.worker_url || localStorage.getItem(CF_WORKER_KEY) || '';
@@ -2654,8 +2592,6 @@ function collectForm() {
     },
     integrations: {
       google_analytics: val('int-google-analytics'),
-      ga_client_id:     val('int-ga-client-id'),
-      ga_property_id:   val('int-ga-property-id'),
       meta_pixel:       val('int-meta-pixel'),
       meta_verify:      val('int-meta-verify'),
       worker_url:       localStorage.getItem(CF_WORKER_KEY) || val('int-worker-url') || ''
@@ -3211,16 +3147,63 @@ function gaShow(id) {
   });
 }
 
-
 function gaTokenValid() {
   const t   = sessionStorage.getItem(GA_TOKEN_KEY);
   const exp = parseInt(sessionStorage.getItem(GA_TOKEN_EXP_KEY) || '0');
   return !!(t && Date.now() < exp - 60000);
 }
 
-function initGaTab() {
+// ── Worker-served GA (no OAuth needed when service account is configured) ──
+const GA_WORKER_CACHE_KEY = 'ga_worker_cache';
+const GA_WORKER_CACHE_TTL = 25 * 60 * 1000; // 25 min (Worker KV caches for 30 min)
+
+async function fetchGaWorkerData(force = false) {
+  if (!force) {
+    try {
+      const c = JSON.parse(localStorage.getItem(GA_WORKER_CACHE_KEY) || 'null');
+      if (c && Date.now() - c.t < GA_WORKER_CACHE_TTL) return c.data;
+    } catch {}
+  }
+  const workerUrl = localStorage.getItem(CF_WORKER_KEY) || CF_WORKER_DEFAULT;
+  const resp = await fetch(workerUrl);
+  if (!resp.ok) return null;
+  const json = await resp.json();
+  if (!json.ga) return null;
+  try { localStorage.setItem(GA_WORKER_CACHE_KEY, JSON.stringify({ data: json.ga, t: Date.now() })); } catch {}
+  return json.ga;
+}
+
+function _setGaWorkerMode(on) {
+  document.getElementById('ga-period-select')?.style.setProperty('display', on ? 'none' : '');
+  const wp = document.getElementById('ga-worker-period');
+  if (wp) wp.style.display = on ? '' : 'none';
+  document.getElementById('ga-realtime-banner')?.style.setProperty('display', on ? 'none' : '');
+  document.getElementById('ga-disconnect-btn')?.style.setProperty('display', on ? 'none' : '');
+}
+
+async function initGaTab(force = false) {
   clearGaRealtime();
-  // localStorage first; fall back to hidden inputs populated by populateForm (works in incognito)
+  gaShow('ga-loading');
+
+  // ── Try Worker-served GA first (service account, no OAuth) ──
+  try {
+    const workerGa = await fetchGaWorkerData(force);
+    if (workerGa) {
+      renderGaData({ ...workerGa, pages: null, days: 30 });
+      _setGaWorkerMode(true);
+      const st = document.getElementById('ga-cache-status');
+      if (st) {
+        const mins = Math.round((Date.now() - (workerGa.t || Date.now())) / 60000);
+        st.textContent = mins < 1 ? '● Worker' : `Worker · há ${mins} min`;
+        st.style.color = 'var(--green)';
+      }
+      gaShow('ga-data');
+      return;
+    }
+  } catch {}
+
+  // ── Fall back to OAuth ──
+  _setGaWorkerMode(false);
   const fromStorage = localStorage.getItem(GA_CLIENT_ID_KEY);
   const inContent   = (document.getElementById('int-ga-client-id')?.value  || '').trim();
   const clientId    = fromStorage || inContent;
@@ -3228,11 +3211,7 @@ function initGaTab() {
                    || (document.getElementById('int-ga-property-id')?.value || '').trim();
   if (clientId) localStorage.setItem(GA_CLIENT_ID_KEY, clientId);
   if (propId)   localStorage.setItem(GA_PROP_ID_KEY,   propId);
-
-  // If credentials are in localStorage but not yet in content.json, push silently
-  if (clientId && propId && !inContent) {
-    saveGaConfig(clientId, propId).catch(() => {});
-  }
+  if (clientId && propId && !inContent) saveGaConfig(clientId, propId).catch(() => {});
 
   if (!clientId || !propId) {
     document.getElementById('ga-setup-fields').style.display = '';
@@ -3242,10 +3221,7 @@ function initGaTab() {
     gaShow('ga-setup');
     return;
   }
-  if (gaTokenValid()) {
-    loadGaData();
-    return;
-  }
+  if (gaTokenValid()) { loadGaData(); return; }
   document.getElementById('ga-setup-fields').style.display = 'none';
   document.getElementById('ga-reconnect').style.display    = '';
   gaShow('ga-setup');
@@ -3285,32 +3261,10 @@ function doGaOAuth(clientId, onSuccess) {
   });
 }
 
-async function saveGaConfig(clientId, propId) {
-  localStorage.setItem(GA_CLIENT_ID_KEY, clientId);
-  localStorage.setItem(GA_PROP_ID_KEY,   propId);
-  const hc = document.getElementById('int-ga-client-id');
-  const hp = document.getElementById('int-ga-property-id');
-  if (hc) hc.value = clientId;
-  if (hp) hp.value = propId;
-  const getR = await ghGet(CONTENT_PATH);
-  if (!getR.ok) throw new Error('Repositório inacessível. Verifique o token GitHub.');
-  const file = await getR.json();
-  const c = JSON.parse(decodeURIComponent(escape(atob(file.content.replace(/\n/g,'')))));
-  c.integrations = c.integrations || {};
-  c.integrations.ga_client_id   = clientId;
-  c.integrations.ga_property_id = propId;
-  const putR = await ghPut(CONTENT_PATH, JSON.stringify(c, null, 2), file.sha, 'Admin: save GA credentials');
-  if (!putR.ok) {
-    const err = await putR.json().catch(() => ({}));
-    throw new Error(err.message || `Erro ${putR.status}`);
-  }
-}
-
-document.getElementById('ga-save-setup-btn')?.addEventListener('click', async () => {
+document.getElementById('ga-save-setup-btn')?.addEventListener('click', () => {
   const clientId = document.getElementById('ga-client-id').value.trim();
   const propId   = document.getElementById('ga-property-id').value.trim();
   const errEl    = document.getElementById('ga-setup-error');
-  const btn      = document.getElementById('ga-save-setup-btn');
 
   if (!clientId || !clientId.includes('.apps.googleusercontent.com')) {
     errEl.textContent = 'OAuth Client ID inválido — deve terminar em .apps.googleusercontent.com';
@@ -3321,21 +3275,9 @@ document.getElementById('ga-save-setup-btn')?.addEventListener('click', async ()
     errEl.style.display = ''; return;
   }
   errEl.style.display = 'none';
-  btn.innerHTML = 'Salvando… <span class="spinner"></span>';
-  btn.disabled = true;
-
-  try {
-    await saveGaConfig(clientId, propId);
-    document.getElementById('ga-setup-fields').style.display = 'none';
-    document.getElementById('ga-reconnect').style.display    = '';
-    doGaOAuth(clientId, loadGaData);
-  } catch(e) {
-    errEl.textContent = 'Erro ao salvar: ' + e.message;
-    errEl.style.display = '';
-  } finally {
-    btn.innerHTML = 'Salvar e Conectar com Google';
-    btn.disabled = false;
-  }
+  localStorage.setItem(GA_CLIENT_ID_KEY, clientId);
+  localStorage.setItem(GA_PROP_ID_KEY,   propId);
+  doGaOAuth(clientId, loadGaData);
 });
 
 document.getElementById('ga-reconnect-btn')?.addEventListener('click', () => {
@@ -3350,7 +3292,7 @@ document.getElementById('ga-change-setup-btn')?.addEventListener('click', () => 
   document.getElementById('ga-setup-error').style.display = 'none';
 });
 
-document.getElementById('ga-retry-btn')?.addEventListener('click', () => loadGaData(true));
+document.getElementById('ga-retry-btn')?.addEventListener('click', () => initGaTab(true));
 
 document.getElementById('ga-reset-btn')?.addEventListener('click', () => {
   localStorage.removeItem(GA_CLIENT_ID_KEY);
@@ -3368,7 +3310,7 @@ document.getElementById('ga-disconnect-btn')?.addEventListener('click', () => {
   initGaTab();
 });
 
-document.getElementById('ga-refresh-btn')?.addEventListener('click', () => loadGaData(true));
+document.getElementById('ga-refresh-btn')?.addEventListener('click', () => initGaTab(true));
 document.getElementById('ga-period-select')?.addEventListener('change', () => loadGaData(true));
 
 // ── GA API helpers ──────────────────────────────
@@ -3434,7 +3376,7 @@ async function loadGaData(force = false) {
   const dr     = gaDateRange(days);
 
   try {
-    const [overview, daily, sources, devices, os, cities] = await Promise.all([
+    const [overview, daily, sources, devices, pages, cities] = await Promise.all([
       gaReport(propId, token, {
         dateRanges:[dr],
         metrics:[{name:'sessions'},{name:'totalUsers'},{name:'screenPageViews'},{name:'averageSessionDuration'}]
@@ -3460,10 +3402,10 @@ async function loadGaData(force = false) {
       }),
       gaReport(propId, token, {
         dateRanges:[dr],
-        dimensions:[{name:'operatingSystem'}],
-        metrics:[{name:'sessions'}],
-        orderBys:[{metric:{metricName:'sessions'},desc:true}],
-        limit:8
+        dimensions:[{name:'pagePath'},{name:'pageTitle'}],
+        metrics:[{name:'screenPageViews'},{name:'totalUsers'}],
+        orderBys:[{metric:{metricName:'screenPageViews'},desc:true}],
+        limit:10
       }),
       gaReport(propId, token, {
         dateRanges:[dr],
@@ -3475,7 +3417,7 @@ async function loadGaData(force = false) {
       })
     ]);
 
-    renderGaData({ overview, daily, sources, devices, os, cities, days });
+    renderGaData({ overview, daily, sources, devices, pages, cities, days });
     gaShow('ga-data');
 
     const st = document.getElementById('ga-cache-status');
@@ -3500,7 +3442,7 @@ const _fmt  = n => n >= 1000000 ? (n/1000000).toFixed(1)+'M' : n >= 1000 ? (n/10
 const _fmtN = n => n.toLocaleString('pt-BR');
 const _fmtDur = s => { const m = Math.floor(s/60), sec = Math.floor(s%60); return m ? `${m}min ${sec}s` : `${sec}s`; };
 
-function renderGaData({ overview, daily, sources, devices, os, cities, days }) {
+function renderGaData({ overview, daily, sources, devices, pages, cities, days }) {
   const mV = (r, i) => parseFloat(r?.rows?.[0]?.metricValues?.[i]?.value || '0');
 
   document.getElementById('ga-sessions').textContent  = _fmt(Math.round(mV(overview,0)));
@@ -3510,7 +3452,8 @@ function renderGaData({ overview, daily, sources, devices, os, cities, days }) {
 
   renderGaChart(daily, days);
   renderGaSources(sources);
-  renderGaDevices(devices, os);
+  renderGaDevices(devices);
+  renderGaPages(pages);
   renderGaCities(cities);
 }
 
@@ -3597,19 +3540,17 @@ function renderGaSources(sources) {
 
 const GA_DEV_ICONS  = { mobile:'📱', desktop:'🖥️', tablet:'📟' };
 const GA_DEV_LABELS = { mobile:'Mobile', desktop:'Desktop', tablet:'Tablet' };
-const GA_OS_ICONS   = { Android:'🤖', iOS:'🍏', Windows:'🪟', Macintosh:'💻', Linux:'🐧', 'Chrome OS':'🌐' };
 
-function renderGaDevices(devices, os) {
+function renderGaDevices(devices) {
   const el = document.getElementById('ga-devices');
   if (!el) return;
+  const rows = devices?.rows || [];
+  const total = rows.reduce((s,r) => s + parseInt(r.metricValues[0].value||'0'), 0) || 1;
 
-  const devRows = devices?.rows || [];
-  const totalDev = devRows.reduce((s,r) => s + parseInt(r.metricValues[0].value||'0'), 0) || 1;
-
-  let html = devRows.map(r => {
-    const cat = r.dimensionValues[0].value;
-    const val = parseInt(r.metricValues[0].value||'0');
-    const pct = Math.round(val / totalDev * 100);
+  el.innerHTML = rows.map(r => {
+    const cat  = r.dimensionValues[0].value;
+    const val  = parseInt(r.metricValues[0].value||'0');
+    const pct  = Math.round(val / total * 100);
     return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
       <span style="font-size:1.2rem">${GA_DEV_ICONS[cat]||'📦'}</span>
       <div style="flex:1">
@@ -3623,46 +3564,48 @@ function renderGaDevices(devices, os) {
       </div>
     </div>`;
   }).join('');
+}
 
-  const osRows = (os?.rows || []).filter(r => r.dimensionValues[0].value !== '(not set)');
-  const totalOs = osRows.reduce((s,r) => s + parseInt(r.metricValues[0].value||'0'), 0) || 1;
+function renderGaPages(pages) {
+  const el   = document.getElementById('ga-pages');
+  const wrap = document.getElementById('ga-pages-wrap');
+  if (!el || !wrap) return;
+  const rows = pages?.rows || [];
+  if (!rows.length) { wrap.style.display = 'none'; return; }
+  wrap.style.display = '';
+  const maxPV = Math.max(...rows.map(r => parseInt(r.metricValues[0].value||'0')), 1);
 
-  if (osRows.length) {
-    html += `<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border)">
-      <div style="font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Sistemas Operacionais</div>`;
-    html += osRows.map(r => {
-      const name  = r.dimensionValues[0].value;
-      const val   = parseInt(r.metricValues[0].value||'0');
-      const pct   = Math.round(val / totalOs * 100);
-      const label = name === 'Macintosh' ? 'macOS' : name;
-      return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-        <span style="font-size:1rem;flex-shrink:0">${GA_OS_ICONS[name]||'💻'}</span>
-        <div style="flex:1">
-          <div style="display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:2px">
-            <span style="color:var(--white)">${label}</span>
-            <span style="color:var(--muted)">${_fmtN(val)} <span style="color:var(--muted2)">(${pct}%)</span></span>
-          </div>
-          <div style="height:3px;background:var(--card2);border-radius:2px">
-            <div style="height:3px;width:${pct}%;background:#4285F4;border-radius:2px"></div>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-    html += '</div>';
-  }
-  el.innerHTML = html;
+  el.innerHTML = `<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:.8rem">
+    <thead><tr style="border-bottom:1px solid var(--border)">
+      <th style="text-align:left;padding:6px 8px;color:var(--muted);font-weight:600">Página</th>
+      <th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Views</th>
+      <th style="text-align:right;padding:6px 8px;color:var(--muted);font-weight:600">Usuários</th>
+    </tr></thead>
+    <tbody>${rows.map(r => {
+      const path  = r.dimensionValues[0].value || '/';
+      const title = r.dimensionValues[1].value || path;
+      const pv    = parseInt(r.metricValues[0].value||'0');
+      const us    = parseInt(r.metricValues[1].value||'0');
+      const pct   = Math.round(pv / maxPV * 100);
+      return `<tr style="border-bottom:1px solid rgba(255,255,255,.04)">
+        <td style="padding:7px 8px">
+          <div style="color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px" title="${path}">${path}</div>
+          <div style="color:var(--muted);font-size:.72rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px">${title}</div>
+          <div style="height:3px;background:var(--card2);border-radius:2px;margin-top:4px"><div style="height:3px;width:${pct}%;background:#4285F4;border-radius:2px"></div></div>
+        </td>
+        <td style="padding:7px 8px;text-align:right;color:var(--white)">${_fmtN(pv)}</td>
+        <td style="padding:7px 8px;text-align:right;color:var(--muted)">${_fmtN(us)}</td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
 }
 
 function renderGaCities(cities) {
   const el   = document.getElementById('ga-cities');
   const wrap = document.getElementById('ga-cities-wrap');
   if (!el || !wrap) return;
-  wrap.style.display = '';
   const rows = cities?.rows || [];
-  if (!rows.length) {
-    el.innerHTML = '<p class="field-note" style="margin-top:6px">Sem dados de visitas no Brasil ainda. Os dados aparecerão conforme os visitantes acessarem o site.</p>';
-    return;
-  }
+  if (!rows.length) { wrap.style.display = 'none'; return; }
   wrap.style.display = '';
   const maxS = Math.max(...rows.map(r => parseInt(r.metricValues[0].value||'0')), 1);
 
