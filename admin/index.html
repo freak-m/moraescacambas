@@ -1233,8 +1233,8 @@
           </div>
         </div>
 
-        <!-- Row 2: Tráfego + Cache + Tempo -->
-        <div class="dash-metrics" style="grid-template-columns:repeat(3,1fr)">
+        <!-- Row 2: Tráfego + Tempo -->
+        <div class="dash-metrics" style="grid-template-columns:repeat(2,1fr)">
           <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label-wrap">
@@ -1245,16 +1245,8 @@
             <div class="dash-metric-val" id="dm-bandwidth" style="color:var(--muted2)">—</div>
             <div class="dash-metric-spark" id="dms-bandwidth"></div>
           </div>
-          <div class="dash-metric">
-            <div class="dash-metric-top">
-              <span class="dash-metric-label-wrap">
-                <span class="dash-metric-label">Taxa de Cache</span>
-                <span class="dash-info-btn">i<span class="dash-info-tip">Percentual de requisições servidas pelo cache do Cloudflare, sem chegar ao servidor de origem. Quanto maior, mais rápido e mais eficiente.</span></span>
-              </span>
-            </div>
-            <div class="dash-metric-val" id="dm-cache" style="color:var(--muted2)">—</div>
-            <div style="height:4px;background:var(--border2);border-radius:2px;margin-top:8px;overflow:hidden"><div id="dm-cache-bar" style="height:100%;border-radius:2px;background:var(--yellow);width:0%;transition:width .6s"></div></div>
-          </div>
+          <!-- hidden cache elements to avoid JS errors -->
+          <div style="display:none"><div id="dm-cache"></div><div id="dm-cache-bar"></div></div>
           <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label-wrap">
