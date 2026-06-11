@@ -1184,8 +1184,8 @@
           </div>
         </div>
 
-        <!-- CF metric cards -->
-        <div class="dash-metrics" style="grid-template-columns:repeat(2,1fr)">
+        <!-- Row 1: Visitas + Page Views + WhatsApp + Fotos -->
+        <div class="dash-metrics" style="grid-template-columns:repeat(4,1fr)">
           <div class="dash-metric">
             <div class="dash-metric-top">
               <span class="dash-metric-label-wrap">
@@ -1208,25 +1208,64 @@
             <div class="dash-metric-val" id="dm-pageviews">—</div>
             <div class="dash-metric-spark" id="dms-pageviews"></div>
           </div>
-        </div>
-
-        <!-- Event tracking cards (Worker KV) -->
-        <div class="dash-metrics" style="grid-template-columns:repeat(1,1fr)">
           <div class="dash-metric">
             <div class="dash-metric-top">
-              <span class="dash-metric-label">Tempo na Página</span>
-              <span class="dash-metric-change neutral" id="dmc-time">—</span>
+              <span class="dash-metric-label-wrap">
+                <span class="dash-metric-label">Cliques WhatsApp</span>
+                <span class="dash-info-btn">i<span class="dash-info-tip">Total de cliques no botão do WhatsApp. Rastreado pelo Worker KV — requer que o site chame o Worker ao clicar no botão.</span></span>
+              </span>
+              <span class="dash-metric-change neutral" id="dmc-wa">—</span>
             </div>
-            <div class="dash-metric-val" id="dm-time" style="color:var(--muted)">—</div>
-            <p class="dash-metric-ga-note" id="dm-time-note">Rastreado automaticamente via Worker</p>
+            <div class="dash-metric-val" id="dm-wa" style="color:var(--green)">—</div>
+            <div class="dash-metric-spark" id="dms-wa"></div>
+            <p class="dash-metric-ga-note" id="dm-wa-note">Aguardando dados do Worker KV</p>
+          </div>
+          <div class="dash-metric">
+            <div class="dash-metric-top">
+              <span class="dash-metric-label-wrap">
+                <span class="dash-metric-label">Fotos Abertas</span>
+                <span class="dash-info-btn">i<span class="dash-info-tip">Total de vezes que a foto do serviço foi aberta. Rastreado pelo Worker KV — requer que o site chame o Worker ao abrir a foto.</span></span>
+              </span>
+              <span class="dash-metric-change neutral" id="dmc-photo">—</span>
+            </div>
+            <div class="dash-metric-val" id="dm-photo" style="color:#4D9FEC">—</div>
+            <p class="dash-metric-ga-note" id="dm-photo-note">Aguardando dados do Worker KV</p>
           </div>
         </div>
-        <!-- Hidden elements to keep JS working -->
-        <div style="display:none">
-          <span id="dmc-wa"></span><div id="dm-wa"></div>
-          <p id="dm-wa-note"></p><div id="dms-wa"></div>
-          <span id="dmc-photo"></span><div id="dm-photo"></div>
-          <p id="dm-photo-note"></p>
+
+        <!-- Row 2: Tráfego + Cache + Tempo -->
+        <div class="dash-metrics" style="grid-template-columns:repeat(3,1fr)">
+          <div class="dash-metric">
+            <div class="dash-metric-top">
+              <span class="dash-metric-label-wrap">
+                <span class="dash-metric-label">Tráfego Total</span>
+                <span class="dash-info-btn">i<span class="dash-info-tip">Total de dados transferidos pelo Cloudflare no período. Inclui HTML, imagens, CSS e JS servidos aos visitantes.</span></span>
+              </span>
+            </div>
+            <div class="dash-metric-val" id="dm-bandwidth" style="color:var(--muted2)">—</div>
+            <div class="dash-metric-spark" id="dms-bandwidth"></div>
+          </div>
+          <div class="dash-metric">
+            <div class="dash-metric-top">
+              <span class="dash-metric-label-wrap">
+                <span class="dash-metric-label">Taxa de Cache</span>
+                <span class="dash-info-btn">i<span class="dash-info-tip">Percentual de requisições servidas pelo cache do Cloudflare, sem chegar ao servidor de origem. Quanto maior, mais rápido e mais eficiente.</span></span>
+              </span>
+            </div>
+            <div class="dash-metric-val" id="dm-cache" style="color:var(--muted2)">—</div>
+            <div style="height:4px;background:var(--border2);border-radius:2px;margin-top:8px;overflow:hidden"><div id="dm-cache-bar" style="height:100%;border-radius:2px;background:var(--yellow);width:0%;transition:width .6s"></div></div>
+          </div>
+          <div class="dash-metric">
+            <div class="dash-metric-top">
+              <span class="dash-metric-label-wrap">
+                <span class="dash-metric-label">Tempo na Página</span>
+                <span class="dash-info-btn">i<span class="dash-info-tip">Tempo médio que os visitantes ficam no site. Rastreado pelo Worker KV via evento de saída da página.</span></span>
+              </span>
+              <span class="dash-metric-change neutral" id="dmc-time">média</span>
+            </div>
+            <div class="dash-metric-val" id="dm-time" style="color:var(--muted2)">—</div>
+            <p class="dash-metric-ga-note" id="dm-time-note">Aguardando dados do Worker KV</p>
+          </div>
         </div>
 
         <!-- Daily bar chart -->
@@ -1560,6 +1599,14 @@ function fmtTime(secs) {
   return m > 0 ? `${m}m ${String(s).padStart(2,'0')}s` : `${s}s`;
 }
 
+function fmtBytes(b) {
+  if (!b) return '—';
+  if (b >= 1e9) return (b / 1e9).toFixed(1) + ' GB';
+  if (b >= 1e6) return (b / 1e6).toFixed(1) + ' MB';
+  if (b >= 1e3) return (b / 1e3).toFixed(0) + ' KB';
+  return b + ' B';
+}
+
 function sparklineSVG(values, dates, color) {
   if (!values || values.length < 2) return '';
   const max = Math.max(...values, 1);
@@ -1876,13 +1923,16 @@ function renderWAChart(waDaily, days) {
 }
 
 function renderDashboard(daily, prev, devices, os, events, waDaily, days) {
-  let curUniq = 0, curPV = 0;
+  let curUniq = 0, curPV = 0, curBytes = 0, curReqs = 0, curCached = 0;
   let prvUniq = 0, prvPV = 0;
   const countryMap = {};
 
   daily.forEach(d => {
-    curUniq += d.uniq?.uniques  || 0;
-    curPV   += d.sum?.pageViews || 0;
+    curUniq   += d.uniq?.uniques         || 0;
+    curPV     += d.sum?.pageViews        || 0;
+    curBytes  += d.sum?.bytes            || 0;
+    curReqs   += d.sum?.requests         || 0;
+    curCached += d.sum?.cachedRequests   || 0;
     (d.sum?.countryMap || []).forEach(c => {
       countryMap[c.clientCountryName] = (countryMap[c.clientCountryName] || 0) + c.requests;
     });
@@ -1897,12 +1947,29 @@ function renderDashboard(daily, prev, devices, os, events, waDaily, days) {
   document.getElementById('dm-uniques').textContent   = fmtNum(curUniq);
   document.getElementById('dm-pageviews').textContent = fmtNum(curPV);
 
+  // Bandwidth
+  const bwEl = document.getElementById('dm-bandwidth');
+  if (bwEl) bwEl.textContent = fmtBytes(curBytes);
+
+  // Cache rate
+  const cacheEl  = document.getElementById('dm-cache');
+  const cacheBar = document.getElementById('dm-cache-bar');
+  if (cacheEl) {
+    const cachePct = curReqs > 0 ? Math.round(curCached / curReqs * 100) : 0;
+    cacheEl.textContent = curReqs > 0 ? cachePct + '%' : '—';
+    const cacheColor = cachePct >= 80 ? '#25D366' : cachePct >= 50 ? '#F5C400' : '#e05555';
+    cacheEl.style.color = curReqs > 0 ? cacheColor : 'var(--muted2)';
+    if (cacheBar) { cacheBar.style.width = cachePct + '%'; cacheBar.style.background = cacheColor; }
+  }
+
   setChange('dmc-visits',    changePct(curUniq, prvUniq));
   setChange('dmc-pageviews', changePct(curPV,   prvPV));
 
   const sparkDates = daily.map(d => d.dimensions?.date).filter(Boolean);
   document.getElementById('dms-visits').innerHTML    = sparklineSVG(daily.map(d => d.uniq?.uniques  || 0), sparkDates);
   document.getElementById('dms-pageviews').innerHTML = sparklineSVG(daily.map(d => d.sum?.pageViews || 0), sparkDates);
+  const bwSpark = document.getElementById('dms-bandwidth');
+  if (bwSpark) bwSpark.innerHTML = sparklineSVG(daily.map(d => d.sum?.bytes || 0), sparkDates, '#888');
 
   // Bar chart — chronological, dates at bottom, page views overlay line
   const chartData = [...daily].sort((a, b) => a.dimensions.date.localeCompare(b.dimensions.date));
